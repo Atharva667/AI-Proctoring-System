@@ -1,0 +1,19 @@
+1) From homepage remove the start exam button (green)
+
+2) In student registeration enter Your Full Name, with layout of First , Middle and last  also Enter Your class dropdown list with rollno  and give tip box in that written as email is ID and password is password
+
+3) In login page add forgot password and redirect to maintenance page robot
+
+4) add new page knonwn as view result page (replica of homepage ) buttons with view result start exam and logout 
+
+6) after start exam camera verification after that continue button
+
+6)   in rules  page under the rules add the button known as start exam
+
+7) Exam started
+
+8) after completeing exam new page of exam successfully completed already their so link return to homepage to 4) page 
+
+9) after logout return to homepage main page
+
+

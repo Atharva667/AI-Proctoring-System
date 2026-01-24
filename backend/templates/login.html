@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Login</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <!-- LOGIN SUCCESS TOAST -->
+    <div id="loginSuccessToast" style="
+        display:none;
+        position:fixed;
+        top:30px;
+        right:30px;
+        background:linear-gradient(135deg,#22c55e,#16a34a);
+        color:white;
+        padding:16px 28px;
+        border-radius:14px;
+        box-shadow:0 0 25px rgba(34,197,94,0.6);
+        font-weight:bold;
+        font-size:16px;
+        z-index:9999;
+        animation: slideIn 0.4s ease;
+    ">
+        ✅ Login Successful
+    </div>
+
+    <style>
+        @keyframes slideIn {
+            from { transform: translateX(100px); opacity:0; }
+            to   { transform: translateX(0); opacity:1; }
+        }
+    </style>
+
+    <!-- HEADER -->
+    <div class="login-header">
+        Student Login
+    </div>
+
+    <!-- INSTRUCTIONS -->
+    <div class="instructions-box">
+        <b>Instructions:</b>
+        <ul>
+            <li>Enter your registered email and password.</li>
+            <li>Click Login to authenticate.</li>
+            <li>Face verification will be performed during the exam.</li>
+        </ul>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="login-content">
+
+        <!-- LEFT FORM -->
+        <div class="login-form">
+            <label>Email:</label>
+            <input type="email" id="email" placeholder="Enter your email">
+
+            <label>Password:</label>
+            <input type="password" id="password" placeholder="Enter your password">
+
+            <button onclick="login()">Login</button>
+            <div class="forgot-password">
+    <a href="/maintenance">Forgot Password?</a>
+</div>
+
+        </div>
+
+        <!-- RIGHT INFO (NO CAMERA) -->
+        <div class="face-box">
+            <h3>AI Face Verification</h3>
+            <p style="color:#555; font-size:14px;">
+                Your face will be monitored continuously during the exam using AI-based proctoring.
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+function showLoginSuccess() {
+    const toast = document.getElementById("loginSuccessToast");
+    toast.style.display = "block";
+
+    setTimeout(() => {
+        toast.style.display = "none";
+        window.location.href = "/view_result";
+    }, 1500);
+}
+
+function login() {
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    if (!email || !password) {
+        alert("Please enter email and password");
+        return;
+    }
+
+    fetch("/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "success") {
+            showLoginSuccess();
+        } else {
+            alert(data.message);
+        }
+    })
+    .catch(err => {
+        console.error("Login error:", err);
+        alert("Server error. Try again.");
+    });
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Examination Result</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            background: #0f172a;
+            color: white;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+            align-items: absolute;
+        }
+
+    
+
+        .nav-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 16px;
+            padding: 6px 14px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .nav-actions a:hover {
+            background: #1e293b;
+        }
+
+        /* PAGE CENTER */
+        .page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: calc(100vh - 64px);
+        }
+
+        /* RESULT CARD */
+        .card {
+            background: white;
+            width: 520px;
+            border-radius: 10px;
+            padding: 28px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .card h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 6px;
+            color: #0f172a;
+        }
+
+        .exam-date {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
+
+        /* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .box {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            background: #f9fafb;
+        }
+
+        .box h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #475569;
+            font-weight: 600;
+        }
+
+        .box p {
+            margin-top: 6px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+
+        /* STATUS */
+        .status {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .completed {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .terminated {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* BUTTON */
+        .back-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .back-btn:hover {
+            background: #15803d;
+        }
+
+        .loading {
+            text-align: center;
+            font-size: 15px;
+            color: #64748b;
+        }
+
+        .error {
+            text-align: center;
+            color: #dc2626;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="navbar">    
+ 
+        <i class="fa-solid fa-robot"> AKS Proctoring – Results </i> 
+        <div class="nav-actions">
+            <a href="/">Home</a>
+            <a href="/logout">Logout</a>
+        </div>
+    </div>
+
+
+    <div class="page">
+        <div class="card" id="resultCard">
+            <div class="loading">Loading examination result…</div>
+        </div>
+    </div>
+
+    <script>
+        fetch("/api/result")
+            .then(res => res.json())
+            .then(data => {
+
+                const card = document.getElementById("resultCard");
+
+                if (data.empty) {
+                    card.innerHTML = "<div class='error'>No exam result found.</div>";
+                    return;
+                }
+
+                const statusClass = data.status === "COMPLETED" ? "completed" : "terminated";
+
+                card.innerHTML = `
+        <h1>Examination Result</h1>
+        <div class="exam-date">${data.date}</div>
+
+        <div class="grid">
+            <div class="box">
+                <h3>Total Questions</h3>
+                <p>${data.total}</p>
+            </div>
+
+            <div class="box">
+                <h3>Score</h3>
+                <p>${data.score}</p>
+            </div>
+
+            <div class="box">
+                <h3>Percentage</h3>
+                <p>${data.percentage}%</p>
+            </div>
+
+            <div class="box">
+                <h3>Violations</h3>
+                <p>${data.violations}</p>
+            </div>
+        </div>
+
+        <div class="status ${statusClass}">
+            Status: ${data.status}
+        </div>
+
+        <button class="back-btn" onclick="window.location.href='/view_result'">
+            Back to Dashboard
+        </button>
+    `;
+            })
+            .catch(() => {
+                document.getElementById("resultCard").innerHTML =
+                    "<div class='error'>Error loading result</div>";
+            });
+    </script>
+
+</body>
+
+</html>

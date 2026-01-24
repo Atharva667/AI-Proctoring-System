@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Exam Completed</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f3f4f6;
+            font-family: "Segoe UI", Arial, sans-serif;
+            color: #1f2937;
+        }
+
+        .card {
+            background: #ffffff;
+            padding: 40px 45px;
+            border-radius: 12px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+        }
+
+        .icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            background: #16a34a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 36px;
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 15px;
+            color: #4b5563;
+            margin-bottom: 25px;
+        }
+
+        .info {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        button {
+            padding: 12px 28px;
+            background: #1e3a8a;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #1e40af;
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="icon">✓</div>
+
+        <h1>Exam Successfully Completed</h1>
+        <p>Your responses have been submitted and recorded.</p>
+
+        <div class="info">
+            You may safely close this page or return to the homepage.
+        </div>
+
+        <button onclick="window.location.href='/view_result'">
+            Return to View Result
+        </button>
+
+        <div class="footer">
+            AI-Based Online Proctoring System
+        </div>
+    </div>
+
+</body>
+</html>

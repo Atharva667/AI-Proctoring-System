@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Student Dashboard</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<style>
+    body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: #f5f7fa;
+        color: #1f2937;
+    }
+
+    /* HEADER */
+    header {
+        background: #0f172a;
+        color: white;
+        padding: 14px 24px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .brand {
+        font-weight: 600;
+        font-size: 18px;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    header a {
+        color: white;
+        text-decoration: none;
+        border: 1px solid #334155;
+        padding: 6px 14px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    header a:hover {
+        background: #1e293b;
+    }
+
+    /* PAGE */
+    .container {
+        max-width: 1100px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 4px;
+    }
+
+    .subtext {
+        font-size: 14px;
+        color: #64748b;
+        margin-bottom: 25px;
+    }
+
+    /* INFO STRIP */
+    .info-strip {
+        background: #ffffff;
+        border-left: 5px solid #2563eb;
+        padding: 14px 18px;
+        margin-bottom: 25px;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    /* GRID */
+    .grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 24px;
+    }
+
+    .card {
+        background: white;
+        border-radius: 10px;
+        padding: 24px;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    }
+
+    .card h2 {
+        font-size: 18px;
+        margin-bottom: 12px;
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 8px;
+    }
+
+    /* TABLE */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+    table td {
+        padding: 10px 6px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    table td:first-child {
+        color: #64748b;
+        width: 40%;
+    }
+
+    /* ACTIONS */
+    .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        text-decoration: none;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 600;
+        font-size: 15px;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+    .btn-secondary {
+        background: #16a34a;
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: #15803d;
+    }
+
+    .btn-disabled {
+        background: #e5e7eb;
+        color: #9ca3af;
+        cursor: not-allowed;
+    }
+
+    /* FOOTER */
+    footer {
+        text-align: center;
+        margin-top: 50px;
+        font-size: 13px;
+        color: #64748b;
+    }
+
+    @media (max-width: 900px) {
+        .grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="brand">
+        <i class="fa-solid fa-robot"></i>
+        AKS Proctoring System
+    </div>
+    <a href="/logout">Logout</a>
+</header>
+
+<div class="container">
+
+    <h1>Student Dashboard</h1>
+    <div class="subtext">Examination control and result access panel</div>
+
+    <div class="info-strip">
+        <b>Note:</b> All examinations are monitored using AI-based proctoring.
+        Any violation may lead to exam termination.
+    </div>
+
+    <div class="grid">
+
+        <!-- LEFT: EXAM DETAILS -->
+        <div class="card">
+            <h2>Examination Overview</h2>
+
+            <table>
+                <tr>
+                    <td>Exam Mode</td>
+                    <td>AI Proctored Online</td>
+                </tr>
+                <tr>
+                    <td>Total Questions</td>
+                    <td>70</td>
+                </tr>
+                <tr>
+                    <td>Duration</td>
+                    <td>5 Minutes</td>
+                </tr>
+                <tr>
+                    <td>Exam Status</td>
+                    <td><b>Not Attempted</b></td>
+                </tr>
+            </table>
+
+            <div class="actions">
+                <a href="/dashboard" class="btn btn-primary">
+                    <i class="fa-solid fa-play"></i> Start Examination
+                </a>
+            </div>
+        </div>
+
+        <!-- RIGHT: RESULT -->
+        <div class="card">
+            <h2>Result & Reports</h2>
+
+            <table>
+                <tr>
+                    <td>Last Attempt</td>
+                    <td>Available</td>
+                </tr>
+                <tr>
+                    <td>Score</td>
+                    <td>—</td>
+                </tr>
+                <tr>
+                    <td>Violations</td>
+                    <td>—</td>
+                </tr>
+            </table>
+
+            <div class="actions">
+                <a href="/result" class="btn btn-secondary">
+                    <i class="fa-solid fa-chart-line"></i> View Result
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <footer>
+        © 2026 AI Based Online Proctoring System
+    </footer>
+
+</div>
+
+</body>
+</html>

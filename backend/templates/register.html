@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Registration</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="header">Student Registration</div>
+
+    <div class="form-container">
+
+        <!-- TIP BOX -->
+        <div class="tip-box">
+            📌 <b>Email ID</b> will be used as your <b>Login ID</b><br>
+            🔐 The <b>Password</b> you create here will be your <b>Login Password</b>
+        </div>
+
+        <!-- FULL NAME -->
+        <label>Full Name:</label>
+        <div class="name-row">
+            <input type="text" id="firstName" placeholder="First Name">
+            <input type="text" id="middleName" placeholder="Middle Name">
+            <input type="text" id="lastName" placeholder="Last Name">
+        </div>
+
+        <!-- CLASS & ROLL -->
+        <div class="row">
+            <select id="className">
+                <option value="">Select Class</option>
+                <option>FY Diploma</option>
+                <option>SY Diploma</option>
+                <option>TY Diploma</option>
+                <option>BSc</option>
+                <option>BCA</option>
+                <option>BTech</option>
+            </select>
+
+            <input type="text" id="rollNo" placeholder="Roll Number">
+        </div>
+
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="Enter your email">
+
+        <label>Password:</label>
+        <input type="password" id="password" placeholder="Create a password">
+        <small>Password must start with CAPITAL letter and contain one special character.</small>
+
+        <!-- CAMERA -->
+        <label class="photo-label">Capture Photo:</label>
+
+        <div class="camera-box">
+            <video id="video" autoplay></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+        </div>
+
+        <p id="photoStatus" class="photo-status">
+            Please capture your photo before registering.
+        </p>
+
+        <button class="btn" onclick="capturePhoto()">Capture Photo</button>
+
+        <button class="button" id="registerBtn" onclick="registerUser()" disabled>
+            Register
+        </button>
+
+        <div class="login-redirect">
+            Already registered?
+            <a href="/login">Login</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+let photoCaptured = false;
+
+/* ================= PASSWORD VALIDATION ================= */
+function validatePassword(password) {
+    const firstCapital = /^[A-Z]/;
+    const specialChar = /[!@#$%^&*(),.?":{}|<>]/;
+
+    if (!firstCapital.test(password)) {
+        alert("Password must start with a CAPITAL letter");
+        return false;
+    }
+    if (!specialChar.test(password)) {
+        alert("Password must contain at least ONE special character");
+        return false;
+    }
+    if (password.length < 6) {
+        alert("Password must be at least 6 characters long");
+        return false;
+    }
+    return true;
+}
+
+/* ================= CAMERA ================= */
+const video = document.getElementById("video");
+
+navigator.mediaDevices.getUserMedia({
+    video: { facingMode: "user" }
+})
+.then(stream => video.srcObject = stream)
+.catch(() => alert("Camera access denied"));
+
+/* ================= CAPTURE PHOTO ================= */
+function capturePhoto() {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    ctx.drawImage(video, 0, 0);
+
+    photoCaptured = true;
+    document.getElementById("photoStatus").innerText = "Photo captured successfully ✔";
+    document.getElementById("photoStatus").classList.add("success");
+    document.getElementById("registerBtn").disabled = false;
+}
+
+/* ================= REGISTER ================= */
+function registerUser() {
+
+    if (!photoCaptured) {
+        alert("Please capture photo before registering");
+        return;
+    }
+
+    const first = firstName.value.trim();
+    const middle = middleName.value.trim();
+    const last = lastName.value.trim();
+    const email = email.value.trim();
+    const password = password.value.trim();
+
+    if (!first || !last || !email || !password) {
+        alert("Required fields missing");
+        return;
+    }
+
+    if (!validatePassword(password)) return;
+
+    const fullName = `${first} ${middle} ${last}`.replace(/\s+/g, " ");
+
+    fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            name: fullName,
+            email: email,
+            password: password
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === "error") {
+            alert(data.message);
+        } else {
+            alert("Registration successful! Please login.");
+            window.location.href = "/login";
+        }
+    });
+}
+</script>
+
+</body>
+</html>
