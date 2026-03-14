@@ -37,13 +37,16 @@ def analyze_frame():
 
 # ---------------- DATABASE ----------------
 def get_db():
-    return mysql.connector.connect(
-        host=os.environ.get("MYSQLHOST"),
-        user=os.environ.get("MYSQLUSER"),
-        password=os.environ.get("MYSQLPASSWORD"),
-        database=os.environ.get("MYSQLDATABASE"),
-        port=int(os.environ.get("MYSQLPORT", 3306))
-    )
+    try:
+        return mysql.connector.connect(
+            host=os.environ.get("MYSQLHOST"),
+            user=os.environ.get("MYSQLUSER"),
+            password=os.environ.get("MYSQLPASSWORD"),
+            database=os.environ.get("MYSQLDATABASE"),
+            port=int(os.environ.get("MYSQLPORT", 3306))
+        )
+    except Exception as e:
+        print("❌ DATABASE CONNECTION ERROR:", e)
 # ---------------- PAGES ----------------
 
 
@@ -298,29 +301,33 @@ def create_exam():
 @app.route('/teacher_register', methods=['GET','POST'])
 def teacher_register():
 
-    if request.method == 'POST':
+    try:
+        if request.method == 'POST':
 
-        name = request.form['name']
-        email = request.form['email']
-        mobile = request.form['mobile']
+            name = request.form['name']
+            email = request.form['email']
+            mobile = request.form['mobile']
 
-        db = get_db()
-        cursor = db.cursor()
+            db = get_db()
+            cursor = db.cursor()
 
-        cursor.execute("""
-            INSERT INTO teachers (name,email,mobile,status)
-            VALUES (%s,%s,%s,'UNDER_REVIEW')
-        """,(name,email,mobile))
+            cursor.execute("""
+                INSERT INTO teachers (name,email,mobile,status)
+                VALUES (%s,%s,%s,'UNDER_REVIEW')
+            """,(name,email,mobile))
 
-        db.commit()
+            db.commit()
 
-        cursor.close()
-        db.close()
+            cursor.close()
+            db.close()
 
-        return render_template("teacher_register_success.html")
+            return render_template("teacher_register_success.html")
 
-    return render_template('teacher_register.html')
+        return render_template('teacher_register.html')
 
+    except Exception as e:
+        print("❌ TEACHER REGISTER ERROR:", e)
+        return "Database error occurred"
 
 @app.route("/view_result")
 def view_result():
@@ -694,7 +701,7 @@ def login_user():
     cursor.close()
     db.close()
 
-    if user and user["password"] == password:
+    if user and check_password_hash(user["password"], password):
 
         session["user_id"] = user["id"]
         session["user_name"] = user["name"]
