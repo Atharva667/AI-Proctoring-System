@@ -38,10 +38,11 @@ def analyze_frame():
 # ---------------- DATABASE ----------------
 def get_db():
     return mysql.connector.connect(
-        host="localhost",
+        host="mysql.railway.internal",
         user="root",
-        password="localhost",
-        database="ai_proctoring"
+        password="LMfGYSivOfQiorntcKQEOwBLTqWffTwg",
+        database="railway"
+        port=3306
     )
 
 
