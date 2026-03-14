@@ -1,0 +1,15 @@
+1) Mobile Optimization
+
+2)Admin panel should be accessed by only login system
+
+3)Merge login into Teacher Login 
+
+4) {{{Same Email and Same Password should not be there and also same email  with different pass should not pass and also same pass with different emails}} IF USER ALREADY EXITST THEN LOGIN SHOULD BE In that text given as "User is already exist in both cases teacher and student"
+
+5)Add animations like loading... and kuber watsapp downlist list add in admin panel for getting the teachers application and also add sorting button (in that add APPROVED,REJECTED,PENDING,REAPPLIED)
+
+6) Add search bar in Admin panel to find teacher in the list (VIP)
+
+7)Add light and Dark Mode with custom mode (static HoneyComb ==> Hover,whole theme)
+
+8)Give the rejection reason to the teacher who checks the application status   
