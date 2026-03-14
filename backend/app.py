@@ -4,7 +4,13 @@ from flask_cors import CORS
 import mysql.connector
 import os
 from datetime import datetime
+import base64
+import numpy as np
+import cv2
+from services.ai_proctoring import detect_faces
+from werkzeug.security import generate_password_hash, check_password_hash
 
+ 
 # ---------------- CONFIG ----------------
 app = Flask(__name__)
 app.secret_key = "ai_proctoring_secret_key"
@@ -12,6 +18,22 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "activity_log.txt")
+
+@app.route('/analyze_frame', methods=['POST'])
+def analyze_frame():
+
+    data = request.json['image']
+    encoded = data.split(',')[1]
+
+    img = base64.b64decode(encoded)
+    npimg = np.frombuffer(img, dtype=np.uint8)
+
+    frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+
+    faces = detect_faces(frame)
+
+    return {"faces": faces}
+
 
 # ---------------- DATABASE ----------------
 def get_db():
@@ -24,6 +46,7 @@ def get_db():
 
 
 # ---------------- PAGES ----------------
+
 
 @app.route("/get_sessions")
 def get_sessions():
@@ -81,6 +104,224 @@ def get_sessions():
 
     return jsonify({"sessions": sessions})
 
+@app.route("/teacher_status", methods=["GET","POST"])
+def teacher_status():
+
+    status = None
+    reason = None
+    message = None
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT status, rejection_reason FROM teachers WHERE email=%s",
+            (email,)
+        )
+
+        teacher = cursor.fetchone()
+
+        cursor.close()
+        db.close()
+
+        if teacher:
+            status = teacher["status"]
+            reason = teacher["rejection_reason"]
+        else:
+            message = "No teacher application found."
+
+    return render_template(
+        "teacher_status.html",
+        status=status,
+        reason=reason,
+        message=message
+    )
+
+
+@app.route('/get_teachers')
+def get_teachers():
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT name,email,mobile,status FROM teachers")
+
+    teachers = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return jsonify({"teachers": teachers})
+    
+
+@app.route('/approve_teacher/<email>')
+def approve_teacher(email):
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute(
+        "UPDATE teachers SET status='APPROVED' WHERE email=%s",
+        (email,)
+    )
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return jsonify({"status":"ok"})
+
+
+@app.route("/save_exam", methods=["POST"])
+def save_exam():
+
+    data = request.json
+    questions = data["questions"]
+
+    db = get_db()
+    cursor = db.cursor()
+
+    for q in questions:
+
+        question = q["question"]
+        qtype = q["type"]
+
+        option1 = option2 = option3 = option4 = None
+        answer = q.get("answer","")
+
+        if qtype == "mcq":
+
+            option1 = q["options"][0]
+            option2 = q["options"][1]
+            option3 = q["options"][2]
+            option4 = q["options"][3]
+
+        cursor.execute("""
+        INSERT INTO exam_questions
+        (question,question_type,option1,option2,option3,option4,correct_answer)
+        VALUES (%s,%s,%s,%s,%s,%s,%s)
+        """,(
+            question,
+            qtype,
+            option1,
+            option2,
+            option3,
+            option4,
+            answer
+        ))
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return jsonify({"status":"saved"})
+
+
+@app.route("/get_questions")
+def get_questions():
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM exam_questions")
+
+    rows = cursor.fetchall()
+
+    questions = []
+
+    for r in rows:
+
+        options = []
+
+        if r["question_type"] == "mcq":
+            options = [
+                r["option1"],
+                r["option2"],
+                r["option3"],
+                r["option4"]
+            ]
+
+        questions.append({
+            "question": r["question"],
+            "type": r["question_type"],
+            "options": options,
+            "answer": r["correct_answer"]
+        })
+
+    cursor.close()
+    db.close()
+
+    return jsonify({"questions": questions})
+
+
+@app.route('/reject_teacher/<email>', methods=['POST'])
+def reject_teacher(email):
+
+    reason = request.json["reason"]
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute(
+        "UPDATE teachers SET status='REJECTED', rejection_reason=%s WHERE email=%s",
+        (reason,email)
+    )
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return jsonify({"status":"ok"})
+
+@app.route("/teacher_dashboard")
+def teacher_dashboard():
+    if "teacher" not in session:
+        return redirect("/teacher_login")
+
+    return render_template("teacher_dashboard.html")
+
+@app.route("/create_exam")
+def create_exam():
+
+    if "teacher" not in session:
+        return redirect("/teacher_login")
+
+    return render_template("create_exam.html")
+
+
+@app.route('/teacher_register', methods=['GET','POST'])
+def teacher_register():
+
+    if request.method == 'POST':
+
+        name = request.form['name']
+        email = request.form['email']
+        mobile = request.form['mobile']
+
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute("""
+            INSERT INTO teachers (name,email,mobile,status)
+            VALUES (%s,%s,%s,'UNDER_REVIEW')
+        """,(name,email,mobile))
+
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+        return render_template("teacher_register_success.html")
+
+    return render_template('teacher_register.html')
+
 
 @app.route("/view_result")
 def view_result():
@@ -94,11 +335,134 @@ def view_result():
 
 
 
+@app.route("/teacher_login", methods=["GET","POST"])
+def teacher_login():
+
+    if request.method == "POST":
+
+        email = request.form["email"]
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT status FROM teachers WHERE email=%s",
+            (email,)
+        )
+
+        teacher = cursor.fetchone()
+
+        cursor.close()
+        db.close()
+
+        if teacher and teacher["status"] == "APPROVED":
+            session["teacher"] = email
+            return redirect("/teacher_dashboard")
+
+        return "Teacher not approved"
+
+    return render_template("teacher_login.html")
+
+
+
+@app.route("/api/activity")
+
+def api_activity():
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT students.name, exam_results.status
+        FROM exam_results
+        JOIN students
+        ON exam_results.student_id = students.id
+        ORDER BY exam_results.exam_date DESC
+        LIMIT 5
+    """)
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    activities = []
+
+    for r in rows:
+
+        if r["status"] == "COMPLETED":
+            activities.append(f'Student {r["name"]} completed exam.')
+
+        elif r["status"] == "PENDING_REVIEW":
+            activities.append(f'Student {r["name"]} awaiting evaluation.')
+
+        elif r["status"] == "TERMINATED":
+            activities.append(f'Student {r["name"]} exam terminated.')
+
+    return {"activities": activities}
+
+
+@app.route("/review_exams")
+def review_exams():
+
+    if "teacher" not in session:
+        return redirect("/teacher_login")
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+    SELECT exam_results.id,
+           students.name,
+           exam_results.student_id,
+           exam_results.score,
+           exam_results.total,
+           exam_results.status
+    FROM exam_results
+    JOIN students
+    ON exam_results.student_id = students.id
+    ORDER BY exam_results.exam_date DESC
+""")
+
+    exams = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template("review_exams.html", exams=exams)
+
+
+@app.route("/submit_evaluation", methods=["POST"])
+def submit_evaluation():
+
+    result_id = request.form["result_id"]
+
+    total_marks = 0
+
+    for key in request.form:
+        if "mark" in key:
+            total_marks += int(request.form[key])
+
+    db = get_db()
+    cursor = db.cursor()
+
+    cursor.execute("""
+        UPDATE exam_results
+        SET score=%s, status='EVALUATED'
+        WHERE id=%s
+    """,(total_marks,result_id))
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return redirect("/review_exams")
+
+
 @app.route("/admin")
 def admin_panel():
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    admin_path = os.path.join(base_dir, "admin_panel")
-    return send_from_directory(admin_path, "index.html")
+    return render_template("admin_panel.html")  
 
 
 @app.route("/maintenance")
@@ -244,7 +608,7 @@ def exam_page():
 @app.route("/register", methods=["POST"])
 def register_user():
     try:
-        data = request.get_json()
+        data = request.get_json(silent=True) or request.form
         name = data.get("name")
         email = data.get("email")
         password = data.get("password")
@@ -263,21 +627,26 @@ def register_user():
             "SELECT id FROM students WHERE email = %s",
             (email,)
         )
+
         existing = cursor.fetchone()
 
         if existing:
             cursor.close()
             db.close()
+
             return jsonify({
                 "status": "error",
-                "message": "You are already registered with this email"
+                "message": "User already exists. Please login."
             }), 409
 
         # Insert new user
+        hashed_password = generate_password_hash(password)
+
         cursor.execute(
-            "INSERT INTO students (name, email, password) VALUES (%s, %s, %s)",
-            (name, email, password)
+             "INSERT INTO students (name, email, password) VALUES (%s, %s, %s)",
+            (name, email, hashed_password)
         )
+                
 
         db.commit()
         cursor.close()
@@ -307,43 +676,40 @@ def register_user():
 
 @app.route("/login", methods=["POST"])
 def login_user():
-    try:
-        data = request.get_json()
-        email = data.get("email")
-        password = data.get("password")
 
-        if not email or not password:
-            return jsonify({"status": "error", "message": "Missing credentials"}), 400
+    data = request.get_json()
 
-        db = get_db()
-        cursor = db.cursor(dictionary=True)
+    email = data.get("email").strip()
+    password = data.get("password").strip()
 
-        cursor.execute(
-            "SELECT * FROM students WHERE email = %s",
-            (email,)
-        )
-        user = cursor.fetchone()
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
 
-        cursor.close()
-        db.close()
+    cursor.execute(
+        "SELECT * FROM students WHERE email=%s",
+        (email,)
+    )
 
-        if user and user["password"] == password:
-            session["user_id"] = user["id"]
-            session["user_name"] = user["name"]
-            session["state"] = "logged_in"
+    user = cursor.fetchone()
 
-            return jsonify({"status": "success", "name": user["name"]})
+    cursor.close()
+    db.close()
 
-        return jsonify({"status": "error", "message": "Invalid email or password"}), 401
+    if user and user["password"] == password:
 
-    except mysql.connector.Error as e:
-        print("❌ LOGIN DB ERROR:", e)
-        return jsonify({"status": "error", "message": "Database error"}), 500
+        session["user_id"] = user["id"]
+        session["user_name"] = user["name"]
+        session["state"] = "logged_in"
 
-    except Exception as e:
-        print("❌ LOGIN ERROR:", e)
-        return jsonify({"status": "error", "message": "Server error"}), 500
+        return jsonify({
+            "status": "success",
+            "name": user["name"]
+        })
 
+    return jsonify({
+        "status": "error",
+        "message": "Invalid email or password"
+    })
 
 # ---------------- LOGOUT ----------------
 
@@ -384,45 +750,119 @@ def start_session():
 
     return jsonify({"message": "Session started"}), 200
 
+
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
-    if "user_id" not in session:
-        return jsonify({"error": "unauthorized"}), 401
 
-    data = request.get_json() or {}
+    data = request.get_json()
 
-    score = int(data.get("score") or 0)
-    total = int(data.get("total") or 0)
-    violations = int(data.get("violations") or 0)
+    score = int(data.get("score"))
+    total = int(data.get("total"))
+    violations = int(data.get("violations"))
+    answers = data.get("answers")
 
-    try:
-        db = get_db()
-        cursor = db.cursor()
+    answers_text = "|".join([str(a) for a in answers])
 
-        cursor.execute("""
-            INSERT INTO exam_results
-            (student_id, total, score, violations, status)
-            VALUES (%s, %s, %s, %s, %s)
-        """, (
-            session["user_id"],
-            total,
-            score,
-            violations,
-            "COMPLETED"
-        ))
+    db = get_db()
+    cursor = db.cursor()
 
-        db.commit()
+    cursor.execute("""
+        INSERT INTO exam_results
+        (student_id,total,score,violations,answers,status)
+        VALUES (%s,%s,%s,%s,%s,%s)
+    """,(
+        session["user_id"],
+        total,
+        score,
+        violations,
+        answers_text,
+        "PENDING_REVIEW"
+    ))
+
+    db.commit()
+
+    cursor.close()
+    db.close()
+
+    return jsonify({"status": "saved"})
+
+
+@app.route("/teacher_results")
+def teacher_results():
+
+    # Teacher must be logged in
+    if "teacher" not in session:
+        return redirect("/teacher_login")
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT students.name,
+               exam_results.student_id,
+               exam_results.score,
+               exam_results.total,
+               exam_results.violations,
+               exam_results.status,
+               exam_results.exam_date
+        FROM exam_results
+        JOIN students
+        ON exam_results.student_id = students.id
+        ORDER BY exam_results.exam_date DESC
+    """)
+
+    results = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return render_template("teacher_results.html", results=results)
+
+
+
+@app.route("/evaluate_exam/<int:result_id>")
+def evaluate_exam(result_id):
+
+    if "teacher" not in session:
+        return redirect("/teacher_login")
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT students.name, exam_results.*
+        FROM exam_results
+        JOIN students
+        ON exam_results.student_id = students.id
+        WHERE exam_results.id = %s
+    """, (result_id,))
+
+    exam = cursor.fetchone()
+
+    # IMPORTANT FIX
+    if exam is None:
         cursor.close()
         db.close()
+        return "Exam record not found"
 
-        return jsonify({"message": "Exam submitted successfully"})
+    # Safe handling of answers
+    student_answers = (exam.get("answers") or "").split("|")
 
-    except mysql.connector.Error as e:
-        print("❌ SUBMIT EXAM DB ERROR:", e)
-        return jsonify({"error": "database error"}), 500
+    # Load exam questions
+    questions = []
+    with open("exam_questions.txt", "r") as f:
+        for line in f:
+            questions.append(line.strip().split("|"))
 
+    cursor.close()
+    db.close()
 
-
+    return render_template(
+        "evaluate_exam.html",
+        exam=exam,
+        questions=questions,
+        answers=student_answers
+    )
 
 
 
@@ -479,5 +919,4 @@ def start_ai_engine():
 # ---------------- MAIN ----------------
 
 if __name__ == "__main__":
-    app.run(debug=True)
-
+    app.run(host="0.0.0.0", port=10000)

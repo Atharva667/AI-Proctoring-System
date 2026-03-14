@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<title>Review Student Exams</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Segoe UI,Arial;
+}
+
+body{
+background:#f4f6f9;
+}
+
+/* HEADER */
+
+.header{
+background:#1f2a40;
+color:white;
+padding:15px 20px;
+display:flex;
+align-items:center;
+justify-content:space-between;
+flex-wrap:wrap;
+}
+
+.header-title{
+font-size:20px;
+font-weight:600;
+}
+
+/* BACK BUTTON */
+
+.back{
+text-decoration:none;
+background:#2563eb;
+color:white;
+padding:6px 12px;
+border-radius:6px;
+font-size:14px;
+}
+
+.back:hover{
+background:#1d4ed8;
+}
+
+/* MAIN CONTAINER */
+
+.container{
+width:90%;
+max-width:1100px;
+margin:auto;
+margin-top:35px;
+}
+
+/* TABLE */
+
+.table-wrapper{
+overflow-x:auto;
+}
+
+table{
+width:100%;
+border-collapse:collapse;
+background:white;
+border-radius:8px;
+overflow:hidden;
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+}
+
+th{
+background:#2d3e60;
+color:white;
+padding:14px;
+text-align:left;
+font-size:14px;
+}
+
+td{
+padding:13px;
+border-bottom:1px solid #eee;
+font-size:14px;
+}
+
+tr:hover{
+background:#f9fafb;
+}
+
+/* ALIGN CENTER FOR NUMERIC COLUMNS */
+
+td:nth-child(2),
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(5){
+text-align:center;
+}
+
+/* STATUS BADGES */
+
+.status{
+padding:5px 10px;
+border-radius:5px;
+font-size:12px;
+font-weight:600;
+display:inline-block;
+white-space:nowrap;
+}
+
+.pending{
+background:#fff3cd;
+color:#856404;
+}
+
+.evaluated{
+background:#d4edda;
+color:#155724;
+}
+
+/* BUTTON */
+
+.evaluate-btn{
+background:#4caf50;
+border:none;
+padding:7px 14px;
+color:white;
+border-radius:5px;
+cursor:pointer;
+font-weight:500;
+font-size:13px;
+}
+
+.evaluate-btn:hover{
+background:#3fa145;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width:768px){
+
+.header{
+flex-direction:column;
+align-items:flex-start;
+gap:10px;
+}
+
+.header-title{
+font-size:18px;
+}
+
+th,td{
+font-size:13px;
+padding:10px;
+}
+
+.evaluate-btn{
+padding:6px 10px;
+font-size:12px;
+}
+
+}
+
+/* SMALL PHONES */
+
+@media (max-width:500px){
+
+.container{
+width:95%;
+margin-top:20px;
+}
+
+th,td{
+font-size:12px;
+padding:8px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<a href="/teacher_dashboard" class="back">← Dashboard</a>
+
+<div class="header-title">
+Review Student Exams
+</div>
+
+</div>
+
+
+<div class="container">
+
+<div class="table-wrapper">
+
+<table>
+
+<tr>
+<th>Student Name</th>
+<th>Total Questions</th>
+<th>Score</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+
+{% for e in exams %}
+
+<tr>
+
+<td>{{ e.name }}</td>
+
+<td>{{ e.total }}</td>
+
+<td>{{ e.score }}</td>
+
+<td>
+
+{% if e.status == "PENDING_REVIEW" %}
+<span class="status pending">Pending</span>
+{% else %}
+<span class="status evaluated">Evaluated</span>
+{% endif %}
+
+</td>
+
+<td>
+
+<a href="/evaluate_exam/{{ e.id }}">
+<button class="evaluate-btn">Evaluate</button>
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</table>
+
+</div>
+
+</div>
+
+</body>
+</html>

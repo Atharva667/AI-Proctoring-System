@@ -2,6 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
     <title>Student Registration</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
 </head>
@@ -129,11 +132,11 @@ function registerUser() {
         return;
     }
 
-    const first = firstName.value.trim();
-    const middle = middleName.value.trim();
-    const last = lastName.value.trim();
-    const email = email.value.trim();
-    const password = password.value.trim();
+    const first = document.getElementById("firstName").value.trim();
+    const middle = document.getElementById("middleName").value.trim();
+    const last = document.getElementById("lastName").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
 
     if (!first || !last || !email || !password) {
         alert("Required fields missing");

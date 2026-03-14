@@ -1,0 +1,5 @@
+What does RAM stand for?|mcq|Random Access Memory|Read Access Memory|Run Access Memory|Real Access Memory|0
+What is CPU?|mcq|Central Processing Unit|Computer Personal Unit|Central Program Unit|Control Processing Unit|0
+What does HTTP stand for?|mcq|HyperText Transfer Protocol|High Transfer Text Protocol|Hyper Terminal Transfer Program|Host Transfer Text Protocol|0
+What is Python?|short|||||A programming language
+Explain Artificial Intelligence.|paragraph|||||Simulation of human intelligence by machines

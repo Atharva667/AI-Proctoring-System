@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Evaluate Exam</title>
+
+<style>
+
+*{
+box-sizing:border-box;
+margin:0;
+padding:0;
+font-family:Segoe UI,Arial;
+}
+
+body{
+background:#f4f6f9;
+}
+
+/* HEADER */
+
+.header{
+background:#1f2a40;
+color:white;
+padding:18px 22px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+flex-wrap:wrap;
+}
+
+.header h2{
+font-size:20px;
+}
+
+.back{
+background:#2563eb;
+color:white;
+padding:7px 14px;
+border-radius:6px;
+text-decoration:none;
+font-size:14px;
+}
+
+.back:hover{
+background:#1d4ed8;
+}
+
+/* MAIN CONTAINER */
+
+.container{
+width:90%;
+max-width:900px;
+margin:auto;
+margin-top:30px;
+padding-bottom:80px;
+}
+
+/* STUDENT INFO */
+
+.student-box{
+background:white;
+padding:16px;
+border-radius:8px;
+box-shadow:0 3px 8px rgba(0,0,0,0.08);
+margin-bottom:20px;
+font-size:15px;
+}
+
+/* QUESTION CARD */
+
+.question{
+background:white;
+padding:20px;
+margin-bottom:20px;
+border-radius:10px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+
+.question h3{
+font-size:16px;
+margin-bottom:10px;
+}
+
+/* ANSWER BOX */
+
+.answer-box{
+background:#f1f3f6;
+padding:12px;
+border-radius:6px;
+margin-top:8px;
+font-size:15px;
+word-break:break-word;
+}
+
+/* CORRECT ANSWER */
+
+.correct-answer{
+color:#0a7d2e;
+font-weight:600;
+margin-top:10px;
+}
+
+/* BADGES */
+
+.correct-badge{
+background:#d4edda;
+color:#155724;
+padding:6px 12px;
+border-radius:6px;
+font-size:13px;
+font-weight:500;
+display:inline-block;
+margin-top:10px;
+}
+
+.wrong-badge{
+background:#f8d7da;
+color:#721c24;
+padding:6px 12px;
+border-radius:6px;
+font-size:13px;
+font-weight:500;
+display:inline-block;
+margin-top:10px;
+}
+
+/* INPUT */
+
+input{
+padding:8px;
+margin-top:10px;
+border-radius:5px;
+border:1px solid #ccc;
+width:120px;
+font-size:14px;
+}
+
+/* SUBMIT BUTTON */
+
+.submit-box{
+position:fixed;
+bottom:0;
+left:0;
+width:100%;
+background:white;
+padding:15px;
+box-shadow:0 -3px 10px rgba(0,0,0,0.1);
+display:flex;
+justify-content:center;
+}
+
+.submit{
+background:#16a34a;
+border:none;
+color:white;
+padding:12px 30px;
+border-radius:8px;
+font-size:16px;
+cursor:pointer;
+}
+
+.submit:hover{
+background:#15803d;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width:768px){
+
+.container{
+width:95%;
+margin-top:20px;
+}
+
+.question{
+padding:16px;
+}
+
+.question h3{
+font-size:15px;
+}
+
+.answer-box{
+font-size:14px;
+}
+
+input{
+width:100%;
+}
+
+.submit{
+width:100%;
+}
+
+}
+
+/* SMALL PHONES */
+
+@media (max-width:500px){
+
+.header{
+flex-direction:column;
+gap:10px;
+align-items:flex-start;
+}
+
+.header h2{
+font-size:18px;
+}
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<h2>Evaluate Exam</h2>
+
+<a href="/review_exams" class="back">← Back</a>
+
+</div>
+
+<div class="container">
+
+<div class="student-box">
+<b>Student:</b> {{ exam.name }}
+</div>
+
+<form action="/submit_evaluation" method="POST">
+
+<input type="hidden" name="result_id" value="{{ exam.id }}">
+
+{% for q in questions %}
+
+<div class="question">
+
+<h3>Q{{ loop.index }}. {{ q[0] }}</h3>
+
+<div class="answer-box">
+
+<b>Student Answer:</b>
+
+{% if q[1] == "mcq" %}
+{{ q[2 + answers[loop.index0]|int] }}
+{% else %}
+{{ answers[loop.index0] }}
+{% endif %}
+
+</div>
+
+{% if q[1] == "mcq" %}
+
+<p class="correct-answer">
+Correct Answer: {{ q[2 + q[6]|int] }}
+</p>
+
+{% if answers[loop.index0]|int == q[6]|int %}
+<span class="correct-badge">✔ Correct</span>
+{% else %}
+<span class="wrong-badge">✘ Wrong</span>
+{% endif %}
+
+{% else %}
+
+<label>Assign Marks</label><br>
+
+<input 
+type="number"
+name="mark{{ loop.index }}"
+min="0"
+max="5"
+placeholder="0 - 5">
+
+{% endif %}
+
+</div>
+
+{% endfor %}
+
+<div class="submit-box">
+<button class="submit">Submit Evaluation</button>
+</div>
+
+</form>
+
+</div>
+
+</body>
+</html>

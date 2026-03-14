@@ -1,12 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam Completed</title>
     <style>
         body {
             margin: 0;
-            height: 100vh;
+            min-height: 100vh;
+            padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -19,9 +24,8 @@
             background: #ffffff;
             padding: 40px 45px;
             border-radius: 12px;
-            width: 420px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            width: 90%;
+            max-width: 420px;
         }
 
         .icon {
@@ -77,8 +81,35 @@
             font-size: 12px;
             color: #6b7280;
         }
+
+        @media (max-width:600px) {
+
+            .card {
+                padding: 28px 22px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            p {
+                font-size: 14px;
+            }
+
+            .info {
+                font-size: 13px;
+            }
+
+            button {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+            }
+
+        }
     </style>
 </head>
+
 <body>
 
     <div class="card">
@@ -100,5 +131,11 @@
         </div>
     </div>
 
+    <script>setTimeout(() => {
+            window.location.href = "/view_result";
+        }, 3000);
+    </script>
+
 </body>
+
 </html>

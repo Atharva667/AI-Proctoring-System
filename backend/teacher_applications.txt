@@ -1,0 +1,10 @@
+Tushar bandopant kulkarni,tushar@gmail.com,908968576,APPROVED,NA
+test1,test1@gmail.com,999999999,APPROVED,NA
+test2,test2@gmail.com,9890890897,REJECTED,NA,u fucked!!!!
+Sonali Thormote,sonali@gmail.com,989788762,APPROVED,NA
+Sonali Thormote,sonali@gmail.com,989788762,UNDER_REVIEW,NA
+Sonali Thormote,sonali@gmail.com,989788762,UNDER_REVIEW,NA
+Amayaengineering,amoldeshpande1969@gmail.com,09422471439,UNDER_REVIEW,NA
+Amayaengineering,amoldeshpande1969@gmail.com,09422471439,UNDER_REVIEW,NA
+Amayaengineering,amoldeshpande1969@gmail.com,09422471439,UNDER_REVIEW,NA
+aniket jadhav,aniket@gmail.com,98989898,APPROVED,NA

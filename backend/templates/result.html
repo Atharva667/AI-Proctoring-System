@@ -3,6 +3,10 @@
 
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Examination Result</title>
 
     <style>
@@ -30,7 +34,7 @@
             align-items: absolute;
         }
 
-    
+
 
         .nav-actions a {
             color: white;
@@ -47,17 +51,19 @@
         }
 
         /* PAGE CENTER */
-        .page {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: calc(100vh - 64px);
-        }
+      .page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: calc(100vh - 64px);
+    padding: 20px;
+}
 
         /* RESULT CARD */
         .card {
             background: white;
-            width: 520px;
+            width: 90%;
+            max-width: 520px;
             border-radius: 10px;
             padding: 28px;
             box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
@@ -156,14 +162,47 @@
             color: #dc2626;
             font-weight: bold;
         }
+
+        /* MOBILE RESPONSIVE */
+
+@media (max-width:768px){
+
+.navbar{
+flex-direction:column;
+gap:10px;
+align-items:flex-start;
+}
+
+.card{
+padding:22px;
+}
+
+.card h1{
+font-size:20px;
+}
+
+.grid{
+grid-template-columns:1fr;
+}
+
+.box p{
+font-size:18px;
+}
+
+.back-btn{
+padding:14px;
+font-size:16px;
+}
+
+}
     </style>
 </head>
 
 <body>
 
-    <div class="navbar">    
- 
-        <i class="fa-solid fa-robot"> AKS Proctoring – Results </i> 
+    <div class="navbar">
+
+        <i  style="font-family:monospace; font-style:normal; font-size: medium;"fa-solid fa-robot"> AKS Proctoring – Results </i>
         <div class="nav-actions">
             <a href="/">Home</a>
             <a href="/logout">Logout</a>
