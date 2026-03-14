@@ -38,14 +38,12 @@ def analyze_frame():
 # ---------------- DATABASE ----------------
 def get_db():
     return mysql.connector.connect(
-        host="mysql.railway.internal",
-        user="root",
-        password="LMfGYSivOfQiorntcKQEOwBLTqWffTwg",
-        database="railway",
-        port=3306
-        )
-
-
+        host=os.environ.get("MYSQLHOST"),
+        user=os.environ.get("MYSQLUSER"),
+        password=os.environ.get("MYSQLPASSWORD"),
+        database=os.environ.get("MYSQLDATABASE"),
+        port=int(os.environ.get("MYSQLPORT", 3306))
+    )
 # ---------------- PAGES ----------------
 
 
