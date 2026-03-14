@@ -5,4 +5,4 @@ opencv-python-headless
 numpy
 Werkzeug
 gunicorn
-mediapipe
+mediapipe==0.10.14
