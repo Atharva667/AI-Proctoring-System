@@ -1,6 +1,7 @@
 import cv2
-from mediapipe.python.solutions import face_detection
-mp_face_detection = face_detection
+import mediapipe as mp
+
+mp_face_detection = mp.solutions.face_detection
 
 def detect_faces(frame):
 
