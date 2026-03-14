@@ -1,19 +1,23 @@
-import cv2
-import mediapipe as mp
-mp_face_detection = mp.solutions.face_detection
+import os
 
-def detect_faces(frame):
+# Disable AI detection when running on Render
+if os.environ.get("RENDER"):
 
-    face_detection = mp_face_detection.FaceDetection(
-        model_selection=0,
-        min_detection_confidence=0.5
-    )
+    print("AI detection disabled on cloud")
 
-    results = face_detection.process(frame)
+    def detect_faces(frame):
+        return 1
 
-    face_count = 0
+else:
+    import mediapipe as mp
 
-    if results.detections:
-        face_count = len(results.detections)
+    mp_face_detection = mp.solutions.face_detection
+    face_detection = mp_face_detection.FaceDetection()
 
-    return face_count
+    def detect_faces(frame):
+        results = face_detection.process(frame)
+
+        if not results.detections:
+            return 0
+
+        return len(results.detections)
