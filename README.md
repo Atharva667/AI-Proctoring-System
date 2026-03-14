@@ -1,113 +1,174 @@
-.
+AI Based Online Exam Proctoring System
+Overview
 
-🎯 AI Based Proctoring System
+The AI Based Online Exam Proctoring System is a web-based platform designed to conduct secure online examinations with automated monitoring using Artificial Intelligence.
 
-An AI-powered online examination proctoring system designed to ensure fair and secure exams by monitoring candidates using automated checks like camera verification, activity logging, and exam flow control.
+The system integrates Flask, OpenCV, and MySQL to monitor students during online exams and detect suspicious behavior through webcam-based proctoring.
 
-🚀 Features
+This project was developed as a Capstone Project to demonstrate the integration of AI, web technologies, and database systems.
 
-🔐 Secure Login & Registration system
+Features
+Student Module
 
-📷 Camera verification before exam
+Student registration and login
 
-📝 Online exam interface
+Secure session management
 
-🤖 AI-based behavior & activity monitoring (foundation)
+Online exam interface
 
-📊 Result generation & viewing
+Automatic exam submission
 
-🧑‍💼 Admin panel for monitoring
+View exam results
 
-📁 Properly structured backend & frontend
+Teacher Module
 
-🗂 Activity logging for audit purposes
+Teacher registration
 
-🧩 Project Structure
+Admin approval workflow
+
+Create exams (MCQ, Short Answer, Paragraph)
+
+Review submitted exams
+
+Evaluate subjective answers
+
+View student results
+
+Admin Module
+
+Approve or reject teacher applications
+
+Monitor exam sessions
+
+View system activity logs
+
+AI Proctoring Features
+
+Face detection using OpenCV
+
+Detect no face in frame
+
+Detect multiple faces
+
+Violation tracking
+
+Automatic exam termination after excessive violations
+
+Technologies Used
+Backend
+
+Python
+
+Flask
+
+OpenCV
+
+MySQL
+
+Frontend
+
+HTML
+
+CSS
+
+JavaScript
+
+FontAwesome
+
+Database
+
+MySQL
+
+AI & Computer Vision
+
+OpenCV
+
+NumPy
+
+Project Structure
 AI BASED PROCTORING SYSTEM
 │
-├── admin_panel
-│   └── index.html
+├── backend
+│   ├── app.py
+│   ├── services
+│   │   └── ai_proctoring.py
+│   ├── templates
+│   ├── static
+│   └── requirements.txt
 │
 ├── ai_models
-│   └── (AI/ML related models)
+│   └── proctor_engine.py
 │
-├── backend
-│   ├── static
-│   │   ├── css
-│   │   │   ├── dashboard.css
-│   │   │   ├── home.css
-│   │   │   ├── login.css
-│   │   │   ├── register.css
-│   │   │   └── view_result.css
-│   │   ├── js
-│   │   └── models
-│   │
-│   ├── templates
-│   │   ├── camera_verify.html
-│   │   ├── dashboard.html
-│   │   ├── exam.html
-│   │   ├── exam_success.html
-│   │   ├── home.html
-│   │   ├── login.html
-│   │   ├── register.html
-│   │   ├── result.html
-│   │   └── view_result.html
-│   │
-│   ├── app.py
-│   ├── activity_log.txt
-│   └── exam_results.txt
-│
-├── student_exam
-│   ├── exam_fixed.html
-│   └── test.html
-│
-├── tempCodeRunnerFile.py
 └── README.md
+Database Tables
 
-🛠 Tech Stack
+The system uses the following database tables:
 
-Frontend: HTML5, CSS3, JavaScript
+students – stores student information
 
-Backend: Python (Flask)
+teachers – stores teacher registration and approval status
 
-AI Layer: Computer Vision (OpenCV – planned/extendable)
+exam_questions – stores all exam questions
 
-Database: File-based (can be extended to MySQL / MongoDB)
+exam_results – stores student exam submissions and results
 
-Tools: VS Code, Git, GitHub
-
-⚙️ How to Run the Project
-1️⃣ Clone the Repository
+Setup Instructions
+1 Clone the Repository
 git clone https://github.com/Atharva667/AI-Proctoring-System.git
+2 Navigate to Backend
+cd backend
+3 Install Dependencies
+pip install -r requirements.txt
+4 Configure MySQL
 
-2️⃣ Navigate to Project Folder
-cd "AI BASED PROCTORING SYSTEM"
+Update the database credentials inside app.py:
 
-3️⃣ Install Required Packages
-pip install flask opencv-python
+def get_db():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="your_password",
+        database="ai_proctoring"
+    )
+5 Run the Application
+python app.py
 
-4️⃣ Run the Server
-python backend/app.py
+Open in browser:
 
-5️⃣ Open in Browser
-http://127.0.0.1:5000/
+http://127.0.0.1:5000
+AI Proctoring Workflow
 
-🔮 Future Enhancements
+Student starts the exam
 
-👁 Eye-gaze & head-movement detection
+Webcam captures video frames
 
-📱 Mobile compatibility
+Frames are sent to backend
 
-📡 Live admin monitoring dashboard
+OpenCV detects faces
 
-🧠 Advanced ML-based cheating detection
+Violations are recorded
 
-🗄 Database integration (MySQL/MongoDB)
+Exam is terminated if violations exceed limit
 
-🔐 JWT-based authentication
+Future Improvements
 
-👨‍💻 Author
+Head pose detection
+
+Mobile phone detection
+
+Voice detection
+
+Eye tracking
+
+Real-time admin monitoring dashboard
+
+Advanced AI cheating detection
+
+Developer
 
 Atharva Deshpande
-📌 AI & Software Developer
-🔗 GitHub: Atharva667
+Capstone Project Developer
+
+License
+
+This project is developed for educational purposes only.
