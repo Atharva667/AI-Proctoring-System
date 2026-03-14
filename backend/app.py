@@ -683,7 +683,7 @@ def register_user():
 @app.route("/login", methods=["POST"])
 def login_user():
 
-    data = request.get_json()
+    data = request.get_json(silent=True) or request.form
 
     email = data.get("email").strip()
     password = data.get("password").strip()
