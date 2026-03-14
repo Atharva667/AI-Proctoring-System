@@ -326,8 +326,9 @@ def teacher_register():
         return render_template('teacher_register.html')
 
     except Exception as e:
-        print("❌ TEACHER REGISTER ERROR:", e)
-        return "Database error occurred"
+        import traceback
+        traceback.print_exc()
+        return str(e)
 
 @app.route("/view_result")
 def view_result():
