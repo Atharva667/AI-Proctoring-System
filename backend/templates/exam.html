@@ -494,7 +494,13 @@ let score=0;
 questions.forEach((q,i)=>{
 
 if(q.type==="mcq"){
-if(answers[i]===q.answer) score++;
+
+const selectedOption = q.options[answers[i]]
+
+if(selectedOption === q.answer){
+score++
+}
+
 }
 
 });

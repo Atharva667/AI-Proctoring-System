@@ -264,9 +264,9 @@ const total = data.total ?? 0
 const score = data.score ?? 0
 const percentage = data.percentage ?? 0
 const violations = data.violations ?? 0
-const status = data.status ?? "UNKNOWN"
+const rawStatus = data.status ?? "UNKNOWN"
+let status = rawStatus
 const date = data.date ?? ""
-
 let scoreText = score
 let percentageText = percentage + "%"
 
@@ -284,14 +284,13 @@ percentageText = "--"
 
 let statusClass="terminated"
 
-if(status==="EVALUATED" || status==="COMPLETED"){
+if(rawStatus==="EVALUATED" || rawStatus==="COMPLETED"){
 statusClass="completed"
 }
 
-if(status==="PENDING_REVIEW"){
+if(rawStatus==="PENDING_REVIEW"){
 statusClass="pending"
 }
-
 /* render result */
 
 card.innerHTML=`

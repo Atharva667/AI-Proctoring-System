@@ -873,19 +873,35 @@ def submit_exam():
 
         data = request.get_json()
 
-        score = int(data.get("score", 0))
-        total = int(data.get("total", 0))
-        violations = int(data.get("violations", 0))
-        answers = data.get("answers", [])
+        score = int(data.get("score"))
+        total = int(data.get("total"))
+        violations = int(data.get("violations"))
+        answers = data.get("answers")
 
-        answers_text = "|".join(map(str, answers))
+        answers_text = "|".join([str(a) for a in answers])
 
         student_id = session.get("user_id")
 
-        if not student_id:
-            return jsonify({"error": "not logged in"}), 401
-
         db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        # Check if exam contains descriptive questions
+        cursor.execute("""
+            SELECT question_type
+            FROM exam_questions
+        """)
+
+        questions = cursor.fetchall()
+
+        needs_review = False
+
+        for q in questions:
+            if q["question_type"] in ["short", "paragraph"]:
+                needs_review = True
+                break
+
+        status = "PENDING_REVIEW" if needs_review else "EVALUATED"
+
         cursor = db.cursor()
 
         cursor.execute("""
@@ -898,7 +914,7 @@ def submit_exam():
             score,
             violations,
             answers_text,
-            "PENDING_REVIEW"
+            status
         ))
 
         db.commit()
@@ -906,16 +922,11 @@ def submit_exam():
         cursor.close()
         db.close()
 
-        print("✅ Result saved to database")
-
         return jsonify({"status": "saved"})
 
     except Exception as e:
-
-        print("❌ SUBMIT ERROR:", e)
-
+        print("SUBMIT ERROR:", e)
         return jsonify({"status":"error"})
-
 
 
 
