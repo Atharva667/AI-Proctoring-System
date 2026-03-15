@@ -262,10 +262,13 @@ def get_questions():
 
         exam_id = exam["id"]
 
-        cursor.execute(
-            "SELECT * FROM exam_questions WHERE exam_id=%s",
-            (exam_id,)
-        )
+        cursor.execute("""
+SELECT *
+FROM exam_questions
+WHERE exam_id = (
+    SELECT MAX(id) FROM exams
+)
+""")
 
         rows = cursor.fetchall()
 
@@ -476,18 +479,17 @@ def review_exams():
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
-        SELECT 
-            exam_results.id,
-            students.name,
-            exam_results.total,
-            exam_results.score,
-            exam_results.status
-        FROM exam_results
-        JOIN students
-        ON exam_results.student_id = students.id
-        ORDER BY exam_results.exam_date DESC
-        """)
-
+SELECT 
+er.id,
+s.name,
+er.total,
+er.score,
+er.status
+FROM exam_results er
+JOIN students s ON er.student_id = s.id
+WHERE er.status = 'PENDING_REVIEW'
+ORDER BY er.id DESC
+""")
         exams = cursor.fetchall()
 
         cursor.close()
@@ -586,11 +588,13 @@ def result_page():
     return render_template("result.html")
 
 
-@app.route("/api/result")
+@app.route('/api/result')
 def api_result():
 
     if "user_id" not in session:
         return jsonify({"error": "unauthorized"}), 401
+
+    student_id = session["user_id"]   # ⭐ ADD THIS LINE
 
     try:
 
@@ -598,12 +602,12 @@ def api_result():
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
-            SELECT total, score, violations, status, exam_date
+            SELECT *
             FROM exam_results
-            WHERE student_id = %s
-            ORDER BY exam_date DESC
+            WHERE student_id=%s
+            ORDER BY id DESC
             LIMIT 1
-        """, (session["user_id"],))
+        """,(student_id,))
 
         r = cursor.fetchone()
 
@@ -942,18 +946,17 @@ def teacher_results():
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
-        SELECT 
-            students.name,
-            exam_results.total,
-            exam_results.score,
-            exam_results.violations,
-            exam_results.status,
-            exam_results.exam_date
-        FROM exam_results
-        JOIN students
-        ON exam_results.student_id = students.id
-        ORDER BY exam_results.exam_date DESC
-        """)
+SELECT
+s.name,
+er.total,
+er.score,
+ROUND((er.score/er.total)*100,2) AS percentage,
+er.violations,
+er.status
+FROM exam_results er
+JOIN students s ON er.student_id = s.id
+ORDER BY er.id DESC
+""")
 
         results = cursor.fetchall()
 
