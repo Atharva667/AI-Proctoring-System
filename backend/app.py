@@ -12,7 +12,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
  
 # ---------------- CONFIG ----------------
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
 app.secret_key = "ai_proctoring_secret_key"
 CORS(app)
 
@@ -524,12 +530,45 @@ def submit_evaluation():
 
 @app.route("/admin")
 def admin_panel():
-    return render_template("admin_panel.html")  
 
+    if session.get("admin") != True:
+        return redirect("/admin_login")
+
+    return render_template("admin_panel.html")
 
 @app.route("/maintenance")
 def maintenance():
     return render_template("maintenance.html")
+
+# ---------------- ADMIN LOGIN ----------------
+
+@app.route("/admin_login", methods=["GET","POST"])
+def admin_login():
+
+    if request.method == "POST":
+
+        username = request.form["username"]
+        password = request.form["password"]
+
+        if username == "admin" and password == "admin123":
+
+            session["admin"] = True
+            return redirect("/admin")
+
+        else:
+            return render_template(
+                "admin_login.html",
+                error="Invalid admin credentials"
+            )
+
+    return render_template("admin_login.html")
+
+@app.route("/admin_logout")
+def admin_logout():
+
+    session.pop("admin", None)
+
+    return redirect("/admin_login")
 
 
 @app.route("/")

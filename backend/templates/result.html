@@ -267,6 +267,19 @@ const violations = data.violations ?? 0
 const status = data.status ?? "UNKNOWN"
 const date = data.date ?? ""
 
+let scoreText = score
+let percentageText = percentage + "%"
+
+if(status === "PENDING_REVIEW"){
+scoreText = "Awaiting Evaluation"
+percentageText = "--"
+}
+
+if(status === "TERMINATED"){
+scoreText = "Exam Terminated"
+percentageText = "--"
+}
+
 /* status styling */
 
 let statusClass="terminated"
@@ -296,12 +309,12 @@ card.innerHTML=`
 
 <div class="box">
 <h3>Score</h3>
-<p>${score}</p>
+<p>${scoreText}</p>
 </div>
 
 <div class="box">
 <h3>Percentage</h3>
-<p>${percentage}%</p>
+<p>${percentageText}</p>
 </div>
 
 <div class="box">

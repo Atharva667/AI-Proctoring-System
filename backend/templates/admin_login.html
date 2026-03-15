@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Login</title>
+
+    <style>
+        body {
+            background: #020617;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Segoe UI;
+            color: white;
+        }
+
+        .box {
+            background: #0f172a;
+            padding: 40px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #38bdf8;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #38bdf8;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .error {
+            color: #ff4d4d;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="box">
+
+        <h2>Admin Login</h2>
+
+        {% if error %}
+        <div class="error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+
+            <input type="text" name="username" placeholder="Admin Username" required>
+
+            <input type="password" name="password" placeholder="Admin Password" required>
+
+            <button type="submit">Login</button>
+
+        </form>
+
+    </div>
+
+</body>
+
+</html>

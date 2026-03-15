@@ -261,6 +261,7 @@ background:#dc2626;
 
 <div class="header">
 <h1>🛡 AI Proctoring Admin Panel</h1>
+<a href="/admin_logout" class="btn">Logout</a>
 
 <div class="status">
 <div class="dot" id="statusDot"></div>
@@ -383,7 +384,7 @@ AI Based Online Examination Proctoring System
 </div>
 
 <script>
-const backendURL="http://127.0.0.1:5000";
+const backendURL = window.location.origin;
 
 let autoInterval=null;
 let teachers=[];
