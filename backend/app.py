@@ -241,15 +241,16 @@ def save_exam():
     
     
 
+@app.route("/get_questions")
+def get_questions():
 
-@app.route("/get_questions/<int:exam_id>")
-def get_questions(exam_id):
+    exam_id = 1   # or fetch from request/session
 
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
     cursor.execute(
-        "SELECT * FROM exam_questions WHERE exam_id=%s",
+        "SELECT * FROM exam_questions WHERE exam_id = %s",
         (exam_id,)
     )
 
