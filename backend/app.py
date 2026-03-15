@@ -810,37 +810,49 @@ def start_session():
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
 
-    data = request.get_json()
+    try:
 
-    score = int(data.get("score"))
-    total = int(data.get("total"))
-    violations = int(data.get("violations"))
-    answers = data.get("answers")
+        data = request.get_json()
 
-    answers_text = "|".join([str(a) for a in answers])
+        score = int(data.get("score"))
+        total = int(data.get("total"))
+        violations = int(data.get("violations"))
+        answers = data.get("answers")
 
-    db = get_db()
-    cursor = db.cursor()
+        answers_text = "|".join([str(a) for a in answers])
 
-    cursor.execute("""
+        student_id = session.get("user_id")
+
+        print("STUDENT:", student_id)
+        print("SCORE:", score)
+
+        db = get_db()
+        cursor = db.cursor()
+
+        cursor.execute("""
         INSERT INTO exam_results
-        (student_id,total,score,violations,answers,status)
-        VALUES (%s,%s,%s,%s,%s,%s)
-    """,(
-        session["user_id"],
-        total,
-        score,
-        violations,
-        answers_text,
-        "PENDING_REVIEW"
-    ))
+        (student_id,total,score,violations,answers,status,exam_date)
+        VALUES (%s,%s,%s,%s,%s,%s,NOW())
+        """,(
+            student_id,
+            total,
+            score,
+            violations,
+            answers_text,
+            "PENDING_REVIEW"
+        ))
 
-    db.commit()
+        db.commit()
 
-    cursor.close()
-    db.close()
+        cursor.close()
+        db.close()
 
-    return jsonify({"status": "saved"})
+        return jsonify({"status": "saved"})
+
+    except Exception as e:
+
+        print("SUBMIT ERROR:", e)
+        return jsonify({"status":"error"})
 
 
 @app.route("/teacher_results")
