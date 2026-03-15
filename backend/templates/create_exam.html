@@ -369,6 +369,9 @@ text-align:right;
 <div class="form-title">
 <input placeholder="Untitled Exam">
 </div>
+<div id="emptyMessage" style="text-align:center;color:#777;margin-top:30px;">
+Click ➕ to add your first question
+</div>
 
 <div id="questions"></div>
 
@@ -384,6 +387,7 @@ let qCount = 0;
 
 function addQuestion(){
 
+document.getElementById("emptyMessage")?.remove();
 qCount++;
 
 const container = document.getElementById("questions");
@@ -584,36 +588,10 @@ alert("Failed to save exam");
 console.error("Error:", err);
 alert("Failed to save exam");
 });
-
 }
-
-
-fetch("/save_exam", {
-
-method: "POST",
-
-headers: {
-"Content-Type": "application/json"
-},
-
-body: JSON.stringify({questions: questions})
-
-})
-
-.then(res => res.json())
-
-.then(data => {
-console.log(data);
-alert("Exam saved successfully");
-})
-
-.catch(err => {
-console.error("Error:", err);
-alert("Failed to save exam");
-});
-
-}
-addQuestion();
+window.onload = function() {
+    addQuestion();
+};
 
 const questionContainer = document.getElementById("questions");
 
