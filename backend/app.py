@@ -183,15 +183,16 @@ def approve_teacher(email):
 def save_exam():
     try:
         data = request.get_json()
-        title = data["title"]
-        questions = data["questions"]
+
+        title = data.get("title")
+        questions = data.get("questions")
 
         db = get_db()
         cursor = db.cursor()
 
-        # create exam
+        # create exam first
         cursor.execute(
-            "INSERT INTO exams (title,created_by) VALUES (%s,%s)",
+            "INSERT INTO exams (title, created_by) VALUES (%s,%s)",
             (title, session.get("teacher"))
         )
 
@@ -199,25 +200,36 @@ def save_exam():
 
         for q in questions:
 
-            question = q["question"]
-            qtype = q["type"]
+            question = q.get("question")
+            qtype = q.get("type")
 
             option1 = option2 = option3 = option4 = None
-            answer = q.get("answer","")
+            answer = q.get("answer")
 
             if qtype == "mcq":
-                option1 = q["options"][0]
-                option2 = q["options"][1]
-                option3 = q["options"][2]
-                option4 = q["options"][3]
+                options = q.get("options", [])
+                if len(options) > 0: option1 = options[0]
+                if len(options) > 1: option2 = options[1]
+                if len(options) > 2: option3 = options[2]
+                if len(options) > 3: option4 = options[3]
 
             cursor.execute("""
             INSERT INTO exam_questions
             (exam_id,question,question_type,option1,option2,option3,option4,correct_answer)
             VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
-            """,(exam_id,question,qtype,option1,option2,option3,option4,answer))
+            """,(
+                exam_id,
+                question,
+                qtype,
+                option1,
+                option2,
+                option3,
+                option4,
+                answer
+            ))
 
         db.commit()
+
         cursor.close()
         db.close()
 
@@ -226,6 +238,8 @@ def save_exam():
     except Exception as e:
         print("SAVE EXAM ERROR:", e)
         return jsonify({"status":"error"}),500
+    
+    
 
 
 @app.route("/get_questions/<int:exam_id>")
