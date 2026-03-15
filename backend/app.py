@@ -464,28 +464,34 @@ def review_exams():
     if "teacher" not in session:
         return redirect("/teacher_login")
 
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+    try:
 
-    cursor.execute("""
-    SELECT exam_results.id,
-           students.name,
-           exam_results.student_id,
-           exam_results.score,
-           exam_results.total,
-           exam_results.status
-    FROM exam_results
-    JOIN students
-    ON exam_results.student_id = students.id
-    ORDER BY exam_results.exam_date DESC
-""")
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
 
-    exams = cursor.fetchall()
+        cursor.execute("""
+        SELECT 
+            exam_results.id,
+            students.name,
+            exam_results.total,
+            exam_results.score,
+            exam_results.status
+        FROM exam_results
+        JOIN students
+        ON exam_results.student_id = students.id
+        ORDER BY exam_results.exam_date DESC
+        """)
 
-    cursor.close()
-    db.close()
+        exams = cursor.fetchall()
 
-    return render_template("review_exams.html", exams=exams)
+        cursor.close()
+        db.close()
+
+        return render_template("review_exams.html", exams=exams)
+
+    except Exception as e:
+        print("REVIEW_EXAMS ERROR:", e)
+        return "Server error loading exams"
 
 
 @app.route("/submit_evaluation", methods=["POST"])
@@ -543,10 +549,12 @@ def result_page():
 
 @app.route("/api/result")
 def api_result():
+
     if "user_id" not in session:
         return jsonify({"error": "unauthorized"}), 401
 
     try:
+
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
@@ -566,27 +574,39 @@ def api_result():
         if not r:
             return jsonify({"empty": True})
 
-        score = r["score"] or 0
-        total = r["total"] or 0
-        percentage = round((score / total) * 100, 2) if total > 0 else 0
+        total = r.get("total") or 0
+        score = r.get("score") or 0
+        violations = r.get("violations") or 0
+        status = r.get("status") or "UNKNOWN"
+
+        percentage = 0
+        if total > 0:
+            percentage = round((score / total) * 100, 2)
+
+        # Safe date handling
+        date = ""
+        if r.get("exam_date"):
+            try:
+                date = r["exam_date"].strftime("%d %b %Y, %I:%M %p")
+            except:
+                date = str(r["exam_date"])
 
         return jsonify({
             "total": total,
             "score": score,
             "percentage": percentage,
-            "violations": r["violations"] or 0,
-            "status": r["status"],
-            "date": r["exam_date"].strftime("%d %b %Y, %I:%M %p")
+            "violations": violations,
+            "status": status,
+            "date": date
         })
 
-    except mysql.connector.Error as e:
-        print("❌ API RESULT DB ERROR:", e)
-        return jsonify({"error": "database error"}), 500
+    except Exception as e:
 
+        print("API RESULT ERROR:", e)
 
-# @app.route("/")
-# def home():
-#     return "AI Proctoring Backend is Running"
+        return jsonify({
+            "error": "server_error"
+        }), 500
 
 
 @app.route("/camera-verify")
@@ -814,17 +834,17 @@ def submit_exam():
 
         data = request.get_json()
 
-        score = int(data.get("score"))
-        total = int(data.get("total"))
-        violations = int(data.get("violations"))
-        answers = data.get("answers")
+        score = int(data.get("score", 0))
+        total = int(data.get("total", 0))
+        violations = int(data.get("violations", 0))
+        answers = data.get("answers", [])
 
-        answers_text = "|".join([str(a) for a in answers])
+        answers_text = "|".join(map(str, answers))
 
         student_id = session.get("user_id")
 
-        print("STUDENT:", student_id)
-        print("SCORE:", score)
+        if not student_id:
+            return jsonify({"error": "not logged in"}), 401
 
         db = get_db()
         cursor = db.cursor()
@@ -847,11 +867,14 @@ def submit_exam():
         cursor.close()
         db.close()
 
+        print("✅ Result saved to database")
+
         return jsonify({"status": "saved"})
 
     except Exception as e:
 
-        print("SUBMIT ERROR:", e)
+        print("❌ SUBMIT ERROR:", e)
+
         return jsonify({"status":"error"})
 
 
@@ -863,29 +886,34 @@ def teacher_results():
     if "teacher" not in session:
         return redirect("/teacher_login")
 
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+    try:
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
 
-    cursor.execute("""
-        SELECT students.name,
-               exam_results.student_id,
-               exam_results.score,
-               exam_results.total,
-               exam_results.violations,
-               exam_results.status,
-               exam_results.exam_date
+        cursor.execute("""
+        SELECT 
+            students.name,
+            exam_results.total,
+            exam_results.score,
+            exam_results.violations,
+            exam_results.status,
+            exam_results.exam_date
         FROM exam_results
         JOIN students
         ON exam_results.student_id = students.id
         ORDER BY exam_results.exam_date DESC
-    """)
+        """)
 
-    results = cursor.fetchall()
+        results = cursor.fetchall()
 
-    cursor.close()
-    db.close()
+        cursor.close()
+        db.close()
 
-    return render_template("teacher_results.html", results=results)
+        return render_template("teacher_results.html", results=results)
+
+    except Exception as e:
+        print("TEACHER_RESULTS ERROR:", e)
+        return "Server error loading teacher results"
 
 
 
