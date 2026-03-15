@@ -965,12 +965,15 @@ def evaluate_exam(result_id):
     cursor = db.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT students.name, exam_results.*
-        FROM exam_results
-        JOIN students
-        ON exam_results.student_id = students.id
-        WHERE exam_results.id = %s
-    """, (result_id,))
+                SELECT *
+                FROM exam_questions
+                WHERE exam_id = (
+                    SELECT exam_id
+                    FROM exam_results
+                    WHERE id = %s
+                    )
+                    ORDER BY id
+                    """, (result_id,))
 
     exam = cursor.fetchone()
 

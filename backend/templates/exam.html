@@ -8,7 +8,6 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Computer Based Test</title>
-
 <style>
 
 /* BASE */
@@ -19,6 +18,7 @@ background:#eef1f5;
 }
 
 /* HEADER */
+
 .header{
 height:56px;
 background:#0f172a;
@@ -26,13 +26,16 @@ color:white;
 display:flex;
 align-items:center;
 justify-content:space-between;
-padding:0 24px;
+padding:0 20px;
+flex-wrap:wrap;
+gap:6px;
 }
 
 .timer{
 background:#020617;
 padding:6px 12px;
 border-radius:4px;
+font-size:14px;
 }
 
 /* LAYOUT */
@@ -40,7 +43,10 @@ border-radius:4px;
 .exam-wrapper{
 display:flex;
 height:calc(100vh - 56px);
+overflow:hidden;
 }
+
+/* QUESTION PANEL */
 
 .question-panel{
 flex:3;
@@ -48,7 +54,15 @@ background:white;
 padding:24px;
 display:flex;
 flex-direction:column;
+overflow-y:auto;
 }
+
+#questionText{
+font-size:18px;
+margin:12px 0 18px 0;
+}
+
+/* OPTIONS */
 
 .options{
 display:flex;
@@ -59,14 +73,18 @@ gap:12px;
 .option{
 border:1px solid #d1d5db;
 padding:12px;
-border-radius:4px;
+border-radius:6px;
 cursor:pointer;
+font-size:15px;
 }
+
+/* CONTROLS */
 
 .controls{
 margin-top:auto;
 display:flex;
 gap:10px;
+flex-wrap:wrap;
 }
 
 .btn{
@@ -74,6 +92,8 @@ padding:9px 16px;
 border:none;
 font-weight:600;
 cursor:pointer;
+border-radius:5px;
+font-size:14px;
 }
 
 .save{background:#16a34a;color:white;}
@@ -81,11 +101,14 @@ cursor:pointer;
 .clear{background:#dc2626;color:white;}
 .next{background:#2563eb;color:white;margin-left:auto;}
 
+/* PALETTE */
+
 .palette-panel{
-width:300px;
+width:280px;
 background:#f8fafc;
 border-left:1px solid #d1d5db;
 padding:18px;
+overflow-y:auto;
 }
 
 .palette{
@@ -99,20 +122,108 @@ height:34px;
 border:none;
 font-weight:600;
 cursor:pointer;
+border-radius:4px;
 }
 
 .answered{background:#16a34a;color:white;}
 .marked{background:#f59e0b;color:white;}
 .not-answered{background:#dc2626;color:white;}
 
+/* VIDEO */
+
 #proctorVideo{
 position:fixed;
 right:12px;
 bottom:12px;
-width:220px;
-height:165px;
+width:200px;
+height:150px;
 border:2px solid #0f172a;
 background:black;
+border-radius:6px;
+z-index:999;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width:900px){
+
+.exam-wrapper{
+flex-direction:column;
+}
+
+.palette-panel{
+width:100%;
+border-left:none;
+border-top:1px solid #d1d5db;
+order:-1;
+}
+
+.palette{
+grid-template-columns:repeat(8,1fr);
+}
+
+.question-panel{
+padding:18px;
+}
+
+#questionText{
+font-size:17px;
+}
+
+.controls{
+gap:8px;
+}
+
+.btn{
+flex:1;
+min-width:120px;
+}
+
+#proctorVideo{
+width:140px;
+height:100px;
+}
+
+}
+
+/* SMALL MOBILE */
+
+@media (max-width:500px){
+
+.header{
+flex-direction:column;
+align-items:flex-start;
+height:auto;
+padding:12px;
+}
+
+.timer{
+font-size:13px;
+}
+
+.palette{
+grid-template-columns:repeat(6,1fr);
+}
+
+.option{
+font-size:14px;
+padding:10px;
+}
+
+#questionText{
+font-size:16px;
+}
+
+.btn{
+font-size:13px;
+padding:8px 10px;
+}
+
+#proctorVideo{
+width:120px;
+height:90px;
+}
+
 }
 
 </style>
