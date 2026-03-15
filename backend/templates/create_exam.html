@@ -515,6 +515,7 @@ function publishExam(){
 console.log("Publish clicked");
 
 const questions = [];
+const title = document.querySelector(".form-title input").value;
 
 document.querySelectorAll(".question-card").forEach(q => {
 
@@ -550,7 +551,44 @@ answer:answer
 
 });
 
-fetch("http://127.0.0.1:5000/save_exam", {
+fetch("/save_exam", {
+
+method: "POST",
+
+headers: {
+"Content-Type": "application/json"
+},
+
+body: JSON.stringify({
+title:title,
+questions: questions
+})
+
+})
+
+.then(res => res.json())
+
+.then(data => {
+
+console.log(data);
+
+if(data.status === "saved"){
+alert("Exam saved successfully");
+}else{
+alert("Failed to save exam");
+}
+
+})
+
+.catch(err => {
+console.error("Error:", err);
+alert("Failed to save exam");
+});
+
+}
+
+
+fetch("/save_exam", {
 
 method: "POST",
 

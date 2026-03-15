@@ -181,85 +181,70 @@ def approve_teacher(email):
 
 @app.route("/save_exam", methods=["POST"])
 def save_exam():
+    try:
+        data = request.get_json()
+        title = data["title"]
+        questions = data["questions"]
 
-    data = request.json
-    questions = data["questions"]
+        db = get_db()
+        cursor = db.cursor()
 
-    db = get_db()
-    cursor = db.cursor()
+        # create exam
+        cursor.execute(
+            "INSERT INTO exams (title,created_by) VALUES (%s,%s)",
+            (title, session.get("teacher"))
+        )
 
-    for q in questions:
+        exam_id = cursor.lastrowid
 
-        question = q["question"]
-        qtype = q["type"]
+        for q in questions:
 
-        option1 = option2 = option3 = option4 = None
-        answer = q.get("answer","")
+            question = q["question"]
+            qtype = q["type"]
 
-        if qtype == "mcq":
+            option1 = option2 = option3 = option4 = None
+            answer = q.get("answer","")
 
-            option1 = q["options"][0]
-            option2 = q["options"][1]
-            option3 = q["options"][2]
-            option4 = q["options"][3]
+            if qtype == "mcq":
+                option1 = q["options"][0]
+                option2 = q["options"][1]
+                option3 = q["options"][2]
+                option4 = q["options"][3]
 
-        cursor.execute("""
-        INSERT INTO exam_questions
-        (question,question_type,option1,option2,option3,option4,correct_answer)
-        VALUES (%s,%s,%s,%s,%s,%s,%s)
-        """,(
-            question,
-            qtype,
-            option1,
-            option2,
-            option3,
-            option4,
-            answer
-        ))
+            cursor.execute("""
+            INSERT INTO exam_questions
+            (exam_id,question,question_type,option1,option2,option3,option4,correct_answer)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+            """,(exam_id,question,qtype,option1,option2,option3,option4,answer))
 
-    db.commit()
+        db.commit()
+        cursor.close()
+        db.close()
 
-    cursor.close()
-    db.close()
+        return jsonify({"status":"saved"})
 
-    return jsonify({"status":"saved"})
+    except Exception as e:
+        print("SAVE EXAM ERROR:", e)
+        return jsonify({"status":"error"}),500
 
 
-@app.route("/get_questions")
-def get_questions():
+@app.route("/get_questions/<int:exam_id>")
+def get_questions(exam_id):
 
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM exam_questions")
+    cursor.execute(
+        "SELECT * FROM exam_questions WHERE exam_id=%s",
+        (exam_id,)
+    )
 
     rows = cursor.fetchall()
-
-    questions = []
-
-    for r in rows:
-
-        options = []
-
-        if r["question_type"] == "mcq":
-            options = [
-                r["option1"],
-                r["option2"],
-                r["option3"],
-                r["option4"]
-            ]
-
-        questions.append({
-            "question": r["question"],
-            "type": r["question_type"],
-            "options": options,
-            "answer": r["correct_answer"]
-        })
 
     cursor.close()
     db.close()
 
-    return jsonify({"questions": questions})
+    return jsonify({"questions": rows})
 
 
 @app.route('/reject_teacher/<email>', methods=['POST'])
@@ -281,6 +266,8 @@ def reject_teacher(email):
     db.close()
 
     return jsonify({"status":"ok"})
+
+
 
 @app.route("/teacher_dashboard")
 def teacher_dashboard():
