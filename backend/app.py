@@ -869,6 +869,8 @@ def start_session():
 
     return jsonify({"message": "Session started"}), 200
 
+
+
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
 
@@ -876,7 +878,7 @@ def submit_exam():
 
         data = request.get_json()
 
-        exam_id = int(data.get("exam_id"))
+        exam_id = int(data.get("exam_id") or 1)
         score = int(data.get("score"))
         total = int(data.get("total"))
         violations = int(data.get("violations"))
@@ -887,31 +889,11 @@ def submit_exam():
         student_id = session.get("user_id")
 
         db = get_db()
-        cursor = db.cursor(dictionary=True)
-
-        # Only get questions of THIS exam
-        cursor.execute("""
-            SELECT question_type
-            FROM exam_questions
-            WHERE exam_id = %s
-        """,(exam_id,))
-
-        questions = cursor.fetchall()
-
-        needs_review = False
-
-        for q in questions:
-            if q["question_type"] in ["short","paragraph"]:
-                needs_review = True
-                break
-
-        status = "PENDING_REVIEW" if needs_review else "EVALUATED"
-
         cursor = db.cursor()
 
         cursor.execute("""
         INSERT INTO exam_results
-        (student_id,exam_id,total,score,violations,answers,status,exam_date)
+        (student_id, exam_id, total, score, violations, answers, status, exam_date)
         VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
         """,(
             student_id,
@@ -920,7 +902,7 @@ def submit_exam():
             score,
             violations,
             answers_text,
-            status
+            "PENDING_REVIEW"
         ))
 
         db.commit()
@@ -928,10 +910,11 @@ def submit_exam():
         cursor.close()
         db.close()
 
-        return jsonify({"status":"saved"})
+        return jsonify({"status": "saved"})
 
     except Exception as e:
-        print("SUBMIT ERROR:",e)
+        import traceback
+        traceback.print_exc()
         return jsonify({"status":"error"})
 
 
