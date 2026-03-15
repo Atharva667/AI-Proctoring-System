@@ -1,279 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+
+<meta charset="UTF-8">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Computer Based Test</title>
 
-    <style>
-        /* ================= BASE ================= */
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #eef1f5;
-            color: #111827;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Based Test</title>
 
-        /* ================= HEADER ================= */
-        .header {
-            height: 56px;
-            background: #0f172a;
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 24px;
-            font-size: 14px;
-        }
+<style>
 
-        .header-left {
-            font-weight: 600;
-        }
+/* BASE */
+body{
+margin:0;
+font-family:Segoe UI,Arial;
+background:#eef1f5;
+}
 
-        .header-right {
-            display: flex;
-            gap: 18px;
-            align-items: center;
-        }
+/* HEADER */
+.header{
+height:56px;
+background:#0f172a;
+color:white;
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:0 24px;
+}
 
-        .timer {
-            background: #020617;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-weight: 600;
-        }
+.timer{
+background:#020617;
+padding:6px 12px;
+border-radius:4px;
+}
 
-        /* ================= LAYOUT ================= */
-        .exam-wrapper {
-            display: flex;
-            height: calc(100vh - 56px);
-        }
+/* LAYOUT */
 
-        /* ================= QUESTION PANEL ================= */
-        .question-panel {
-            flex: 3;
-            background: #ffffff;
-            padding: 24px 28px;
-            display: flex;
-            flex-direction: column;
-        }
+.exam-wrapper{
+display:flex;
+height:calc(100vh - 56px);
+}
 
-        .question-number {
-            font-size: 14px;
-            color: #2563eb;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
+.question-panel{
+flex:3;
+background:white;
+padding:24px;
+display:flex;
+flex-direction:column;
+}
 
-        .question-text {
-            font-size: 18px;
-            font-weight: 500;
-            margin-bottom: 22px;
-        }
+.options{
+display:flex;
+flex-direction:column;
+gap:12px;
+}
 
-        /* ================= OPTIONS ================= */
-        .options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+.option{
+border:1px solid #d1d5db;
+padding:12px;
+border-radius:4px;
+cursor:pointer;
+}
 
-        .option {
-            border: 1px solid #d1d5db;
-            padding: 12px 14px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            gap: 10px;
-            font-size: 15px;
-        }
+.controls{
+margin-top:auto;
+display:flex;
+gap:10px;
+}
 
-        .option:hover {
-            background: #f8fafc;
-        }
+.btn{
+padding:9px 16px;
+border:none;
+font-weight:600;
+cursor:pointer;
+}
 
-        /* ================= CONTROLS ================= */
-        .controls {
-            margin-top: auto;
-            padding-top: 16px;
-            border-top: 1px solid #e5e7eb;
-            display: flex;
-            gap: 10px;
-        }
+.save{background:#16a34a;color:white;}
+.mark{background:#f59e0b;color:white;}
+.clear{background:#dc2626;color:white;}
+.next{background:#2563eb;color:white;margin-left:auto;}
 
-        .btn {
-            padding: 9px 16px;
-            border: none;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 3px;
-        }
+.palette-panel{
+width:300px;
+background:#f8fafc;
+border-left:1px solid #d1d5db;
+padding:18px;
+}
 
-        .save {
-            background: #16a34a;
-            color: #fff;
-        }
+.palette{
+display:grid;
+grid-template-columns:repeat(5,1fr);
+gap:8px;
+}
 
-        .mark {
-            background: #f59e0b;
-            color: #fff;
-        }
+.palette button{
+height:34px;
+border:none;
+font-weight:600;
+cursor:pointer;
+}
 
-        .clear {
-            background: #dc2626;
-            color: #fff;
-        }
+.answered{background:#16a34a;color:white;}
+.marked{background:#f59e0b;color:white;}
+.not-answered{background:#dc2626;color:white;}
 
-        .next {
-            background: #2563eb;
-            color: #fff;
-            margin-left: auto;
-        }
+#proctorVideo{
+position:fixed;
+right:12px;
+bottom:12px;
+width:220px;
+height:165px;
+border:2px solid #0f172a;
+background:black;
+}
 
-        /* ================= PALETTE ================= */
-        .palette-panel {
-            width: 300px;
-            background: #f8fafc;
-            border-left: 1px solid #d1d5db;
-            padding: 18px;
-        }
+</style>
 
-        .palette-title {
-            font-size: 15px;
-            font-weight: 600;
-            margin-bottom: 12px;
-        }
-
-        .palette {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-        }
-
-        .palette button {
-            height: 34px;
-            border: none;
-            font-weight: 600;
-            cursor: pointer;
-            border-radius: 3px;
-
-        }
-
-        .answered {
-            background: #16a34a;
-            color: white;
-        }
-
-        .marked {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .not-answered {
-            background: #dc2626;
-            color: white;
-        }
-
-        /* ================= CAMERA ================= */
-        #proctorVideo {
-            position: fixed;
-            right: 12px;
-            bottom: 12px;
-            width: 220px;
-            height: 165px;
-            border: 2px solid #0f172a;
-            border-radius: 4px;
-            background: black;
-        }
-
-        /* ================= MOBILE RESPONSIVE ================= */
-
-        @media (max-width:900px) {
-
-            .exam-wrapper {
-                flex-direction: column;
-                height: auto;
-            }
-
-            /* palette becomes bottom panel */
-
-            .palette-panel {
-                width: 100%;
-                border-left: none;
-                border-top: 1px solid #d1d5db;
-            }
-
-            /* question panel */
-
-            .question-panel {
-                padding: 20px;
-            }
-
-            /* options bigger for touch */
-
-            .option {
-                font-size: 16px;
-                padding: 14px;
-            }
-
-            /* controls stacked */
-
-            .controls {
-                flex-wrap: wrap;
-                gap: 8px;
-            }
-
-            .btn {
-                flex: 1;
-                min-width: 120px;
-                padding: 12px;
-            }
-
-            /* palette grid */
-
-            .palette {
-                grid-template-columns: repeat(6, 1fr);
-            }
-
-            /* camera smaller */
-
-            #proctorVideo {
-                width: 140px;
-                height: 110px;
-                right: 8px;
-                bottom: 8px;
-            }
-
-            /* header adjustments */
-
-            .header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 8px;
-                height: auto;
-                padding: 12px 16px;
-            }
-
-            .header-right {
-                flex-wrap: wrap;
-                gap: 10px;
-            }
-
-            .timer {
-                font-size: 13px;
-            }
-
-        }
-    </style>
 </head>
 
 <body>
 
-    <div id="warningBox" style="
+<div id="warningBox" style="
 position:fixed;
 top:20px;
 left:50%;
@@ -285,22 +133,22 @@ border-radius:6px;
 display:none;
 z-index:999999;
 font-weight:600;">
-    </div>
+</div>
 
-
-    <div id="startOverlay" style="
-position:fixed; inset:0;
+<div id="startOverlay" style="
+position:fixed;inset:0;
 background:#020617;
 color:white;
 display:flex;
 align-items:center;
 justify-content:center;
 flex-direction:column;
-z-index:99999;
-">
-        <h2>Start Examination</h2>
-        <p>Fullscreen mode is mandatory</p>
-        <button onclick="startExam()" style="
+z-index:99999;">
+
+<h2>Start Examination</h2>
+<p>Fullscreen mode is mandatory</p>
+
+<button onclick="startExam()" style="
 margin-top:15px;
 padding:12px 30px;
 font-size:16px;
@@ -309,562 +157,324 @@ border:none;
 color:white;
 cursor:pointer;
 border-radius:4px;">
-            ENTER FULLSCREEN & START
-        </button>
-    </div>
-
-
-    <!-- CAMERA -->
-    <video id="proctorVideo" autoplay muted playsinline></video>
-
-    <!-- HEADER -->
-    <div class="header">
-        <div style="height:6px;background:#ddd;">
-            <div id="progressBar" style="height:6px;width:0%;background:#16a34a;"></div>
-        </div>
-        <div class="header-left">
-            Computer Based Test – AI Proctored Mode
-        </div>
-        <div class="header-right">
-            <div class="timer">
-                ⏱ <span id="timer">05:00</span>
-            </div>
-            <div>
-                Answered: <span id="answeredCount">0</span>
-            </div>
-
-            <div>
-                Remaining: <span id="remainingCount">0</span>
-            </div>
-            <div>
-                🪟 Tabs: <span id="tabCount">0</span>
-            </div>
-        </div>
-    </div>
-
-    <div class="exam-wrapper">
-
-        <!-- QUESTION PANEL -->
-        <div class="question-panel">
-            <div class="question-number" id="qNo"></div>
-            <div class="question-text" id="questionText"></div>
-            <div class="options" id="optionsBox"></div>
-
-            <div class="controls">
-                <button class="btn save" onclick="saveAnswer()">Save & Next</button>
-                <button class="btn mark" onclick="markForReview()">Mark</button>
-                <button class="btn clear" onclick="clearAnswer()">Clear</button>
-                <button class="btn next" onclick="nextQuestion()">Next</button>
-                <button class="btn clear" onclick="confirmSubmit()">Submit</button>
-            </div>
-        </div>
-
-        <!-- PALETTE -->
-        <div class="palette-panel">
-            <div class="palette-title">Question Palette</div>
-            <div class="palette" id="palette"></div>
-        </div>
-
-    </div>
-
-    <script>
-
-
-        function analyzeFrame() {
-
-            console.log("Frame sent for AI analysis");
-
-            const video = document.getElementById("proctorVideo");
-
-            const canvas = document.createElement("canvas");
-            canvas.width = 320;
-            canvas.height = 240;
-
-            const ctx = canvas.getContext("2d");
-            ctx.drawImage(video, 0, 0, 320, 240);
-
-            const image = canvas.toDataURL("image/jpeg");
-
-            fetch("/analyze_frame", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    image: image
-                })
-            })
-                .then(res => res.json())
-                .then(data => {
-
-                    if (data.faces === 0) {
-                        issueWarning("Face not detected");
-                    }
-
-                    if (data.faces > 1) {
-                        issueWarning("Multiple persons detected");
-                    }
-
-                });
-
-        }
-        /* ================= QUESTIONS (YOUR FULL SET) ================= */
-
-        /* ================= STATE ================= */
-        let questions = [];
-        let current = 0;
-        let answers = [];
-        let marked = [];
-        let time = 300;
-        let tabSwitches = 0;
-        let warningCount = 0;
-        const MAX_WARNINGS = 3;
+ENTER FULLSCREEN & START
+</button>
 
-        let examTerminated = false;
-        let violationLocked = false;
-        let movementStableFrames = 0;
-        const STABLE_FRAME_LIMIT = 3;
+</div>
 
+<video id="proctorVideo" autoplay muted playsinline></video>
 
+<div class="header">
 
+<div>
+Computer Based Test – AI Proctored Mode
+</div>
 
+<div class="timer">
+⏱ <span id="timer">05:00</span>
+</div>
 
-        let lastFrame = null;
-        let movementActive = false;
-        let movementWarnings = 0;
-        const MAX_MOVEMENTS = 3;
-        let stableCount = 0;
+<div>
+Answered: <span id="answeredCount">0</span>
+</div>
 
-        function detectMovement(video) {
-            if (examTerminated) return;
-            if (video.videoWidth === 0 || video.videoHeight === 0) return;
+<div>
+Remaining: <span id="remainingCount">0</span>
+</div>
 
-            const canvas = document.createElement("canvas");
-            canvas.width = 160;  // downscale (IMPORTANT)
-            canvas.height = 120;
-            const ctx = canvas.getContext("2d");
+</div>
 
-            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
+<div class="exam-wrapper">
 
-            if (lastFrame) {
-                let diff = 0;
+<div class="question-panel">
 
-                for (let i = 0; i < frame.data.length; i += 16) {
-                    diff += Math.abs(frame.data[i] - lastFrame.data[i]);
-                }
+<div id="qNo"></div>
+<div id="questionText"></div>
+<div class="options" id="optionsBox"></div>
 
-                if (diff > 200000) {
-                    if (!movementActive) {
-                        movementActive = true;
-                        movementWarnings++;
+<div class="controls">
+<button class="btn save" onclick="saveAnswer()">Save & Next</button>
+<button class="btn mark" onclick="markForReview()">Mark</button>
+<button class="btn clear" onclick="clearAnswer()">Clear</button>
+<button class="btn next" onclick="nextQuestion()">Next</button>
+<button class="btn clear" onclick="confirmSubmit()">Submit</button>
+</div>
 
-                        showWarning(`⚠️ Movement detected (${movementWarnings}/${MAX_MOVEMENTS})`);
+</div>
 
-                        if (movementWarnings >= MAX_MOVEMENTS) {
-                            examTerminated = true;
-                            showWarning("❌ Exam terminated due to excessive movement");
-                            submitExam();
-                        }
-                    }
-                    stableCount = 0;
-                } else {
-                    stableCount++;
-                    if (stableCount > 3) {
-                        movementActive = false;
-                    }
-                }
-            }
+<div class="palette-panel">
 
-            lastFrame = frame;
-        }
+<div>Question Palette</div>
 
+<div class="palette" id="palette"></div>
 
+</div>
 
-        /* ================= INIT ================= */
-        window.onload = async () => {
+</div>
 
-            try {
-                const res = await fetch("/get_questions");
-                const data = await res.json();
+<script>
 
-                questions = data.questions;
+/* ================= STATE ================= */
 
-                if (!questions || questions.length === 0) {
-                    alert("No exam questions found. Please ask the teacher to publish an exam.");
-                    return;
-                }
+let questions=[];
+let current=0;
+let answers=[];
+let marked=[];
 
-                answers = new Array(questions.length).fill(null);
-                marked = new Array(questions.length).fill(false);
+let time=300;
 
-                renderPalette();
-                renderQuestion();
+const VIOLATION_COOLDOWN=5000;
 
-                startTimer();
-                enterFullscreen();
-                await startCamera();
+/* ================= START EXAM ================= */
 
-                setInterval(() => {
-                    const video = document.getElementById("proctorVideo");
-                    if (video.readyState >= 2) detectMovement(video);
-                }, 2000);
+async function startExam(){
 
-            } catch (err) {
-                console.error("Error loading questions:", err);
-                alert("Failed to load exam questions.");
-            }
+try{
 
-        };
+const res=await fetch("/get_questions");
+const data=await res.json();
 
-        /* ================= QUESTION RENDER ================= */
-        function renderQuestion() {
+if(!data.questions || data.questions.length===0){
+alert("Questions not loaded.");
+return;
+}
 
-            const q = questions[current];
+questions=data.questions;
 
-            document.getElementById("qNo").innerText = "Question " + (current + 1);
-            document.getElementById("questionText").innerText = q.question;
+answers=new Array(questions.length).fill(null);
+marked=new Array(questions.length).fill(false);
 
-            const box = document.getElementById("optionsBox");
-            box.innerHTML = "";
+await document.documentElement.requestFullscreen();
 
-            /* ---------- MCQ ---------- */
-            if (q.type === "mcq") {
+document.getElementById("startOverlay").style.display="none";
 
-                q.options.forEach((opt, i) => {
+renderPalette();
+renderQuestion();
+updateCounters();
 
-                    const label = document.createElement("label");
-                    label.className = "option";
+startTimer();
+await startCamera();
 
-                    const radio = document.createElement("input");
-                    radio.type = "radio";
-                    radio.name = "optionGroup";
-                    radio.checked = answers[current] === i;
+}
+catch(err){
 
-                    radio.onclick = () => {
-                        answers[current] = i;
-                        marked[current] = false;
-                        renderPalette();
-                    };
+console.error(err);
+alert("Failed to start exam");
 
-                    label.appendChild(radio);
-                    label.append(" " + opt);
+}
 
-                    box.appendChild(label);
-                });
+}
 
-            }
+/* ================= RENDER QUESTION ================= */
 
-            /* ---------- SHORT ANSWER ---------- */
-            else if (q.type === "short") {
+function renderQuestion(){
 
-                const input = document.createElement("input");
+const q=questions[current];
 
-                input.type = "text";
-                input.placeholder = "Type your answer here...";
-                input.style.padding = "10px";
-                input.style.width = "100%";
-                input.style.fontSize = "15px";
+document.getElementById("qNo").innerText="Question "+(current+1);
+document.getElementById("questionText").innerText=q.question;
 
-                input.value = answers[current] || "";
+const box=document.getElementById("optionsBox");
+box.innerHTML="";
 
-                input.oninput = () => {
-                    answers[current] = input.value;
-                };
+if(q.type==="mcq"){
 
-                box.appendChild(input);
-            }
+q.options.forEach((opt,i)=>{
 
-            /* ---------- PARAGRAPH ---------- */
-            else if (q.type === "paragraph") {
+const label=document.createElement("label");
+label.className="option";
 
-                const textarea = document.createElement("textarea");
+const radio=document.createElement("input");
 
-                textarea.placeholder = "Write your answer...";
-                textarea.rows = 5;
-                textarea.style.width = "100%";
-                textarea.style.padding = "10px";
-                textarea.style.fontSize = "15px";
+radio.type="radio";
+radio.name="optionGroup";
+radio.checked=answers[current]===i;
 
-                textarea.value = answers[current] || "";
+radio.onclick=()=>{
+answers[current]=i;
+marked[current]=false;
+renderPalette();
+updateCounters();
+};
 
-                textarea.oninput = () => {
-                    answers[current] = textarea.value;
-                };
+label.appendChild(radio);
+label.append(" "+opt);
 
-                box.appendChild(textarea);
-            }
+box.appendChild(label);
 
-            renderPalette();
-        }
+});
 
+}
 
-        /* ================= CAMERA START ================= */
-        async function startCamera() {
-            const video = document.getElementById("proctorVideo");
+}
 
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        facingMode: "user"
-                    },
-                    audio: false
-                });
-
-                video.srcObject = stream;
-                await video.play();
-
-                console.log("✅ Camera started");
-
-            } catch (err) {
-                showWarning("❌ Camera access denied. Allow camera & reload.");
-                console.error(err);
-            }
-        }
-
-
-        /* ================= CONTROLS ================= */
-        function nextQuestion() {
-            if (current < questions.length - 1) {
-                current++;
-                renderQuestion();
-            }
-        }
-        function saveAnswer() { nextQuestion(); }
-        function markForReview() {
-            marked[current] = true;
-            renderPalette();
-            nextQuestion();
-        }
-        function clearAnswer() {
-            answers[current] = null;
-            marked[current] = false;
-            renderQuestion();
-            renderPalette();
-        }
-
-        /* ================= PALETTE ================= */
-        function renderPalette() {
-            const p = document.getElementById("palette");
-            p.innerHTML = "";
-
-            questions.forEach((_, i) => {
-                const b = document.createElement("button");
-                b.innerText = i + 1;
-                b.className = marked[i] ? "marked" : answers[i] !== null ? "answered" : "not-answered";
-                b.onclick = () => { current = i; renderQuestion(); };
-                p.appendChild(b);
-            });
-        }
-        function issueWarning(reason) {
-            if (examTerminated) return;
-
-            // 🔒 Prevent multiple triggers
-            if (violationLocked) return;
-
-            violationLocked = true;
-            warningCount++;
-
-            showWarning(`⚠️ Warning ${warningCount}/${MAX_WARNINGS}\nReason: ${reason}`);
-
-            // 🔓 Unlock after cooldown
-            setTimeout(() => {
-                violationLocked = false;
-            }, VIOLATION_COOLDOWN);
-
-            if (warningCount >= MAX_WARNINGS) {
-                terminateExam(reason);
-            }
-        }
-
-
-
-        /* ================= TIMER ================= */
-        function startTimer() {
-            setInterval(() => {
-                const m = Math.floor(time / 60);
-                const s = time % 60;
-                document.getElementById("timer").innerText = `${m}:${s.toString().padStart(2, "0")}`;
-                time--;
-                if (time < 0) submitExam();
-            }, 1000);
-        }
-
-        /* ================= SUBMIT ================= */
-        function confirmSubmit() {
-            if (confirm("Are you sure you want to submit the exam?")) submitExam();
-        }
-
-        function submitExam() {
-            let score = 0;
-            questions.forEach((q, i) => {
-
-                if (q.type === "mcq") {
-                    if (answers[i] === q.answer) score++;
-                }
-
-            });
-            fetch("/submit_exam", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    score: score,
-                    total: questions.length,
-                    violations: tabSwitches,
-                    answers: answers
-                })
-            }).then(() => window.location.href = "/exam_success");
-        }
+/* ================= NAVIGATION ================= */
 
-        function enterFullscreen() {
-            const el = document.documentElement;
-            if (el.requestFullscreen) el.requestFullscreen();
-        }
+function nextQuestion(){
 
-        document.addEventListener("fullscreenchange", () => {
-            if (!document.fullscreenElement) {
-                showWarning("❌ Fullscreen exited. Exam terminated.");
-                submitExam();
-            }
-        });
+if(current<questions.length-1){
+current++;
+renderQuestion();
+}
 
+}
 
-        /* ================= TAB MONITOR ================= */
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) {
-                tabSwitches++;
-                document.getElementById("tabCount").innerText = tabSwitches;
+function saveAnswer(){
+nextQuestion();
+}
 
-                if (tabSwitches >= 3) {
-                    showWarning("❌ Exam terminated due to multiple tab switches");
-                    submitExam();
-                }
-            }
-        });
-        async function startExam() {
+function markForReview(){
 
-            try {
+marked[current]=true;
+renderPalette();
+nextQuestion();
 
-                /* LOAD QUESTIONS FROM FLASK */
-                const res = await fetch("/get_questions");
-                const data = await res.json();
+}
 
-                if (!data.questions || data.questions.length === 0) {
-                    alert("Questions not loaded. Teacher has not published an exam.");
-                    return;
-                }
+function clearAnswer(){
 
-                /* SAVE QUESTIONS */
-                questions = data.questions;
+answers[current]=null;
+marked[current]=false;
 
-                /* INITIALIZE ARRAYS */
-                answers = new Array(questions.length).fill(null);
-                marked = new Array(questions.length).fill(false);
+renderQuestion();
+renderPalette();
+updateCounters();
 
-                /* FULLSCREEN */
-                await document.documentElement.requestFullscreen();
+}
 
-                /* REMOVE OVERLAY */
-                document.getElementById("startOverlay").style.display = "none";
+/* ================= PALETTE ================= */
 
-                /* LOAD SAVED ANSWERS */
-                const saved = localStorage.getItem("examAnswers");
-                if (saved) {
-                    answers = JSON.parse(saved);
-                }
+function renderPalette(){
 
-                /* START EXAM SYSTEM */
-                renderPalette();
-                renderQuestion();
-                startTimer();
+const p=document.getElementById("palette");
+p.innerHTML="";
 
-                /* START CAMERA */
-                await startCamera();
+questions.forEach((_,i)=>{
 
-                // START AI FACE DETECTION LOOP
-                setInterval(analyzeFrame, 5000);
+const b=document.createElement("button");
 
-                // START MOVEMENT DETECTION
-                setInterval(() => {
+b.innerText=i+1;
 
-                    const video = document.getElementById("proctorVideo");
+b.className=marked[i]
+?"marked"
+:answers[i]!==null
+?"answered"
+:"not-answered";
 
-                    if (video.readyState >= 2) {
-                        detectMovement(video);
-                    }
+b.onclick=()=>{
+current=i;
+renderQuestion();
+};
 
-                }, 2000);
+p.appendChild(b);
 
-            }
-            catch (err) {
-                console.error("Exam start error:", err);
-                alert("Failed to start exam");
-            }
-        }
+});
 
-        function showWarning(msg) {
-            const box = document.getElementById("warningBox");
-            box.innerText = msg;
-            box.style.display = "block";
-            setTimeout(() => box.style.display = "none", 3000);
-        }
+}
 
+/* ================= COUNTERS ================= */
 
+function updateCounters(){
 
+let answered=answers.filter(a=>a!==null).length;
 
-        function updateCounters() {
+document.getElementById("answeredCount").innerText=answered;
+document.getElementById("remainingCount").innerText=questions.length-answered;
 
-            let answered = answers.filter(a => a !== null && a !== "").length;
+}
 
-            document.getElementById("answeredCount").innerText = answered;
+/* ================= TIMER ================= */
 
-            document.getElementById("remainingCount").innerText =
-                questions.length - answered;
+function startTimer(){
 
-        }
+setInterval(()=>{
 
-        radio.onclick = () => {
-            answers[current] = i;
-            updateCounters();
-        }
+const m=Math.floor(time/60);
+const s=time%60;
 
-        setInterval(() => {
+document.getElementById("timer").innerText=
+`${m}:${s.toString().padStart(2,"0")}`;
 
-            localStorage.setItem("examAnswers", JSON.stringify(answers));
+time--;
 
-        }, 5000);
+if(time<0) submitExam();
 
+},1000);
 
-        document.addEventListener("copy", e => {
-            e.preventDefault();
-            showWarning("Copying is not allowed");
-        });
+}
 
-        document.addEventListener("paste", e => {
-            e.preventDefault();
-            showWarning("Pasting is not allowed");
-        });
+/* ================= CAMERA ================= */
 
-        document.addEventListener("contextmenu", e => {
-            e.preventDefault();
-        });
+async function startCamera(){
 
+const video=document.getElementById("proctorVideo");
 
-        function updateProgress() {
+try{
 
-            let answered = answers.filter(a => a !== null).length;
+const stream=await navigator.mediaDevices.getUserMedia({
+video:true
+});
 
-            let percent = (answered / questions.length) * 100;
+video.srcObject=stream;
 
-            document.getElementById("progressBar").style.width = percent + "%";
+}catch(err){
 
-        }
+showWarning("Camera denied");
 
+}
 
-    </script>
+}
+
+/* ================= SUBMIT ================= */
+
+function confirmSubmit(){
+
+if(confirm("Submit exam?")){
+submitExam();
+}
+
+}
+
+function submitExam(){
+
+let score=0;
+
+questions.forEach((q,i)=>{
+
+if(q.type==="mcq"){
+if(answers[i]===q.answer) score++;
+}
+
+});
+
+fetch("/submit_exam",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+score:score,
+total:questions.length,
+violations:0,
+answers:answers
+})
+})
+.then(()=>window.location.href="/exam_success");
+
+}
+
+/* ================= WARNINGS ================= */
+
+function showWarning(msg){
+
+const box=document.getElementById("warningBox");
+
+box.innerText=msg;
+box.style.display="block";
+
+setTimeout(()=>box.style.display="none",3000);
+
+}
+
+</script>
 
 </body>
-
-</html>5
+</html>
