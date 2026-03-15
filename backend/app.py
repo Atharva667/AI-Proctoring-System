@@ -865,7 +865,6 @@ def start_session():
 
     return jsonify({"message": "Session started"}), 200
 
-
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
 
@@ -873,6 +872,7 @@ def submit_exam():
 
         data = request.get_json()
 
+        exam_id = int(data.get("exam_id"))
         score = int(data.get("score"))
         total = int(data.get("total"))
         violations = int(data.get("violations"))
@@ -885,18 +885,19 @@ def submit_exam():
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # Check if exam contains descriptive questions
+        # Only get questions of THIS exam
         cursor.execute("""
             SELECT question_type
             FROM exam_questions
-        """)
+            WHERE exam_id = %s
+        """,(exam_id,))
 
         questions = cursor.fetchall()
 
         needs_review = False
 
         for q in questions:
-            if q["question_type"] in ["short", "paragraph"]:
+            if q["question_type"] in ["short","paragraph"]:
                 needs_review = True
                 break
 
@@ -906,10 +907,11 @@ def submit_exam():
 
         cursor.execute("""
         INSERT INTO exam_results
-        (student_id,total,score,violations,answers,status,exam_date)
-        VALUES (%s,%s,%s,%s,%s,%s,NOW())
+        (student_id,exam_id,total,score,violations,answers,status,exam_date)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
         """,(
             student_id,
+            exam_id,
             total,
             score,
             violations,
@@ -922,12 +924,11 @@ def submit_exam():
         cursor.close()
         db.close()
 
-        return jsonify({"status": "saved"})
+        return jsonify({"status":"saved"})
 
     except Exception as e:
-        print("SUBMIT ERROR:", e)
+        print("SUBMIT ERROR:",e)
         return jsonify({"status":"error"})
-
 
 
 @app.route("/teacher_results")

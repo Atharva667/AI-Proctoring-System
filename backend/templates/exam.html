@@ -509,10 +509,11 @@ fetch("/submit_exam",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({
-score:score,
-total:questions.length,
-violations:0,
-answers:answers
+exam_id: questions[0].exam_id,
+score: score,
+total: questions.length,
+violations: 0,
+answers: answers
 })
 })
 .then(()=>window.location.href="/exam_success");

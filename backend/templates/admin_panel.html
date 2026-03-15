@@ -5,6 +5,7 @@
 <meta charset="UTF-8">
 <title>AI Proctoring Admin Panel</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 
 <style>
@@ -25,12 +26,24 @@ justify-content:center;
 }
 
 .container{
-width:1200px;
+width:100%;
+max-width:1200px;
+margin:auto;
 background:#0f172a;
 padding:30px;
 border-radius:20px;
 border:1px solid rgba(56,189,248,0.3);
 box-shadow:0 0 40px rgba(56,189,248,0.2);
+}
+
+.sessions-table{
+max-height:300px;
+overflow-y:auto;
+overflow-x:auto;
+}
+
+.teacher-section{
+overflow-x:auto;
 }
 
 /* HEADER */
@@ -250,6 +263,116 @@ background:#16a34a;
 
 .reject-btn:hover{
 background:#dc2626;
+}
+
+/* ================= MOBILE RESPONSIVE ================= */
+
+@media (max-width:1024px){
+
+.container{
+padding:20px;
+}
+
+.cards{
+grid-template-columns:1fr;
+}
+
+}
+
+@media (max-width:768px){
+
+body{
+padding:15px;
+}
+
+.container{
+padding:18px;
+border-radius:14px;
+}
+
+.header{
+flex-direction:column;
+align-items:flex-start;
+gap:12px;
+}
+
+.header h1{
+font-size:20px;
+}
+
+.status{
+font-size:14px;
+}
+
+.cards{
+grid-template-columns:1fr;
+gap:12px;
+}
+
+.card h2{
+font-size:26px;
+}
+
+.controls{
+flex-wrap:wrap;
+gap:8px;
+}
+
+.btn{
+padding:8px 12px;
+font-size:13px;
+}
+
+.sessions-table{
+max-height:260px;
+}
+
+.log-box{
+height:160px;
+font-size:13px;
+}
+
+input{
+width:100%;
+max-width:100%;
+}
+
+.teacher-table th,
+.teacher-table td{
+font-size:12px;
+padding:8px;
+}
+
+.filter-btn{
+margin-bottom:6px;
+}
+
+}
+
+@media (max-width:480px){
+
+.header h1{
+font-size:18px;
+}
+
+.card h2{
+font-size:22px;
+}
+
+.btn{
+font-size:12px;
+padding:7px 10px;
+}
+
+.sessions-table table,
+.teacher-table{
+font-size:12px;
+}
+
+.log-box{
+height:140px;
+}
+
 }
 </style>
 
