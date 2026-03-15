@@ -243,23 +243,70 @@ def save_exam():
 
 @app.route("/get_questions")
 def get_questions():
+    try:
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
 
-    exam_id = 1   # or fetch from request/session
+        # get latest exam
+        cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
+        exam = cursor.fetchone()
 
+        if not exam:
+            return jsonify({"questions": []})
+
+        exam_id = exam["id"]
+
+        cursor.execute(
+            "SELECT * FROM exam_questions WHERE exam_id=%s",
+            (exam_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        db.close()
+
+        questions = []
+
+        for r in rows:
+            options = [
+                r["option1"],
+                r["option2"],
+                r["option3"],
+                r["option4"]
+            ]
+
+            questions.append({
+                "question": r["question"],
+                "type": r["question_type"],
+                "options": options,
+                "answer": r["correct_answer"]
+            })
+
+        return jsonify({"questions": questions})
+
+    except Exception as e:
+        print("ERROR:", e)
+        return jsonify({"questions": []})
+    
+@app.route("/debug_db")
+def debug_db():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute(
-        "SELECT * FROM exam_questions WHERE exam_id = %s",
-        (exam_id,)
-    )
+    cursor.execute("SELECT * FROM exams")
+    exams = cursor.fetchall()
 
-    rows = cursor.fetchall()
+    cursor.execute("SELECT * FROM exam_questions")
+    questions = cursor.fetchall()
 
     cursor.close()
     db.close()
 
-    return jsonify({"questions": rows})
+    return jsonify({
+        "exams": exams,
+        "questions": questions
+    })
 
 
 @app.route('/reject_teacher/<email>', methods=['POST'])
