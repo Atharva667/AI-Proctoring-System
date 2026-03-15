@@ -1,169 +1,183 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+<meta charset="UTF-8">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Examination Result</title>
 
-    <style>
-        body {
-            margin: 0;
-            font-family: "Segoe UI", Arial, sans-serif;
-            background: #f4f6f8;
-            color: #1f2937;
-        }
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        /* NAVBAR */
-        .navbar {
-            background: #0f172a;
-            color: white;
-            padding: 14px 24px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+<title>Examination Result</title>
 
-        .navbar h2 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 600;
-            align-items: absolute;
-        }
+<style>
 
-
-
-        .nav-actions a {
-            color: white;
-            text-decoration: none;
-            margin-left: 16px;
-            padding: 6px 14px;
-            border: 1px solid #334155;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-
-        .nav-actions a:hover {
-            background: #1e293b;
-        }
-
-        /* PAGE CENTER */
-      .page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: calc(100vh - 64px);
-    padding: 20px;
+body{
+margin:0;
+font-family:"Segoe UI",Arial,sans-serif;
+background:#f4f6f8;
+color:#1f2937;
 }
 
-        /* RESULT CARD */
-        .card {
-            background: white;
-            width: 90%;
-            max-width: 520px;
-            border-radius: 10px;
-            padding: 28px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-        }
+/* NAVBAR */
 
-        .card h1 {
-            text-align: center;
-            font-size: 22px;
-            margin-bottom: 6px;
-            color: #0f172a;
-        }
+.navbar{
+background:#0f172a;
+color:white;
+padding:14px 24px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
 
-        .exam-date {
-            text-align: center;
-            font-size: 13px;
-            color: #64748b;
-            margin-bottom: 24px;
-        }
+.navbar h2{
+margin:0;
+font-size:20px;
+font-weight:600;
+}
 
-        /* GRID */
-        .grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
-        }
+.nav-actions a{
+color:white;
+text-decoration:none;
+margin-left:16px;
+padding:6px 14px;
+border:1px solid #334155;
+border-radius:6px;
+font-size:14px;
+}
 
-        .box {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 14px;
-            text-align: center;
-            background: #f9fafb;
-        }
+.nav-actions a:hover{
+background:#1e293b;
+}
 
-        .box h3 {
-            margin: 0;
-            font-size: 14px;
-            color: #475569;
-            font-weight: 600;
-        }
+/* PAGE CENTER */
 
-        .box p {
-            margin-top: 6px;
-            font-size: 20px;
-            font-weight: bold;
-            color: #0f172a;
-        }
+.page{
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:calc(100vh - 64px);
+padding:20px;
+}
 
-        /* STATUS */
-        .status {
-            margin-top: 18px;
-            padding: 12px;
-            border-radius: 8px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 14px;
-        }
+/* RESULT CARD */
 
-        .completed {
-            background: #dcfce7;
-            color: #166534;
-        }
+.card{
+background:white;
+width:90%;
+max-width:520px;
+border-radius:10px;
+padding:28px;
+box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
 
-        .terminated {
-            background: #fee2e2;
-            color: #991b1b;
-        }
+.card h1{
+text-align:center;
+font-size:22px;
+margin-bottom:6px;
+color:#0f172a;
+}
 
-        /* BUTTON */
-        .back-btn {
-            display: block;
-            width: 100%;
-            margin-top: 20px;
-            padding: 12px;
-            background: #16a34a;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.exam-date{
+text-align:center;
+font-size:13px;
+color:#64748b;
+margin-bottom:24px;
+}
 
-        .back-btn:hover {
-            background: #15803d;
-        }
+/* GRID */
 
-        .loading {
-            text-align: center;
-            font-size: 15px;
-            color: #64748b;
-        }
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:14px;
+}
 
-        .error {
-            text-align: center;
-            color: #dc2626;
-            font-weight: bold;
-        }
+.box{
+border:1px solid #e5e7eb;
+border-radius:8px;
+padding:14px;
+text-align:center;
+background:#f9fafb;
+}
 
-        /* MOBILE RESPONSIVE */
+.box h3{
+margin:0;
+font-size:14px;
+color:#475569;
+font-weight:600;
+}
+
+.box p{
+margin-top:6px;
+font-size:20px;
+font-weight:bold;
+color:#0f172a;
+}
+
+/* STATUS */
+
+.status{
+margin-top:18px;
+padding:12px;
+border-radius:8px;
+text-align:center;
+font-weight:bold;
+font-size:14px;
+}
+
+.completed{
+background:#dcfce7;
+color:#166534;
+}
+
+.pending{
+background:#fef3c7;
+color:#92400e;
+}
+
+.terminated{
+background:#fee2e2;
+color:#991b1b;
+}
+
+/* BUTTON */
+
+.back-btn{
+display:block;
+width:100%;
+margin-top:20px;
+padding:12px;
+background:#16a34a;
+color:white;
+border:none;
+border-radius:8px;
+font-size:15px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.back-btn:hover{
+background:#15803d;
+}
+
+.loading{
+text-align:center;
+font-size:15px;
+color:#64748b;
+}
+
+.error{
+text-align:center;
+color:#dc2626;
+font-weight:bold;
+}
+
+/* MOBILE */
 
 @media (max-width:768px){
 
@@ -195,82 +209,132 @@ font-size:16px;
 }
 
 }
-    </style>
+
+</style>
+
 </head>
 
 <body>
 
-    <div class="navbar">
+<div class="navbar">
 
-        <i  style="font-family:monospace; font-style:normal; font-size: medium;"fa-solid fa-robot"> AKS Proctoring – Results </i>
-        <div class="nav-actions">
-            <a href="/">Home</a>
-            <a href="/logout">Logout</a>
-        </div>
-    </div>
+<h2><i class="fa-solid fa-robot"></i> AKS Proctoring – Results</h2>
 
+<div class="nav-actions">
+<a href="/">Home</a>
+<a href="/logout">Logout</a>
+</div>
 
-    <div class="page">
-        <div class="card" id="resultCard">
-            <div class="loading">Loading examination result…</div>
-        </div>
-    </div>
+</div>
 
-    <script>
-        fetch("/api/result")
-            .then(res => res.json())
-            .then(data => {
+<div class="page">
 
-                const card = document.getElementById("resultCard");
+<div class="card" id="resultCard">
 
-                if (data.empty) {
-                    card.innerHTML = "<div class='error'>No exam result found.</div>";
-                    return;
-                }
+<div class="loading">Loading examination result...</div>
 
-                const statusClass = data.status === "COMPLETED" ? "completed" : "terminated";
+</div>
 
-                card.innerHTML = `
-        <h1>Examination Result</h1>
-        <div class="exam-date">${data.date}</div>
+</div>
 
-        <div class="grid">
-            <div class="box">
-                <h3>Total Questions</h3>
-                <p>${data.total}</p>
-            </div>
+<script>
 
-            <div class="box">
-                <h3>Score</h3>
-                <p>${data.score}</p>
-            </div>
+async function loadResult(){
 
-            <div class="box">
-                <h3>Percentage</h3>
-                <p>${data.percentage}%</p>
-            </div>
+try{
 
-            <div class="box">
-                <h3>Violations</h3>
-                <p>${data.violations}</p>
-            </div>
-        </div>
+const response = await fetch("/api/result")
+const data = await response.json()
 
-        <div class="status ${statusClass}">
-            Status: ${data.status}
-        </div>
+const card = document.getElementById("resultCard")
 
-        <button class="back-btn" onclick="window.location.href='/view_result'">
-            Back to Dashboard
-        </button>
-    `;
-            })
-            .catch(() => {
-                document.getElementById("resultCard").innerHTML =
-                    "<div class='error'>Error loading result</div>";
-            });
-    </script>
+if(data.error){
+card.innerHTML="<div class='error'>Server error loading result</div>"
+return
+}
+
+if(data.empty){
+card.innerHTML="<div class='error'>No exam result found.</div>"
+return
+}
+
+/* fallback values */
+
+const total = data.total ?? 0
+const score = data.score ?? 0
+const percentage = data.percentage ?? 0
+const violations = data.violations ?? 0
+const status = data.status ?? "UNKNOWN"
+const date = data.date ?? ""
+
+/* status styling */
+
+let statusClass="terminated"
+
+if(status==="EVALUATED" || status==="COMPLETED"){
+statusClass="completed"
+}
+
+if(status==="PENDING_REVIEW"){
+statusClass="pending"
+}
+
+/* render result */
+
+card.innerHTML=`
+
+<h1>Examination Result</h1>
+
+<div class="exam-date">${date}</div>
+
+<div class="grid">
+
+<div class="box">
+<h3>Total Questions</h3>
+<p>${total}</p>
+</div>
+
+<div class="box">
+<h3>Score</h3>
+<p>${score}</p>
+</div>
+
+<div class="box">
+<h3>Percentage</h3>
+<p>${percentage}%</p>
+</div>
+
+<div class="box">
+<h3>Violations</h3>
+<p>${violations}</p>
+</div>
+
+</div>
+
+<div class="status ${statusClass}">
+Status: ${status}
+</div>
+
+<button class="back-btn" onclick="window.location.href='/view_result'">
+Back to Dashboard
+</button>
+
+`
+
+}
+
+catch(err){
+
+document.getElementById("resultCard").innerHTML=
+"<div class='error'>Error loading result</div>"
+
+}
+
+}
+
+loadResult()
+
+</script>
 
 </body>
-
 </html>

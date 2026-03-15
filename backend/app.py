@@ -855,10 +855,11 @@ def submit_exam():
         return jsonify({"status":"error"})
 
 
+
+
 @app.route("/teacher_results")
 def teacher_results():
 
-    # Teacher must be logged in
     if "teacher" not in session:
         return redirect("/teacher_login")
 
@@ -885,6 +886,7 @@ def teacher_results():
     db.close()
 
     return render_template("teacher_results.html", results=results)
+
 
 
 

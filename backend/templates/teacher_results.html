@@ -1,10 +1,13 @@
 <!DOCTYPE html>
+
 <html lang="en">
 
 <head>
 <meta charset="UTF-8">
+
 <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
 <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Student Exam Results</title>
@@ -142,7 +145,7 @@ font-weight:600;
 color:#2563eb;
 }
 
-/* ================= MOBILE ================= */
+/* MOBILE */
 
 @media (max-width:768px){
 
@@ -162,8 +165,6 @@ font-size:13px;
 }
 
 }
-
-/* SMALL PHONES */
 
 @media (max-width:500px){
 
@@ -194,12 +195,13 @@ Student Exam Results
 
 </div>
 
-
 <div class="container">
 
 <div class="table-wrapper">
 
 <table>
+
+<thead>
 
 <tr>
 <th>Student</th>
@@ -210,52 +212,57 @@ Student Exam Results
 <th>Status</th>
 </tr>
 
+</thead>
+
+<tbody>
+
+{% if results %}
+
 {% for r in results %}
 
 <tr>
 
 <td>{{ r.name }}</td>
 
-<td>{{ r.total }}</td>
+<td>{{ r.total or 0 }}</td>
 
 <td class="score">
+
 {% if r.score is none %}
 —
 {% else %}
 {{ r.score }} / {{ r.total }}
 {% endif %}
+
 </td>
 
 <td>
-{% if r.score is none %}
-<span class="badge pending">Pending Evaluation</span>
 
-{% elif r.total > 0 %}
-{{ ((r.score) / r.total * 100)|round(2) }}%
+{% if r.score is none %} <span class="badge pending">Pending Evaluation</span>
+
+{% elif r.total and r.total > 0 %}
+{{ ((r.score) / r.total * 100) | round(2) }}%
 
 {% else %}
 0%
+
 {% endif %}
+
 </td>
 
-<td>{{ r.violations }}</td>
+<td>{{ r.violations or 0 }}</td>
 
 <td>
 
-{% if r.status == "COMPLETED" %}
-<span class="badge completed">Completed</span>
+{% if r.status == "COMPLETED" %} <span class="badge completed">Completed</span>
 
-{% elif r.status == "EVALUATED" %}
-<span class="badge evaluated">Evaluated</span>
+{% elif r.status == "EVALUATED" %} <span class="badge evaluated">Evaluated</span>
 
-{% elif r.status == "PENDING_REVIEW" %}
-<span class="badge pending">Pending Review</span>
+{% elif r.status == "PENDING_REVIEW" %} <span class="badge pending">Pending Review</span>
 
-{% elif r.status == "TERMINATED" %}
-<span class="badge terminated">Terminated</span>
+{% elif r.status == "TERMINATED" %} <span class="badge terminated">Terminated</span>
 
-{% else %}
-<span class="badge">{{ r.status }}</span>
+{% else %} <span class="badge">{{ r.status }}</span>
 
 {% endif %}
 
@@ -265,6 +272,16 @@ Student Exam Results
 
 {% endfor %}
 
+{% else %}
+
+<tr>
+<td colspan="6">No exam results found</td>
+</tr>
+
+{% endif %}
+
+</tbody>
+
 </table>
 
 </div>
@@ -272,4 +289,5 @@ Student Exam Results
 </div>
 
 </body>
+
 </html>
