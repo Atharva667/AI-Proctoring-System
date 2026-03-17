@@ -651,6 +651,35 @@ setTimeout(()=>box.style.display="none",3000);
 
 }
 
+
+
+
+/* ================= TAB SWITCH DETECTION ================= */
+
+function sendViolation(message){
+
+    fetch("/log_event", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            event: "VIOLATION| " + message
+        })
+    });
+
+    showWarning(message);
+}
+
+/* Detect tab change */
+document.addEventListener("visibilitychange", () => {
+
+    if(document.hidden){
+        sendViolation("Tab switched / minimized");
+    }
+
+});
+
 </script>
 
 </body>
