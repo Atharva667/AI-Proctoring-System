@@ -873,22 +873,32 @@ def start_session():
 
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
-
     try:
-
         data = request.get_json()
 
-        exam_id = int(data.get("exam_id") or 1)
+        exam_id = int(data.get("exam_id"))
         score = int(data.get("score"))
         total = int(data.get("total"))
         violations = int(data.get("violations"))
         answers = data.get("answers")
 
         answers_text = "|".join([str(a) for a in answers])
-
         student_id = session.get("user_id")
 
         db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        # 🔥 CHECK IF DESCRIPTIVE EXISTS
+        cursor.execute("""
+            SELECT question_type FROM exam_questions WHERE exam_id=%s
+        """, (exam_id,))
+
+        questions = cursor.fetchall()
+
+        needs_review = any(q["question_type"] in ["short","paragraph"] for q in questions)
+
+        status = "PENDING_REVIEW" if needs_review else "EVALUATED"
+
         cursor = db.cursor()
 
         cursor.execute("""
@@ -902,7 +912,7 @@ def submit_exam():
             score,
             violations,
             answers_text,
-            "PENDING_REVIEW"
+            status
         ))
 
         db.commit()
@@ -933,7 +943,10 @@ SELECT
 s.name,
 er.total,
 er.score,
-ROUND((er.score/er.total)*100,2) AS percentage,
+CASE 
+WHEN er.total > 0 THEN ROUND((er.score/er.total)*100,2)
+ELSE 0 
+END AS percentage
 er.violations,
 er.status
 FROM exam_results er
@@ -964,44 +977,35 @@ def evaluate_exam(result_id):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute("""
-                SELECT *
-                FROM exam_questions
-                WHERE exam_id = (
-                    SELECT exam_id
-                    FROM exam_results
-                    WHERE id = %s
-                    )
-                    ORDER BY id
-                    """, (result_id,))
+    # 🔥 GET RESULT
+    cursor.execute("SELECT * FROM exam_results WHERE id=%s", (result_id,))
+    result = cursor.fetchone()
 
-    exam = cursor.fetchone()
-
-    # IMPORTANT FIX
-    if exam is None:
-        cursor.close()
-        db.close()
+    if not result:
         return "Exam record not found"
 
-    # Safe handling of answers
-    student_answers = (exam.get("answers") or "").split("|")
+    exam_id = result["exam_id"]
+    answers = (result["answers"] or "").split("|")
 
-    # Load exam questions
-    questions = []
-    with open("exam_questions.txt", "r") as f:
-        for line in f:
-            questions.append(line.strip().split("|"))
+    # 🔥 GET QUESTIONS
+    cursor.execute("""
+        SELECT *
+        FROM exam_questions
+        WHERE exam_id=%s
+        ORDER BY id
+    """, (exam_id,))
+
+    questions = cursor.fetchall()
 
     cursor.close()
     db.close()
 
     return render_template(
         "evaluate_exam.html",
-        exam=exam,
         questions=questions,
-        answers=student_answers
+        answers=answers,
+        result_id=result_id
     )
-
 
 
 @app.route("/log_event", methods=["POST"])
