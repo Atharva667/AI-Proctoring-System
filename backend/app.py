@@ -500,6 +500,42 @@ def review_exams():
         return "Server error loading exams"
 
 
+
+# @app.route("/review_exams_latest")
+# def review_exams_latest():
+
+#     if "teacher" not in session:
+#         return redirect("/teacher_login")
+
+#     try:
+#         db = get_db()
+#         cursor = db.cursor(dictionary=True)
+
+#         cursor.execute("""
+#         SELECT er.id, s.name, er.total, er.score, er.status
+#         FROM exam_results er
+#         JOIN (
+#             SELECT student_id, MAX(id) as latest_id
+#             FROM exam_results
+#             GROUP BY student_id
+#         ) latest
+#         ON er.id = latest.latest_id
+#         JOIN students s ON er.student_id = s.id
+#         ORDER BY er.id DESC
+#         """)
+
+#         exams = cursor.fetchall()
+
+#         cursor.close()
+#         db.close()
+
+#         return render_template("review_exams.html", exams=exams)
+
+#     except Exception as e:
+#         print("LATEST ERROR:", e)
+#         return "Error"
+
+
 @app.route("/submit_evaluation", methods=["POST"])
 def submit_evaluation():
 
