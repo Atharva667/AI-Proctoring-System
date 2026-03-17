@@ -233,38 +233,43 @@ font-size:18px;
 <div class="container">
 
 <div class="student-box">
-<b>Student:</b> {{ exam.name }}
+<b>Student:</b> {{ session.user_name }}
 </div>
 
 <form action="/submit_evaluation" method="POST">
 
-<input type="hidden" name="result_id" value="{{ exam.id }}">
+<input type="hidden" name="result_id" value="{{ result_id }}">
 
 {% for q in questions %}
 
 <div class="question">
 
-<h3>Q{{ loop.index }}. {{ q[0] }}</h3>
+<h3>Q{{ loop.index }}. {{ q.question }}</h3>
 
 <div class="answer-box">
 
 <b>Student Answer:</b>
 
-{% if q[1] == "mcq" %}
-{{ q[2 + answers[loop.index0]|int] }}
+{% if q.question_type == "mcq" %}
+
+    {% set idx = answers[loop.index0]|int %}
+    {{ [q.option1, q.option2, q.option3, q.option4][idx] }}
+
 {% else %}
-{{ answers[loop.index0] }}
+
+    {{ answers[loop.index0] }}
+
 {% endif %}
 
 </div>
 
-{% if q[1] == "mcq" %}
+{% if q.question_type == "mcq" %}
 
 <p class="correct-answer">
-Correct Answer: {{ q[2 + q[6]|int] }}
+Correct Answer: {{ q.correct_answer }}
 </p>
 
-{% if answers[loop.index0]|int == q[6]|int %}
+{% if [q.option1, q.option2, q.option3, q.option4][answers[loop.index0]|int] == q.correct_answer %}
 <span class="correct-badge">✔ Correct</span>
 {% else %}
 <span class="wrong-badge">✘ Wrong</span>

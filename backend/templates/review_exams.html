@@ -222,12 +222,18 @@ Review Student Exams
 
 <td>{{ e.total }}</td>
 
-<td>{{ e.score }}</td>
+<td>
+{% if e.status == "PENDING_REVIEW" %}
+<span style="color:#f59e0b;font-weight:600;">Pending</span>
+{% else %}
+{{ e.score }}
+{% endif %}
+</td>
 
 <td>
 
 {% if e.status == "PENDING_REVIEW" %}
-<span class="status pending">Pending</span>
+<span class="status pending">Pending Review</span>
 {% else %}
 <span class="status evaluated">Evaluated</span>
 {% endif %}
@@ -236,10 +242,19 @@ Review Student Exams
 
 <td>
 
+{% if e.status == "PENDING_REVIEW" %}
+
 <a href="/evaluate_exam/{{ e.id }}">
 <button class="evaluate-btn">Evaluate</button>
 </a>
 
+{% else %}
+
+<span style="color:gray;font-weight:500;">Done</span>
+
+{% endif %}
+
+</td>
 </td>
 
 </tr>

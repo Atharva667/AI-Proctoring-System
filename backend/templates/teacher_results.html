@@ -228,23 +228,24 @@ Student Exam Results
 
 <td class="score">
 
-{% if r.score is none %}
-—
+{% if r.status == "PENDING_REVIEW" %}
+<span class="badge pending">Pending</span>
+
 {% else %}
-{{ r.score }} / {{ r.total }}
+{{ r.score or 0 }} / {{ r.total or 0 }}
+
 {% endif %}
 
+</td>
 </td>
 
 <td>
 
-{% if r.score is none %} <span class="badge pending">Pending Evaluation</span>
-
-{% elif r.total and r.total > 0 %}
-{{ ((r.score) / r.total * 100) | round(2) }}%
+{% if r.status == "PENDING_REVIEW" %}
+<span class="badge pending">Pending</span>
 
 {% else %}
-0%
+{{ r.percentage or 0 }}%
 
 {% endif %}
 
