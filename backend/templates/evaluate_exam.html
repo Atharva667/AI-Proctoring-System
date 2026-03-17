@@ -10,7 +10,6 @@
 <title>Evaluate Exam</title>
 
 <style>
-
 *{
 box-sizing:border-box;
 margin:0;
@@ -22,8 +21,6 @@ body{
 background:#f4f6f9;
 }
 
-/* HEADER */
-
 .header{
 background:#1f2a40;
 color:white;
@@ -31,11 +28,6 @@ padding:18px 22px;
 display:flex;
 justify-content:space-between;
 align-items:center;
-flex-wrap:wrap;
-}
-
-.header h2{
-font-size:20px;
 }
 
 .back{
@@ -44,14 +36,7 @@ color:white;
 padding:7px 14px;
 border-radius:6px;
 text-decoration:none;
-font-size:14px;
 }
-
-.back:hover{
-background:#1d4ed8;
-}
-
-/* MAIN CONTAINER */
 
 .container{
 width:90%;
@@ -61,18 +46,13 @@ margin-top:30px;
 padding-bottom:80px;
 }
 
-/* STUDENT INFO */
-
 .student-box{
 background:white;
 padding:16px;
 border-radius:8px;
 box-shadow:0 3px 8px rgba(0,0,0,0.08);
 margin-bottom:20px;
-font-size:15px;
 }
-
-/* QUESTION CARD */
 
 .question{
 background:white;
@@ -82,41 +62,37 @@ border-radius:10px;
 box-shadow:0 3px 10px rgba(0,0,0,0.08);
 }
 
-.question h3{
-font-size:16px;
-margin-bottom:10px;
-}
-
-/* ANSWER BOX */
-
-.answer-box{
-background:#f1f3f6;
-padding:12px;
+.option{
+padding:10px;
+margin-top:6px;
 border-radius:6px;
-margin-top:8px;
-font-size:15px;
-word-break:break-word;
+background:#f1f3f6;
 }
 
-/* CORRECT ANSWER */
+.correct{
+background:#d4edda;
+color:#155724;
+font-weight:600;
+}
+
+.wrong{
+background:#f8d7da;
+color:#721c24;
+}
 
 .correct-answer{
+margin-top:10px;
 color:#0a7d2e;
 font-weight:600;
-margin-top:10px;
 }
-
-/* BADGES */
 
 .correct-badge{
 background:#d4edda;
 color:#155724;
 padding:6px 12px;
 border-radius:6px;
-font-size:13px;
-font-weight:500;
-display:inline-block;
 margin-top:10px;
+display:inline-block;
 }
 
 .wrong-badge{
@@ -124,13 +100,9 @@ background:#f8d7da;
 color:#721c24;
 padding:6px 12px;
 border-radius:6px;
-font-size:13px;
-font-weight:500;
-display:inline-block;
 margin-top:10px;
+display:inline-block;
 }
-
-/* INPUT */
 
 input{
 padding:8px;
@@ -138,10 +110,7 @@ margin-top:10px;
 border-radius:5px;
 border:1px solid #ccc;
 width:120px;
-font-size:14px;
 }
-
-/* SUBMIT BUTTON */
 
 .submit-box{
 position:fixed;
@@ -161,61 +130,8 @@ border:none;
 color:white;
 padding:12px 30px;
 border-radius:8px;
-font-size:16px;
 cursor:pointer;
 }
-
-.submit:hover{
-background:#15803d;
-}
-
-/* ================= MOBILE ================= */
-
-@media (max-width:768px){
-
-.container{
-width:95%;
-margin-top:20px;
-}
-
-.question{
-padding:16px;
-}
-
-.question h3{
-font-size:15px;
-}
-
-.answer-box{
-font-size:14px;
-}
-
-input{
-width:100%;
-}
-
-.submit{
-width:100%;
-}
-
-}
-
-/* SMALL PHONES */
-
-@media (max-width:500px){
-
-.header{
-flex-direction:column;
-gap:10px;
-align-items:flex-start;
-}
-
-.header h2{
-font-size:18px;
-}
-
-}
-
 </style>
 
 </head>
@@ -223,11 +139,8 @@ font-size:18px;
 <body>
 
 <div class="header">
-
 <h2>Evaluate Exam</h2>
-
 <a href="/review_exams" class="back">← Back</a>
-
 </div>
 
 <div class="container">
@@ -246,30 +159,47 @@ font-size:18px;
 
 <h3>Q{{ loop.index }}. {{ q.question }}</h3>
 
-<div class="answer-box">
+{% set options = [q.option1, q.option2, q.option3, q.option4] %}
+{% set student_idx = answers[loop.index0]|int %}
+{% set correct_idx = q.correct_answer|int %}
 
+<!-- STUDENT ANSWER -->
+<div class="option">
 <b>Student Answer:</b>
-
 {% if q.question_type == "mcq" %}
-
-    {% set idx = answers[loop.index0]|int %}
-    {{ [q.option1, q.option2, q.option3, q.option4][idx] }}
-
+{{ options[student_idx] }}
 {% else %}
-
-    {{ answers[loop.index0] }}
-
+{{ answers[loop.index0] }}
 {% endif %}
-
 </div>
 
 {% if q.question_type == "mcq" %}
 
+<!-- OPTIONS WITH COLORS -->
+{% for opt in options %}
+    {% set i = loop.index0 %}
+
+    <div class="option
+        {% if i == correct_idx %} correct
+        {% elif i == student_idx and student_idx != correct_idx %} wrong
+        {% endif %}
+    ">
+        {{ opt }}
+
+        {% if i == correct_idx %}
+            ✔
+        {% elif i == student_idx and student_idx != correct_idx %}
+            ✘
+        {% endif %}
+    </div>
+
+{% endfor %}
+
 <p class="correct-answer">
-Correct Answer: {{ q.correct_answer }}
+✔ Correct Answer: {{ options[correct_idx] }}
 </p>
 
-{% if [q.option1, q.option2, q.option3, q.option4][answers[loop.index0]|int] == q.correct_answer %}
+{% if student_idx == correct_idx %}
 <span class="correct-badge">✔ Correct</span>
 {% else %}
 <span class="wrong-badge">✘ Wrong</span>
@@ -278,13 +208,7 @@ Correct Answer: {{ q.correct_answer }}
 {% else %}
 
 <label>Assign Marks</label><br>
-
-<input 
-type="number"
-name="mark{{ loop.index }}"
-min="0"
-max="5"
-placeholder="0 - 5">
+<input type="number" name="mark{{ loop.index }}" min="0" max="5">
 
 {% endif %}
 
