@@ -259,6 +259,8 @@ Student Exam Results
 
 {% elif r.status == "EVALUATED" %} <span class="badge evaluated">Evaluated</span>
 
+{% elif r.status == "PARTIAL_EVALUATED" %} <span class="badge pending">Partial</span>
+
 {% elif r.status == "PENDING_REVIEW" %} <span class="badge pending">Pending Review</span>
 
 {% elif r.status == "TERMINATED" %} <span class="badge terminated">Terminated</span>

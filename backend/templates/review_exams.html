@@ -234,8 +234,13 @@ Review Student Exams
 
 {% if e.status == "PENDING_REVIEW" %}
 <span class="status pending">Pending Review</span>
+
+{% elif e.status == "PARTIAL_EVALUATED" %}
+<span class="status pending">Partially Evaluated</span>
+
 {% else %}
 <span class="status evaluated">Evaluated</span>
+
 {% endif %}
 
 </td>

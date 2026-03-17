@@ -404,7 +404,7 @@ radio.name = "optionGroup";
 radio.checked = answers[current] === i;
 
 radio.onclick = ()=>{
-answers[current] = i;
+answers[current] = Number(i);
 marked[current] = false;
 renderPalette();
 updateCounters();
@@ -602,17 +602,24 @@ function submitExam(){
 
 let score=0;
 
-questions.forEach((q,i)=>{
+ questions.forEach((q,i)=>{
 
-if(q.type==="mcq"){
+    if(q.type==="mcq"){
 
-const selectedOption = q.options[answers[i]]
+        if(answers[i] !== null && answers[i] !== undefined){
 
-if(selectedOption === q.answer){
-score++
-}
+            const userAns = Number(answers[i]);
+            const correctAns = Number(q.answer);
 
-}
+            console.log("Q", i, "User:", userAns, "Correct:", correctAns);
+
+            if(userAns === correctAns){
+                score++;
+            }
+
+        }
+
+    }
 
 });
 

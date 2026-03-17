@@ -895,7 +895,10 @@ def submit_exam():
 
         needs_review = any(q["question_type"] in ["short","paragraph"] for q in questions)
 
-        status = "PENDING_REVIEW" if needs_review else "EVALUATED"
+        if needs_review:
+            status = "PARTIAL_EVALUATED"
+        else:
+            status = "EVALUATED"
 
         cursor = db.cursor()
 
