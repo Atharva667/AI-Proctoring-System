@@ -156,55 +156,75 @@
             color: white;
         }
 
- /* ================= VIDEO OVERLAY ================= */
 
-#proctorVideo {
-    position: fixed;
-    right: 16px;
-    bottom: 16px;
+        /* ================= VIDEO WRAPPER ================= */
 
-    width: 180px;
-    height: 130px;
-    pointer-events: none;
+        .video-wrapper {
+            position: sticky;
+            bottom: 10px;
 
-    border-radius: 12px;
-    object-fit: cover;
+            display: flex;
+            justify-content: flex-end;
 
-    background: black;
-    border: 2px solid #111827;
+            padding: 10px;
+            z-index: 10;
+        }
 
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4);
+        /* VIDEO STYLE */
+        #proctorVideo {
+            width: 140px;
+            height: 100px;
 
-    z-index: 999;
-    transition: 0.3s;
-}
+            border-radius: 10px;
+            object-fit: cover;
 
-/* MOBILE */
-@media (max-width:768px){
+            border: 2px solid #1f2937;
+            background: black;
 
-    #proctorVideo {
-        width: 120px;
-        height: 90px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
 
-        right: 10px;
-        bottom: 10px;
+        /* MOBILE */
+        @media (max-width:768px) {
 
-        border-radius: 10px;
-        border: 1.5px solid #1f2937;
-    }
-}
+            #proctorVideo {
+                width: 110px;
+                height: 80px;
+            }
 
-/* SMALL MOBILE */
-@media (max-width:480px){
+            .video-wrapper {
+                justify-content: center;
+                /* center on mobile */
+            }
+        }
 
-    #proctorVideo {
-        width: 100px;
-        height: 75px;
+        /* MOBILE */
+        @media (max-width:768px) {
 
-        right: 8px;
-        bottom: 8px;
-    }
-}
+            #proctorVideo {
+                width: 120px;
+                height: 90px;
+
+                right: 10px;
+                bottom: 10px;
+
+                border-radius: 10px;
+                border: 1.5px solid #1f2937;
+            }
+        }
+
+        /* SMALL MOBILE */
+        @media (max-width:480px) {
+
+            #proctorVideo {
+                width: 100px;
+                height: 75px;
+
+                right: 8px;
+                bottom: 8px;
+            }
+        }
+
         /* ================= MOBILE ================= */
 
         @media (max-width:900px) {
@@ -334,7 +354,7 @@ border-radius:4px;">
 
     </div>
 
-    <video id="proctorVideo" autoplay muted playsinline></video>
+
 
     <div class="header">
 
@@ -363,6 +383,10 @@ border-radius:4px;">
             <div id="qNo"></div>
             <div id="questionText"></div>
             <div class="options" id="optionsBox"></div>
+
+            <div class="video-wrapper">
+                <video id="proctorVideo" autoplay muted playsinline></video>
+            </div>
 
             <div class="controls">
                 <button class="btn save" onclick="saveAnswer()">Save & Next</button>
