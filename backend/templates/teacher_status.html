@@ -1,60 +1,62 @@
 <!DOCTYPE html>
 <html>
+
 <head>
 
-<title>Teacher Application Status</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_status.css') }}">
+    <title>Teacher Application Status</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/teacher_status.css') }}">
 
 </head>
 
 <body>
 
-<div class="status-container">
+    <div class="status-container">
 
-<h2>Teacher Application Status</h2>
+        <h2>Teacher Application Status</h2>
 
-<form action="/teacher_status" method="POST">
+        <form action="/teacher_status" method="POST">
 
-<label>Email</label>
-<input type="email" name="email" required>
+            <label>Email</label>
+            <input type="email" name="email" required>
 
-<button type="submit">Check Status</button>
+            <button type="submit">Check Status</button>
 
-</form>
+        </form>
 
-{% if status %}
+        {% if status %}
 
-<div class="status-card">
+        <div class="status-card">
 
-<h3>Application Status</h3>
+            <h3>Application Status</h3>
 
-<p class="status
+            <p class="status
 {% if status == 'APPROVED' %}approved
 {% elif status == 'UNDER_REVIEW' %}pending
 {% elif status == 'REJECTED' %}rejected
 {% endif %}
 ">
-{{ status }}
-</p>
+                {{ status }}
+            </p>
 
-{% if status == "REJECTED" and reason %}
-<div class="reject-box">
-<b>Reason:</b> {{ reason }}
-</div>
-{% endif %}
+            {% if status == "REJECTED" and reason %}
+            <div class="reject-box">
+                <b>Reason:</b> {{ reason }}
+            </div>
+            {% endif %}
 
-{% if status == "APPROVED" %}
-<a href="/teacher_login" class="login-btn">Teacher Login</a>
-{% endif %}
+            {% if status == "APPROVED" %}
+            <a href="/teacher_login" class="login-btn">Teacher Login</a>
+            {% endif %}
 
-</div>
+        </div>
 
-{% endif %}
+        {% endif %}
 
-</div>
+    </div>
 
 </body>
+
 </html>

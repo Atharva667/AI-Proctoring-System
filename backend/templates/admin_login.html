@@ -1,145 +1,147 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login</title>
 
-<style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: "Segoe UI", sans-serif;
-    }
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
 
-    body {
-        height: 100vh;
-        background: linear-gradient(135deg, #020617, #0f172a);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #020617, #0f172a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .container {
-        width: 100%;
-        padding: 20px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
+        .container {
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
 
-    .box {
-        width: 100%;
-        max-width: 360px;
-        background: rgba(15, 23, 42, 0.85);
-        backdrop-filter: blur(10px);
-        padding: 35px 30px;
-        border-radius: 16px;
-        box-shadow: 0 0 30px rgba(56, 189, 248, 0.25);
-        transition: 0.3s;
-    }
-
-    .box:hover {
-        box-shadow: 0 0 40px rgba(56, 189, 248, 0.4);
-    }
-
-    h2 {
-        text-align: center;
-        color: #38bdf8;
-        margin-bottom: 25px;
-        font-weight: 600;
-    }
-
-    .error {
-        color: #ff4d4d;
-        text-align: center;
-        margin-bottom: 12px;
-        font-size: 14px;
-    }
-
-    .input-group {
-        margin-bottom: 15px;
-    }
-
-    input {
-        width: 100%;
-        padding: 12px;
-        border-radius: 8px;
-        border: none;
-        outline: none;
-        background: #1e293b;
-        color: #fff;
-        font-size: 14px;
-        transition: 0.3s;
-    }
-
-    input::placeholder {
-        color: #94a3b8;
-    }
-
-    input:focus {
-        border: 1px solid #38bdf8;
-        box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
-    }
-
-    button {
-        width: 100%;
-        padding: 12px;
-        background: linear-gradient(90deg, #38bdf8, #0ea5e9);
-        border: none;
-        border-radius: 8px;
-        font-weight: 600;
-        color: #000;
-        cursor: pointer;
-        transition: 0.3s;
-    }
-
-    button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 15px rgba(56, 189, 248, 0.4);
-    }
-
-    /* 📱 Mobile Optimization */
-    @media (max-width: 480px) {
         .box {
-            padding: 25px 20px;
+            width: 100%;
+            max-width: 360px;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 35px 30px;
+            border-radius: 16px;
+            box-shadow: 0 0 30px rgba(56, 189, 248, 0.25);
+            transition: 0.3s;
+        }
+
+        .box:hover {
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.4);
         }
 
         h2 {
-            font-size: 20px;
+            text-align: center;
+            color: #38bdf8;
+            margin-bottom: 25px;
+            font-weight: 600;
         }
-    }
-</style>
+
+        .error {
+            color: #ff4d4d;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            outline: none;
+            background: #1e293b;
+            color: #fff;
+            font-size: 14px;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: #94a3b8;
+        }
+
+        input:focus {
+            border: 1px solid #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.5);
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(90deg, #38bdf8, #0ea5e9);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #000;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(56, 189, 248, 0.4);
+        }
+
+        /* 📱 Mobile Optimization */
+        @media (max-width: 480px) {
+            .box {
+                padding: 25px 20px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container">
-    <div class="box">
+    <div class="container">
+        <div class="box">
 
-        <h2>Admin Login</h2>
+            <h2>Admin Login</h2>
 
-        {% if error %}
-        <div class="error">{{ error }}</div>
-        {% endif %}
+            {% if error %}
+            <div class="error">{{ error }}</div>
+            {% endif %}
 
-        <form method="POST">
+            <form method="POST">
 
-            <div class="input-group">
-                <input type="text" name="username" placeholder="Admin Username" required>
-            </div>
+                <div class="input-group">
+                    <input type="text" name="username" placeholder="Admin Username" required>
+                </div>
 
-            <div class="input-group">
-                <input type="password" name="password" placeholder="Admin Password" required>
-            </div>
+                <div class="input-group">
+                    <input type="password" name="password" placeholder="Admin Password" required>
+                </div>
 
-            <button type="submit">Login</button>
+                <button type="submit">Login</button>
 
-        </form>
+            </form>
 
+        </div>
     </div>
-</div>
 
 </body>
+
 </html>

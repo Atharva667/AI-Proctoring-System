@@ -1,293 +1,295 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Examination Instructions</title>
+    <meta charset="UTF-8">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Examination Instructions</title>
 
-<style>
-    body {
-        margin: 0;
-        font-family: "Segoe UI", Arial, sans-serif;
-        background: #f3f4f6;
-        color: #111827;
-    }
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f3f4f6;
+            color: #111827;
+        }
 
-    /* HEADER */
-    .top-bar {
-        background: #0f172a;
-        color: white;
-        padding: 14px 28px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
+        /* HEADER */
+        .top-bar {
+            background: #0f172a;
+            color: white;
+            padding: 14px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-    .top-bar h1 {
-        font-size: 18px;
-        font-weight: 600;
-        margin: 0;
-    }
+        .top-bar h1 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
 
-    .user {
-        font-size: 14px;
-        color: #cbd5f5;
-    }
+        .user {
+            font-size: 14px;
+            color: #cbd5f5;
+        }
 
-    /* MAIN */
-    .container {
-        max-width: 900px;
-        margin: 30px auto;
-        padding: 0 20px;
-    }
+        /* MAIN */
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
 
-    .notice {
-        background: #fff7ed;
-        border-left: 6px solid #ea580c;
-        padding: 16px 20px;
-        border-radius: 6px;
-        font-size: 14px;
-        margin-bottom: 25px;
-    }
+        .notice {
+            background: #fff7ed;
+            border-left: 6px solid #ea580c;
+            padding: 16px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
 
-    .notice b {
-        color: #9a3412;
-    }
+        .notice b {
+            color: #9a3412;
+        }
 
-    .card {
-        background: white;
-        border-radius: 10px;
-        padding: 28px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-    }
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 28px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
 
-    .card h2 {
-        font-size: 20px;
-        margin-bottom: 18px;
-        border-bottom: 2px solid #e5e7eb;
-        padding-bottom: 10px;
-    }
+        .card h2 {
+            font-size: 20px;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
 
-    ol {
-        padding-left: 20px;
-        line-height: 1.8;
-        font-size: 15px;
-    }
+        ol {
+            padding-left: 20px;
+            line-height: 1.8;
+            font-size: 15px;
+        }
 
-    ol li {
-        margin-bottom: 12px;
-    }
+        ol li {
+            margin-bottom: 12px;
+        }
 
-    ol li b {
-        color: #1e3a8a;
-    }
+        ol li b {
+            color: #1e3a8a;
+        }
 
-    .strict {
-        color: #b91c1c;
-        font-weight: 600;
-    }
+        .strict {
+            color: #b91c1c;
+            font-weight: 600;
+        }
 
-    /* ACTION */
-    .action-box {
-        margin-top: 30px;
-        padding-top: 20px;
-        border-top: 1px dashed #d1d5db;
-        text-align: center;
-    }
+        /* ACTION */
+        .action-box {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed #d1d5db;
+            text-align: center;
+        }
 
-    .start-btn {
-        background: #dc2626;
-        color: white;
-        border: none;
-        padding: 14px 40px;
-        font-size: 16px;
-        font-weight: 700;
-        border-radius: 8px;
-        cursor: pointer;
-        transition: 0.2s ease;
-    }
+        .start-btn {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 14px 40px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s ease;
+        }
 
-    .start-btn:hover {
-        background: #b91c1c;
-    }
+        .start-btn:hover {
+            background: #b91c1c;
+        }
 
-    .start-btn:active {
-        transform: scale(0.98);
-    }
+        .start-btn:active {
+            transform: scale(0.98);
+        }
 
-    .warning-text {
-        margin-top: 12px;
-        font-size: 13px;
-        color: #6b7280;
-    }
+        .warning-text {
+            margin-top: 12px;
+            font-size: 13px;
+            color: #6b7280;
+        }
 
-    /* FOOTER */
-    .footer {
-        text-align: center;
-        font-size: 13px;
-        color: #6b7280;
-        margin: 30px 0;
-    }
+        /* FOOTER */
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin: 30px 0;
+        }
 
-/* MOBILE RESPONSIVE */
+        /* MOBILE RESPONSIVE */
 
-@media (max-width:768px){
+        @media (max-width:768px) {
 
-/* header layout */
-.top-bar{
-flex-direction:column;
-align-items:flex-start;
-gap:6px;
-padding:12px 18px;
-}
+            /* header layout */
+            .top-bar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 6px;
+                padding: 12px 18px;
+            }
 
-.top-bar h1{
-font-size:16px;
-}
+            .top-bar h1 {
+                font-size: 16px;
+            }
 
-/* container spacing */
-.container{
-margin:20px auto;
-padding:0 14px;
-}
+            /* container spacing */
+            .container {
+                margin: 20px auto;
+                padding: 0 14px;
+            }
 
-/* notice box */
-.notice{
-font-size:13px;
-padding:14px;
-}
+            /* notice box */
+            .notice {
+                font-size: 13px;
+                padding: 14px;
+            }
 
-/* instruction card */
-.card{
-padding:20px;
-}
+            /* instruction card */
+            .card {
+                padding: 20px;
+            }
 
-.card h2{
-font-size:18px;
-}
+            .card h2 {
+                font-size: 18px;
+            }
 
-/* instruction list */
-ol{
-font-size:14px;
-line-height:1.7;
-}
+            /* instruction list */
+            ol {
+                font-size: 14px;
+                line-height: 1.7;
+            }
 
-/* start button */
-.start-btn{
-background:#dc2626;
-color:white;
-border:none;
-padding:14px 40px;
-font-size:16px;
-font-weight:700;
-border-radius:8px;
-cursor:pointer;
-transition:0.2s ease;
-display:inline-block;
-}
+            /* start button */
+            .start-btn {
+                background: #dc2626;
+                color: white;
+                border: none;
+                padding: 14px 40px;
+                font-size: 16px;
+                font-weight: 700;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: 0.2s ease;
+                display: inline-block;
+            }
 
-/* warning text */
-.warning-text{
-font-size:12px;
-}
+            /* warning text */
+            .warning-text {
+                font-size: 12px;
+            }
 
-/* footer */
-.footer{
-font-size:12px;
-margin:25px 0;
-}
+            /* footer */
+            .footer {
+                font-size: 12px;
+                margin: 25px 0;
+            }
 
-}
-</style>
+        }
+    </style>
 </head>
 
 <body>
 
-<!-- HEADER -->
-<div class="top-bar">
-    <h1>AI Proctored Online Examination</h1>
-    <div class="user">Candidate: <b>{{ name }}</b></div>
-</div>
-
-<!-- CONTENT -->
-<div class="container">
-
-    <div class="notice">
-        <b>Important Notice:</b>
-        This examination is monitored using Artificial Intelligence.
-        Any suspicious activity will be automatically recorded and may
-        result in immediate termination of the examination.
+    <!-- HEADER -->
+    <div class="top-bar">
+        <h1>AI Proctored Online Examination</h1>
+        <div class="user">Candidate: <b>{{ name }}</b></div>
     </div>
 
-    <div class="card">
-        <h2>Mandatory Examination Instructions</h2>
+    <!-- CONTENT -->
+    <div class="container">
 
-        <ol>
-            <li><b>Identity & Environment:</b>
-                You must be alone in a quiet, well-lit room.
-                Presence of any other person is <span class="strict">strictly prohibited</span>.
-            </li>
+        <div class="notice">
+            <b>Important Notice:</b>
+            This examination is monitored using Artificial Intelligence.
+            Any suspicious activity will be automatically recorded and may
+            result in immediate termination of the examination.
+        </div>
 
-            <li><b>Camera & Microphone:</b>
-                Webcam and microphone must remain ON throughout the exam.
-                Face must be clearly visible at all times.
-            </li>
+        <div class="card">
+            <h2>Mandatory Examination Instructions</h2>
 
-            <li><b>Screen Monitoring:</b>
-                Switching tabs, minimizing the browser, or opening other applications
-                will be treated as a <span class="strict">violation</span>.
-            </li>
+            <ol>
+                <li><b>Identity & Environment:</b>
+                    You must be alone in a quiet, well-lit room.
+                    Presence of any other person is <span class="strict">strictly prohibited</span>.
+                </li>
 
-            <li><b>Prohibited Items:</b>
-                Mobile phones, smart watches, earphones, books, notes,
-                or any external material are <span class="strict">not allowed</span>.
-            </li>
+                <li><b>Camera & Microphone:</b>
+                    Webcam and microphone must remain ON throughout the exam.
+                    Face must be clearly visible at all times.
+                </li>
 
-            <li><b>Eye & Head Movement:</b>
-                Excessive head movement or looking away from the screen
-                repeatedly may trigger AI warnings.
-            </li>
+                <li><b>Screen Monitoring:</b>
+                    Switching tabs, minimizing the browser, or opening other applications
+                    will be treated as a <span class="strict">violation</span>.
+                </li>
 
-            <li><b>Multiple Faces:</b>
-                Detection of more than one face in the camera frame
-                will result in immediate exam termination.
-            </li>
+                <li><b>Prohibited Items:</b>
+                    Mobile phones, smart watches, earphones, books, notes,
+                    or any external material are <span class="strict">not allowed</span>.
+                </li>
 
-            <li><b>Violation Policy:</b>
-                Maximum <span class="strict">3 AI violations</span> are allowed.
-                Exceeding this limit will auto-submit and terminate the exam.
-            </li>
+                <li><b>Eye & Head Movement:</b>
+                    Excessive head movement or looking away from the screen
+                    repeatedly may trigger AI warnings.
+                </li>
 
-            <li><b>Final Submission:</b>
-                Once submitted, the exam cannot be re-attempted under any circumstances.
-            </li>
-        </ol>
+                <li><b>Multiple Faces:</b>
+                    Detection of more than one face in the camera frame
+                    will result in immediate exam termination.
+                </li>
 
-        <div class="action-box">
-            <button class="start-btn" onclick="startExam()">
-                Proceed to Camera Verification
-            </button>
+                <li><b>Violation Policy:</b>
+                    Maximum <span class="strict">3 AI violations</span> are allowed.
+                    Exceeding this limit will auto-submit and terminate the exam.
+                </li>
 
-            <div class="warning-text">
-                Clicking the button confirms that you have read and accepted all rules.
+                <li><b>Final Submission:</b>
+                    Once submitted, the exam cannot be re-attempted under any circumstances.
+                </li>
+            </ol>
+
+            <div class="action-box">
+                <button class="start-btn" onclick="startExam()">
+                    Proceed to Camera Verification
+                </button>
+
+                <div class="warning-text">
+                    Clicking the button confirms that you have read and accepted all rules.
+                </div>
             </div>
         </div>
+
+        <div class="footer">
+            © 2026 AI Based Online Proctoring System
+        </div>
+
     </div>
 
-    <div class="footer">
-        © 2026 AI Based Online Proctoring System
-    </div>
-
-</div>
-
-<script>
-function startExam() {
-    window.location.href = "/camera-verify";
-}
-</script>
+    <script>
+        function startExam() {
+            window.location.href = "/camera-verify";
+        }
+    </script>
 
 </body>
+
 </html>

@@ -3,297 +3,295 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Examination Result</title>
+    <title>Examination Result</title>
 
-<style>
+    <style>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #f4f6f8;
+            color: #1f2937;
+        }
 
-body{
-margin:0;
-font-family:"Segoe UI",Arial,sans-serif;
-background:#f4f6f8;
-color:#1f2937;
-}
+        /* NAVBAR */
 
-/* NAVBAR */
+        .navbar {
+            background: #0f172a;
+            color: white;
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.navbar{
-background:#0f172a;
-color:white;
-padding:14px 24px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
+        .navbar h2 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 600;
+        }
 
-.navbar h2{
-margin:0;
-font-size:20px;
-font-weight:600;
-}
+        .nav-actions a {
+            color: white;
+            text-decoration: none;
+            margin-left: 16px;
+            padding: 6px 14px;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            font-size: 14px;
+        }
 
-.nav-actions a{
-color:white;
-text-decoration:none;
-margin-left:16px;
-padding:6px 14px;
-border:1px solid #334155;
-border-radius:6px;
-font-size:14px;
-}
+        .nav-actions a:hover {
+            background: #1e293b;
+        }
 
-.nav-actions a:hover{
-background:#1e293b;
-}
+        /* PAGE CENTER */
 
-/* PAGE CENTER */
+        .page {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: calc(100vh - 64px);
+            padding: 20px;
+        }
 
-.page{
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:calc(100vh - 64px);
-padding:20px;
-}
+        /* RESULT CARD */
 
-/* RESULT CARD */
+        .card {
+            background: white;
+            width: 90%;
+            max-width: 520px;
+            border-radius: 10px;
+            padding: 28px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
 
-.card{
-background:white;
-width:90%;
-max-width:520px;
-border-radius:10px;
-padding:28px;
-box-shadow:0 10px 25px rgba(0,0,0,0.08);
-}
+        .card h1 {
+            text-align: center;
+            font-size: 22px;
+            margin-bottom: 6px;
+            color: #0f172a;
+        }
 
-.card h1{
-text-align:center;
-font-size:22px;
-margin-bottom:6px;
-color:#0f172a;
-}
+        .exam-date {
+            text-align: center;
+            font-size: 13px;
+            color: #64748b;
+            margin-bottom: 24px;
+        }
 
-.exam-date{
-text-align:center;
-font-size:13px;
-color:#64748b;
-margin-bottom:24px;
-}
+        /* GRID */
 
-/* GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:14px;
-}
+        .box {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+            background: #f9fafb;
+        }
 
-.box{
-border:1px solid #e5e7eb;
-border-radius:8px;
-padding:14px;
-text-align:center;
-background:#f9fafb;
-}
+        .box h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #475569;
+            font-weight: 600;
+        }
 
-.box h3{
-margin:0;
-font-size:14px;
-color:#475569;
-font-weight:600;
-}
+        .box p {
+            margin-top: 6px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #0f172a;
+        }
 
-.box p{
-margin-top:6px;
-font-size:20px;
-font-weight:bold;
-color:#0f172a;
-}
+        /* STATUS */
 
-/* STATUS */
+        .status {
+            margin-top: 18px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
 
-.status{
-margin-top:18px;
-padding:12px;
-border-radius:8px;
-text-align:center;
-font-weight:bold;
-font-size:14px;
-}
+        .completed {
+            background: #dcfce7;
+            color: #166534;
+        }
 
-.completed{
-background:#dcfce7;
-color:#166534;
-}
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
 
-.pending{
-background:#fef3c7;
-color:#92400e;
-}
+        .terminated {
+            background: #fee2e2;
+            color: #991b1b;
+        }
 
-.terminated{
-background:#fee2e2;
-color:#991b1b;
-}
+        /* BUTTON */
 
-/* BUTTON */
+        .back-btn {
+            display: block;
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-.back-btn{
-display:block;
-width:100%;
-margin-top:20px;
-padding:12px;
-background:#16a34a;
-color:white;
-border:none;
-border-radius:8px;
-font-size:15px;
-font-weight:bold;
-cursor:pointer;
-}
+        .back-btn:hover {
+            background: #15803d;
+        }
 
-.back-btn:hover{
-background:#15803d;
-}
+        .loading {
+            text-align: center;
+            font-size: 15px;
+            color: #64748b;
+        }
 
-.loading{
-text-align:center;
-font-size:15px;
-color:#64748b;
-}
+        .error {
+            text-align: center;
+            color: #dc2626;
+            font-weight: bold;
+        }
 
-.error{
-text-align:center;
-color:#dc2626;
-font-weight:bold;
-}
+        /* MOBILE */
 
-/* MOBILE */
+        @media (max-width:768px) {
 
-@media (max-width:768px){
+            .navbar {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
 
-.navbar{
-flex-direction:column;
-gap:10px;
-align-items:flex-start;
-}
+            .card {
+                padding: 22px;
+            }
 
-.card{
-padding:22px;
-}
+            .card h1 {
+                font-size: 20px;
+            }
 
-.card h1{
-font-size:20px;
-}
+            .grid {
+                grid-template-columns: 1fr;
+            }
 
-.grid{
-grid-template-columns:1fr;
-}
+            .box p {
+                font-size: 18px;
+            }
 
-.box p{
-font-size:18px;
-}
+            .back-btn {
+                padding: 14px;
+                font-size: 16px;
+            }
 
-.back-btn{
-padding:14px;
-font-size:16px;
-}
-
-}
-
-</style>
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div class="navbar">
+    <div class="navbar">
 
-<h2><i class="fa-solid fa-robot"></i> AKS Proctoring – Results</h2>
+        <h2><i class="fa-solid fa-robot"></i> AKS Proctoring – Results</h2>
 
-<div class="nav-actions">
-<a href="/">Home</a>
-<a href="/logout">Logout</a>
-</div>
+        <div class="nav-actions">
+            <a href="/">Home</a>
+            <a href="/logout">Logout</a>
+        </div>
 
-</div>
+    </div>
 
-<div class="page">
+    <div class="page">
 
-<div class="card" id="resultCard">
+        <div class="card" id="resultCard">
 
-<div class="loading">Loading examination result...</div>
+            <div class="loading">Loading examination result...</div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
-<script>
+    <script>
 
-async function loadResult(){
+        async function loadResult() {
 
-try{
+            try {
 
-const response = await fetch("/api/result")
-const data = await response.json()
+                const response = await fetch("/api/result")
+                const data = await response.json()
 
-const card = document.getElementById("resultCard")
+                const card = document.getElementById("resultCard")
 
-if(data.error){
-card.innerHTML="<div class='error'>Server error loading result</div>"
-return
-}
+                if (data.error) {
+                    card.innerHTML = "<div class='error'>Server error loading result</div>"
+                    return
+                }
 
-if(data.empty){
-card.innerHTML="<div class='error'>No exam result found.</div>"
-return
-}
+                if (data.empty) {
+                    card.innerHTML = "<div class='error'>No exam result found.</div>"
+                    return
+                }
 
-/* fallback values */
+                /* fallback values */
 
-const total = data.total ?? 0
-const score = data.score ?? 0
-const percentage = data.percentage ?? 0
-const violations = data.violations ?? 0
-const rawStatus = data.status ?? "UNKNOWN"
-let status = rawStatus
-const date = data.date ?? ""
-let scoreText = score
-let percentageText = percentage + "%"
+                const total = data.total ?? 0
+                const score = data.score ?? 0
+                const percentage = data.percentage ?? 0
+                const violations = data.violations ?? 0
+                const rawStatus = data.status ?? "UNKNOWN"
+                let status = rawStatus
+                const date = data.date ?? ""
+                let scoreText = score
+                let percentageText = percentage + "%"
 
-if(status === "PENDING_REVIEW"){
-scoreText = "Awaiting Evaluation"
-percentageText = "--"
-}
+                if (status === "PENDING_REVIEW") {
+                    scoreText = "Awaiting Evaluation"
+                    percentageText = "--"
+                }
 
-if(status === "TERMINATED"){
-scoreText = "Exam Terminated"
-percentageText = "--"
-}
+                if (status === "TERMINATED") {
+                    scoreText = "Exam Terminated"
+                    percentageText = "--"
+                }
 
-/* status styling */
+                /* status styling */
 
-let statusClass="terminated"
+                let statusClass = "terminated"
 
-if(rawStatus==="EVALUATED" || rawStatus==="COMPLETED"){
-statusClass="completed"
-}
+                if (rawStatus === "EVALUATED" || rawStatus === "COMPLETED") {
+                    statusClass = "completed"
+                }
 
-if(rawStatus==="PENDING_REVIEW"){
-statusClass="pending"
-}
-/* render result */
+                if (rawStatus === "PENDING_REVIEW") {
+                    statusClass = "pending"
+                }
+                /* render result */
 
-card.innerHTML=`
+                card.innerHTML = `
 
 <h1>Examination Result</h1>
 
@@ -333,20 +331,21 @@ Back to Dashboard
 
 `
 
-}
+            }
 
-catch(err){
+            catch (err) {
 
-document.getElementById("resultCard").innerHTML=
-"<div class='error'>Error loading result</div>"
+                document.getElementById("resultCard").innerHTML =
+                    "<div class='error'>Error loading result</div>"
 
-}
+            }
 
-}
+        }
 
-loadResult()
+        loadResult()
 
-</script>
+    </script>
 
 </body>
+
 </html>

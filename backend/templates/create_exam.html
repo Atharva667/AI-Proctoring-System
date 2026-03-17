@@ -1,401 +1,401 @@
 <!DOCTYPE html>
 
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create Exam</title>
-
-<style>
-
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Segoe UI,Arial;
-}
-
-body{
-background:#f0ebf8;
-}
-
-.header{
-background:#673ab7;
-color:white;
-padding:15px 30px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-}
-
-.header-left{
-flex:1;
-}
-
-.header-center{
-flex:1;
-text-align:center;
-}
-
-.header-right{
-flex:1;
-text-align:right;
-}
-
-/* Dashboard Button */
-
-.back-btn{
-background:white;
-color:#673ab7;
-text-decoration:none;
-padding:6px 14px;
-border-radius:6px;
-font-size:14px;
-font-weight:500;
-}
-
-.back-btn:hover{
-background:#ede9fe;
-}
-
-.publish{
-background:white;
-color:#673ab7;
-border:none;
-padding:8px 16px;
-border-radius:4px;
-cursor:pointer;
-}
-
-/* MAIN CONTAINER */
-
-.container{
-width:90%;
-max-width:750px;
-margin:30px auto;
-}
-/* FORM TITLE */
-
-.form-title{
-background:white;
-padding:25px;
-border-radius:8px;
-border-top:8px solid #673ab7;
-margin-bottom:20px;
-}
-
-.form-title input{
-width:100%;
-border:none;
-font-size:22px;
-outline:none;
-}
-
-/* QUESTION CARD */
-
-.question-card{
-background:white;
-padding:20px;
-border-radius:8px;
-margin-bottom:15px;
-border-left:4px solid #673ab7;
-}
-
-.question-header{
-display:flex;
-justify-content:space-between;
-align-items:center;
-gap:10px;
-margin-bottom:10px;
-flex-wrap:wrap;
-}
-
-.question-header input{
-flex:1;
-min-width:200px;
-border:none;
-border-bottom:1px solid #ccc;
-font-size:16px;
-outline:none;
-}
-
-.type{
-
-background:#dad8d8;
-color:#000000;
-
-border:none;
-border-radius:8px;
-
-padding:10px 14px;
-
-font-size:15px;
-font-weight:500;
-
-cursor:pointer;
-
-outline:none;
-
-transition:0.2s;
-
-min-width:160px;
-
-}
-
-/* Hover */
-
-.type:hover{
-border-color:#7c3aed;
-}
-
-/* Focus */
-
-.type:focus{
-border-color:#7c3aed;
-box-shadow:0 0 0 2px rgba(124,58,237,0.4);
-}
-
-/* OPTIONS */
-
-.option{
-display:flex;
-align-items:center;
-gap:12px;
-margin:14px 0;
-}
-
-.option input{
-margin-right:10px;
-}
-
-.option-text{
-flex:1;
-background:#e6e6e6;
-border:none;
-padding:12px;
-border-radius:6px;
-color:rgb(0, 0, 0);
-font-size:16px;
-}
-
-.add-option{
-color:#673ab7;
-cursor:pointer;
-font-size:14px;
-margin-top:5px;
-}
-
-/* DELETE BUTTON */
-
-.delete-q{
-background:none;
-border:none;
-color:#999;
-cursor:pointer;
-font-size:20px;
-padding:6px 10px;
-border-radius:6px;
-transition:0.2s;
-}
-
-/* hover effect */
-
-.delete-q:hover{
-color:#dc2626;
-background:#fef2f2;
-}
-
-/* RIGHT TOOLBAR */
-
-.toolbar{
-position:fixed;
-right:20px;
-top:160px;
-background:white;
-border-radius:10px;
-padding:10px;
-box-shadow:0 2px 8px rgba(0,0,0,0.2);
-}
-
-.tool-btn{
-display:block;
-background:none;
-border:none;
-font-size:18px;
-padding:10px;
-cursor:pointer;
-}
-
-.short-answer{
-width:100%;
-padding:12px;
-border:1px solid #ccc;
-border-radius:6px;
-background:white;
-color:black;
-margin-top:12px;
-}
-
-.answer-box textarea{
-width:100%;
-padding:12px;
-background:#dad9d9;
-border:none;
-border-radius:6px;
-color:rgb(41, 41, 41);
-margin-top:10px;
-}
-
-/* ================= MOBILE ================= */
-
-@media (max-width:900px){
-
-.header{
-flex-direction:column;
-gap:10px;
-align-items:flex-start;
-}
-
-.container{
-width:95%;
-}
-
-/* question input full width */
-
-.question-header input{
-width:100%;
-}
-
-/* options layout */
-
-.option{
-flex-wrap:wrap;
-}
-
-.option-text{
-width:100%;
-}
-
-/* toolbar bottom */
-
-.toolbar{
-bottom:20px;
-top:auto;
-right:20px;
-}
-
-}
-
-/* SMALL PHONES */
-
-@media (max-width:500px){
-
-.form-title input{
-font-size:18px;
-}
-
-.option-text{
-font-size:14px;
-}
-
-.publish{
-padding:10px 18px;
-font-size:14px;
-}
-
-}
-.dragging{
-opacity:0.5;
-background:#ede9fe;
-}
-
-.drag{
-cursor:grab;
-font-size:18px;
-margin-right:10px;
-color:#666;
-}
-
-@media (max-width:768px){
-
-.header{
-flex-direction:column;
-gap:10px;
-align-items:flex-start;
-}
-
-.header-left,
-.header-center,
-.header-right{
-width:100%;
-text-align:left;
-}
-
-.header-right{
-text-align:right;
-}
-
-}
- 
-
-</style>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Exam</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Segoe UI, Arial;
+        }
+
+        body {
+            background: #f0ebf8;
+        }
+
+        .header {
+            background: #673ab7;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-left {
+            flex: 1;
+        }
+
+        .header-center {
+            flex: 1;
+            text-align: center;
+        }
+
+        .header-right {
+            flex: 1;
+            text-align: right;
+        }
+
+        /* Dashboard Button */
+
+        .back-btn {
+            background: white;
+            color: #673ab7;
+            text-decoration: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .back-btn:hover {
+            background: #ede9fe;
+        }
+
+        .publish {
+            background: white;
+            color: #673ab7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        /* MAIN CONTAINER */
+
+        .container {
+            width: 90%;
+            max-width: 750px;
+            margin: 30px auto;
+        }
+
+        /* FORM TITLE */
+
+        .form-title {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            border-top: 8px solid #673ab7;
+            margin-bottom: 20px;
+        }
+
+        .form-title input {
+            width: 100%;
+            border: none;
+            font-size: 22px;
+            outline: none;
+        }
+
+        /* QUESTION CARD */
+
+        .question-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border-left: 4px solid #673ab7;
+        }
+
+        .question-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .question-header input {
+            flex: 1;
+            min-width: 200px;
+            border: none;
+            border-bottom: 1px solid #ccc;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .type {
+
+            background: #dad8d8;
+            color: #000000;
+
+            border: none;
+            border-radius: 8px;
+
+            padding: 10px 14px;
+
+            font-size: 15px;
+            font-weight: 500;
+
+            cursor: pointer;
+
+            outline: none;
+
+            transition: 0.2s;
+
+            min-width: 160px;
+
+        }
+
+        /* Hover */
+
+        .type:hover {
+            border-color: #7c3aed;
+        }
+
+        /* Focus */
+
+        .type:focus {
+            border-color: #7c3aed;
+            box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.4);
+        }
+
+        /* OPTIONS */
+
+        .option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 14px 0;
+        }
+
+        .option input {
+            margin-right: 10px;
+        }
+
+        .option-text {
+            flex: 1;
+            background: #e6e6e6;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            color: rgb(0, 0, 0);
+            font-size: 16px;
+        }
+
+        .add-option {
+            color: #673ab7;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* DELETE BUTTON */
+
+        .delete-q {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 20px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            transition: 0.2s;
+        }
+
+        /* hover effect */
+
+        .delete-q:hover {
+            color: #dc2626;
+            background: #fef2f2;
+        }
+
+        /* RIGHT TOOLBAR */
+
+        .toolbar {
+            position: fixed;
+            right: 20px;
+            top: 160px;
+            background: white;
+            border-radius: 10px;
+            padding: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-btn {
+            display: block;
+            background: none;
+            border: none;
+            font-size: 18px;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .short-answer {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background: white;
+            color: black;
+            margin-top: 12px;
+        }
+
+        .answer-box textarea {
+            width: 100%;
+            padding: 12px;
+            background: #dad9d9;
+            border: none;
+            border-radius: 6px;
+            color: rgb(41, 41, 41);
+            margin-top: 10px;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width:900px) {
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .container {
+                width: 95%;
+            }
+
+            /* question input full width */
+
+            .question-header input {
+                width: 100%;
+            }
+
+            /* options layout */
+
+            .option {
+                flex-wrap: wrap;
+            }
+
+            .option-text {
+                width: 100%;
+            }
+
+            /* toolbar bottom */
+
+            .toolbar {
+                bottom: 20px;
+                top: auto;
+                right: 20px;
+            }
+
+        }
+
+        /* SMALL PHONES */
+
+        @media (max-width:500px) {
+
+            .form-title input {
+                font-size: 18px;
+            }
+
+            .option-text {
+                font-size: 14px;
+            }
+
+            .publish {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+
+        }
+
+        .dragging {
+            opacity: 0.5;
+            background: #ede9fe;
+        }
+
+        .drag {
+            cursor: grab;
+            font-size: 18px;
+            margin-right: 10px;
+            color: #666;
+        }
+
+        @media (max-width:768px) {
+
+            .header {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
+
+            .header-left,
+            .header-center,
+            .header-right {
+                width: 100%;
+                text-align: left;
+            }
+
+            .header-right {
+                text-align: right;
+            }
+
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div class="header">
+    <div class="header">
 
-<div class="header-left">
-<h2>AKS Proctoring Exam Builder</h2>
-</div>
+        <div class="header-left">
+            <h2>AKS Proctoring Exam Builder</h2>
+        </div>
 
-<div class="header-center">
-<a href="/teacher_dashboard" class="back-btn">← Dashboard</a>
-</div>
+        <div class="header-center">
+            <a href="/teacher_dashboard" class="back-btn">← Dashboard</a>
+        </div>
 
-<div class="header-right">
-<button class="publish" onclick="publishExam()">Publish</button>
-</div>
+        <div class="header-right">
+            <button class="publish" onclick="publishExam()">Publish</button>
+        </div>
 
-</div>
+    </div>
 
-<div class="container">
+    <div class="container">
 
-<div class="form-title">
-<input placeholder="Untitled Exam">
-</div>
-<div id="emptyMessage" style="text-align:center;color:#777;margin-top:30px;">
-Click ➕ to add your first question
-</div>
+        <div class="form-title">
+            <input placeholder="Untitled Exam">
+        </div>
+        <div id="emptyMessage" style="text-align:center;color:#777;margin-top:30px;">
+            Click ➕ to add your first question
+        </div>
 
-<div id="questions"></div>
+        <div id="questions"></div>
 
-</div>
+    </div>
 
-<div class="toolbar">
-<button class="tool-btn" onclick="addQuestion()">➕</button>
-</div>
+    <div class="toolbar">
+        <button class="tool-btn" onclick="addQuestion()">➕</button>
+    </div>
 
-<script>
+    <script>
 
-let qCount = 0;
+        let qCount = 0;
 
-function addQuestion(){
+        function addQuestion() {
 
-document.getElementById("emptyMessage")?.remove();
-qCount++;
+            document.getElementById("emptyMessage")?.remove();
+            qCount++;
 
-const container = document.getElementById("questions");
+            const container = document.getElementById("questions");
 
-const q = document.createElement("div");
-q.className = "question-card";
+            const q = document.createElement("div");
+            q.className = "question-card";
 
-q.innerHTML = `
+            q.innerHTML = `
 
 <div class="question-header">
 <span class="drag">☰</span>
@@ -436,171 +436,172 @@ q.innerHTML = `
 
 `;
 
-container.appendChild(q);
+            container.appendChild(q);
 
-}
-function addOption(btn, group){
+        }
+        function addOption(btn, group) {
 
-const optionIndex = btn.parentElement.querySelectorAll(".option").length;
+            const optionIndex = btn.parentElement.querySelectorAll(".option").length;
 
-const option = document.createElement("div");
-option.className = "option";
+            const option = document.createElement("div");
+            option.className = "option";
 
-option.innerHTML = `
+            option.innerHTML = `
 <input type="radio" class="correct" name="correct${group}" value="${optionIndex}">
 <input class="option-text" placeholder="Option">
 `;
 
-btn.previousElementSibling.appendChild(option);
+            btn.previousElementSibling.appendChild(option);
 
-}
+        }
 
-function duplicateQuestion(btn){
+        function duplicateQuestion(btn) {
 
-const q = btn.closest(".question-card");
+            const q = btn.closest(".question-card");
 
-const clone = q.cloneNode(true);
+            const clone = q.cloneNode(true);
 
-document.getElementById("questions").appendChild(clone);
+            document.getElementById("questions").appendChild(clone);
 
-}
+        }
 
-function deleteQuestion(btn){
+        function deleteQuestion(btn) {
 
-btn.closest(".question-card").remove();
+            btn.closest(".question-card").remove();
 
-}
+        }
 
-function changeQuestionType(select){
+        function changeQuestionType(select) {
 
-const questionCard = select.closest(".question-card");
+            const questionCard = select.closest(".question-card");
 
-const options = questionCard.querySelector(".options");
-const answerBox = questionCard.querySelector(".answer-box");
-const addOptionBtn = questionCard.querySelector(".add-option");
+            const options = questionCard.querySelector(".options");
+            const answerBox = questionCard.querySelector(".answer-box");
+            const addOptionBtn = questionCard.querySelector(".add-option");
 
-const type = select.value;
+            const type = select.value;
 
-answerBox.innerHTML = "";
+            answerBox.innerHTML = "";
 
-if(type === "mcq"){
+            if (type === "mcq") {
 
-options.style.display = "block";
-addOptionBtn.style.display = "block";
+                options.style.display = "block";
+                addOptionBtn.style.display = "block";
 
-}
+            }
 
-if(type === "short"){
+            if (type === "short") {
 
-options.style.display = "none";
-addOptionBtn.style.display = "none";
+                options.style.display = "none";
+                addOptionBtn.style.display = "none";
 
-answerBox.innerHTML = `
+                answerBox.innerHTML = `
 <input type="text" placeholder="Short answer text" class="short-answer">
 `;
 
-}
+            }
 
-if(type === "paragraph"){
+            if (type === "paragraph") {
 
-options.style.display = "none";
-addOptionBtn.style.display = "none";
+                options.style.display = "none";
+                addOptionBtn.style.display = "none";
 
-answerBox.innerHTML = `
+                answerBox.innerHTML = `
 <textarea placeholder="Paragraph answer"></textarea>
 `;
 
-}
+            }
 
-}
+        }
 
-function publishExam(){
+        function publishExam() {
 
-console.log("Publish clicked");
+            console.log("Publish clicked");
 
-const questions = [];
-const title = document.querySelector(".form-title input").value;
+            const questions = [];
+            const title = document.querySelector(".form-title input").value;
 
-document.querySelectorAll(".question-card").forEach(q => {
+            document.querySelectorAll(".question-card").forEach(q => {
 
-const questionText = q.querySelector(".question-header input").value;
-const type = q.querySelector(".type").value;
+                const questionText = q.querySelector(".question-header input").value;
+                const type = q.querySelector(".type").value;
 
-let options = [];
-let answer = null;
+                let options = [];
+                let answer = null;
 
-if(type === "mcq"){
+                if (type === "mcq") {
 
-q.querySelectorAll(".option").forEach((opt,i)=>{
+                    q.querySelectorAll(".option").forEach((opt, i) => {
 
-const text = opt.querySelector(".option-text").value;
-options.push(text);
+                        const text = opt.querySelector(".option-text").value;
+                        options.push(text);
 
-const radio = opt.querySelector(".correct");
+                        const radio = opt.querySelector(".correct");
 
-if(radio.checked){
-answer = i;
-}
+                        if (radio.checked) {
+                            answer = i;
+                        }
 
-});
+                    });
 
-}
+                }
 
-questions.push({
-question:questionText,
-type:type,
-options:options,
-answer:answer
-});
+                questions.push({
+                    question: questionText,
+                    type: type,
+                    options: options,
+                    answer: answer
+                });
 
-});
+            });
 
-fetch("/save_exam", {
+            fetch("/save_exam", {
 
-method: "POST",
+                method: "POST",
 
-headers: {
-"Content-Type": "application/json"
-},
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-body: JSON.stringify({
-title:title,
-questions: questions
-})
+                body: JSON.stringify({
+                    title: title,
+                    questions: questions
+                })
 
-})
+            })
 
-.then(res => res.json())
+                .then(res => res.json())
 
-.then(data => {
+                .then(data => {
 
-console.log(data);
+                    console.log(data);
 
-if(data.status === "saved"){
-alert("Exam saved successfully");
-}else{
-alert("Failed to save exam");
-}
+                    if (data.status === "saved") {
+                        alert("Exam saved successfully");
+                    } else {
+                        alert("Failed to save exam");
+                    }
 
-})
+                })
 
-.catch(err => {
-console.error("Error:", err);
-alert("Failed to save exam");
-});
-}
-window.onload = function() {
-    addQuestion();
-};
+                .catch(err => {
+                    console.error("Error:", err);
+                    alert("Failed to save exam");
+                });
+        }
+        window.onload = function () {
+            addQuestion();
+        };
 
-const questionContainer = document.getElementById("questions");
+        const questionContainer = document.getElementById("questions");
 
-new Sortable(questionContainer, {
-    animation: 150,
-    ghostClass: "dragging",
-    handle: ".drag"
-});
-</script>
+        new Sortable(questionContainer, {
+            animation: 150,
+            ghostClass: "dragging",
+            handle: ".drag"
+        });
+    </script>
 
 </body>
+
 </html>

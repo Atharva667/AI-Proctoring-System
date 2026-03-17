@@ -2,227 +2,228 @@
 <html lang="en">
 
 <head>
-<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Evaluate Exam</title>
+    <title>Evaluate Exam</title>
 
-<style>
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Segoe UI,Arial;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Segoe UI, Arial;
+        }
 
-body{
-background:#f4f6f9;
-}
+        body {
+            background: #f4f6f9;
+        }
 
-.header{
-background:#1f2a40;
-color:white;
-padding:18px 22px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
+        .header {
+            background: #1f2a40;
+            color: white;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.back{
-background:#2563eb;
-color:white;
-padding:7px 14px;
-border-radius:6px;
-text-decoration:none;
-}
+        .back {
+            background: #2563eb;
+            color: white;
+            padding: 7px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+        }
 
-.container{
-width:90%;
-max-width:900px;
-margin:auto;
-margin-top:30px;
-padding-bottom:80px;
-}
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: auto;
+            margin-top: 30px;
+            padding-bottom: 80px;
+        }
 
-.student-box{
-background:white;
-padding:16px;
-border-radius:8px;
-box-shadow:0 3px 8px rgba(0,0,0,0.08);
-margin-bottom:20px;
-}
+        .student-box {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+            margin-bottom: 20px;
+        }
 
-.question{
-background:white;
-padding:20px;
-margin-bottom:20px;
-border-radius:10px;
-box-shadow:0 3px 10px rgba(0,0,0,0.08);
-}
+        .question {
+            background: white;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
 
-.option{
-padding:10px;
-margin-top:6px;
-border-radius:6px;
-background:#f1f3f6;
-}
+        .option {
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            background: #f1f3f6;
+        }
 
-.correct{
-background:#d4edda;
-color:#155724;
-font-weight:600;
-}
+        .correct {
+            background: #d4edda;
+            color: #155724;
+            font-weight: 600;
+        }
 
-.wrong{
-background:#f8d7da;
-color:#721c24;
-}
+        .wrong {
+            background: #f8d7da;
+            color: #721c24;
+        }
 
-.correct-answer{
-margin-top:10px;
-color:#0a7d2e;
-font-weight:600;
-}
+        .correct-answer {
+            margin-top: 10px;
+            color: #0a7d2e;
+            font-weight: 600;
+        }
 
-.correct-badge{
-background:#d4edda;
-color:#155724;
-padding:6px 12px;
-border-radius:6px;
-margin-top:10px;
-display:inline-block;
-}
+        .correct-badge {
+            background: #d4edda;
+            color: #155724;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: inline-block;
+        }
 
-.wrong-badge{
-background:#f8d7da;
-color:#721c24;
-padding:6px 12px;
-border-radius:6px;
-margin-top:10px;
-display:inline-block;
-}
+        .wrong-badge {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 6px 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            display: inline-block;
+        }
 
-input{
-padding:8px;
-margin-top:10px;
-border-radius:5px;
-border:1px solid #ccc;
-width:120px;
-}
+        input {
+            padding: 8px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: 120px;
+        }
 
-.submit-box{
-position:fixed;
-bottom:0;
-left:0;
-width:100%;
-background:white;
-padding:15px;
-box-shadow:0 -3px 10px rgba(0,0,0,0.1);
-display:flex;
-justify-content:center;
-}
+        .submit-box {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: white;
+            padding: 15px;
+            box-shadow: 0 -3px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: center;
+        }
 
-.submit{
-background:#16a34a;
-border:none;
-color:white;
-padding:12px 30px;
-border-radius:8px;
-cursor:pointer;
-}
-</style>
+        .submit {
+            background: #16a34a;
+            border: none;
+            color: white;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div class="header">
-<h2>Evaluate Exam</h2>
-<a href="/review_exams" class="back">← Back</a>
-</div>
+    <div class="header">
+        <h2>Evaluate Exam</h2>
+        <a href="/review_exams" class="back">← Back</a>
+    </div>
 
-<div class="container">
+    <div class="container">
 
-<div class="student-box">
-<b>Student:</b> {{ session.user_name }}
-</div>
+        <div class="student-box">
+            <b>Student:</b> {{ session.user_name }}
+        </div>
 
-<form action="/submit_evaluation" method="POST">
+        <form action="/submit_evaluation" method="POST">
 
-<input type="hidden" name="result_id" value="{{ result_id }}">
+            <input type="hidden" name="result_id" value="{{ result_id }}">
 
-{% for q in questions %}
+            {% for q in questions %}
 
-<div class="question">
+            <div class="question">
 
-<h3>Q{{ loop.index }}. {{ q.question }}</h3>
+                <h3>Q{{ loop.index }}. {{ q.question }}</h3>
 
-{% set options = [q.option1, q.option2, q.option3, q.option4] %}
-{% set student_idx = answers[loop.index0]|int %}
-{% set correct_idx = q.correct_answer|int %}
+                {% set options = [q.option1, q.option2, q.option3, q.option4] %}
+                {% set student_idx = answers[loop.index0]|int %}
+                {% set correct_idx = q.correct_answer|int %}
 
-<!-- STUDENT ANSWER -->
-<div class="option">
-<b>Student Answer:</b>
-{% if q.question_type == "mcq" %}
-{{ options[student_idx] }}
-{% else %}
-{{ answers[loop.index0] }}
-{% endif %}
-</div>
+                <!-- STUDENT ANSWER -->
+                <div class="option">
+                    <b>Student Answer:</b>
+                    {% if q.question_type == "mcq" %}
+                    {{ options[student_idx] }}
+                    {% else %}
+                    {{ answers[loop.index0] }}
+                    {% endif %}
+                </div>
 
-{% if q.question_type == "mcq" %}
+                {% if q.question_type == "mcq" %}
 
-<!-- OPTIONS WITH COLORS -->
-{% for opt in options %}
-    {% set i = loop.index0 %}
+                <!-- OPTIONS WITH COLORS -->
+                {% for opt in options %}
+                {% set i = loop.index0 %}
 
-    <div class="option
+                <div class="option
         {% if i == correct_idx %} correct
         {% elif i == student_idx and student_idx != correct_idx %} wrong
         {% endif %}
     ">
-        {{ opt }}
+                    {{ opt }}
 
-        {% if i == correct_idx %}
-            ✔
-        {% elif i == student_idx and student_idx != correct_idx %}
-            ✘
-        {% endif %}
+                    {% if i == correct_idx %}
+                    ✔
+                    {% elif i == student_idx and student_idx != correct_idx %}
+                    ✘
+                    {% endif %}
+                </div>
+
+                {% endfor %}
+
+                <p class="correct-answer">
+                    ✔ Correct Answer: {{ options[correct_idx] }}
+                </p>
+
+                {% if student_idx == correct_idx %}
+                <span class="correct-badge">✔ Correct</span>
+                {% else %}
+                <span class="wrong-badge">✘ Wrong</span>
+                {% endif %}
+
+                {% else %}
+
+                <label>Assign Marks</label><br>
+                <input type="number" name="mark{{ loop.index }}" min="0" max="5">
+
+                {% endif %}
+
+            </div>
+
+            {% endfor %}
+
+            <div class="submit-box">
+                <button class="submit">Submit Evaluation</button>
+            </div>
+
+        </form>
+
     </div>
 
-{% endfor %}
-
-<p class="correct-answer">
-✔ Correct Answer: {{ options[correct_idx] }}
-</p>
-
-{% if student_idx == correct_idx %}
-<span class="correct-badge">✔ Correct</span>
-{% else %}
-<span class="wrong-badge">✘ Wrong</span>
-{% endif %}
-
-{% else %}
-
-<label>Assign Marks</label><br>
-<input type="number" name="mark{{ loop.index }}" min="0" max="5">
-
-{% endif %}
-
-</div>
-
-{% endfor %}
-
-<div class="submit-box">
-<button class="submit">Submit Evaluation</button>
-</div>
-
-</form>
-
-</div>
-
 </body>
+
 </html>

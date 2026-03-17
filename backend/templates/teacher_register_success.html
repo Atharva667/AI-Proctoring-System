@@ -1,99 +1,114 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<title>Application Submitted</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Application Submitted</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f172a, #020617);
+            font-family: 'Segoe UI';
+            color: white;
+        }
 
-body{
-margin:0;
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-background:linear-gradient(135deg,#0f172a,#020617);
-font-family:'Segoe UI';
-color:white;
-}
+        .card {
+            background: #020617;
+            padding: 50px 60px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(56, 189, 248, 0.25);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            animation: fadeIn 0.8s ease;
+        }
 
-.card{
-background:#020617;
-padding:50px 60px;
-border-radius:20px;
-text-align:center;
-box-shadow:0 0 40px rgba(56,189,248,0.25);
-border:1px solid rgba(56,189,248,0.3);
-animation:fadeIn 0.8s ease;
-}
+        .checkmark {
+            font-size: 80px;
+            color: #22c55e;
+            animation: pop 0.6s ease;
+        }
 
-.checkmark{
-font-size:80px;
-color:#22c55e;
-animation:pop 0.6s ease;
-}
+        h2 {
+            margin-top: 15px;
+            color: #38bdf8;
+        }
 
-h2{
-margin-top:15px;
-color:#38bdf8;
-}
+        p {
+            color: #94a3b8;
+            margin-top: 10px;
+        }
 
-p{
-color:#94a3b8;
-margin-top:10px;
-}
+        .btn {
+            margin-top: 25px;
+            padding: 10px 22px;
+            background: #38bdf8;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #020617;
+        }
 
-.btn{
-margin-top:25px;
-padding:10px 22px;
-background:#38bdf8;
-border:none;
-border-radius:8px;
-font-weight:bold;
-cursor:pointer;
-color:#020617;
-}
+        .btn:hover {
+            background: #0ea5e9;
+        }
 
-.btn:hover{
-background:#0ea5e9;
-}
+        @keyframes pop {
+            0% {
+                transform: scale(0)
+            }
 
-@keyframes pop{
-0%{transform:scale(0)}
-80%{transform:scale(1.2)}
-100%{transform:scale(1)}
-}
+            80% {
+                transform: scale(1.2)
+            }
 
-@keyframes fadeIn{
-from{opacity:0;transform:translateY(20px)}
-to{opacity:1;transform:translateY(0)}
-}
+            100% {
+                transform: scale(1)
+            }
+        }
 
-</style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px)
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0)
+            }
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="card">
+    <div class="card">
 
-<div class="checkmark">✔</div>
+        <div class="checkmark">✔</div>
 
-<h2>Application Submitted Successfully</h2>
+        <h2>Application Submitted Successfully</h2>
 
-<p>
-Your teacher registration request has been sent to the admin for approval.
-</p>
+        <p>
+            Your teacher registration request has been sent to the admin for approval.
+        </p>
 
-<p>
-You will be able to login once your application is approved.
-</p>
+        <p>
+            You will be able to login once your application is approved.
+        </p>
 
-<button class="btn" onclick="window.location.href='/'">
-Go to Home
-</button>
+        <button class="btn" onclick="window.location.href='/'">
+            Go to Home
+        </button>
 
-</div>
+    </div>
 
 </body>
+
 </html>

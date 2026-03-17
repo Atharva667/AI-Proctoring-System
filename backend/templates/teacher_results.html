@@ -3,293 +3,294 @@
 <html lang="en">
 
 <head>
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
 
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Student Exam Results</title>
+    <title>Student Exam Results</title>
 
-<style>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Segoe UI, Arial;
+        }
 
-*{
-box-sizing:border-box;
-margin:0;
-padding:0;
-font-family:Segoe UI,Arial;
-}
+        body {
+            background: #f4f6f9;
+        }
 
-body{
-background:#f4f6f9;
-}
+        /* HEADER */
 
-/* HEADER */
+        .header {
+            background: #1f2a40;
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
 
-.header{
-background:#1f2a40;
-color:white;
-padding:15px 20px;
-display:flex;
-align-items:center;
-justify-content:space-between;
-flex-wrap:wrap;
-}
+        .header-title {
+            font-size: 21px;
+            font-weight: 600;
+        }
 
-.header-title{
-font-size:21px;
-font-weight:600;
-}
+        /* BACK BUTTON */
 
-/* BACK BUTTON */
+        .back {
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+        }
 
-.back{
-text-decoration:none;
-background:#2563eb;
-color:white;
-padding:7px 14px;
-border-radius:6px;
-font-size:14px;
-}
+        .back:hover {
+            background: #1d4ed8;
+        }
 
-.back:hover{
-background:#1d4ed8;
-}
+        /* PAGE CONTAINER */
 
-/* PAGE CONTAINER */
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: auto;
+            margin-top: 30px;
+        }
 
-.container{
-width:95%;
-max-width:1200px;
-margin:auto;
-margin-top:30px;
-}
+        /* TABLE CONTAINER */
 
-/* TABLE CONTAINER */
+        .table-wrapper {
+            overflow-x: auto;
+        }
 
-.table-wrapper{
-overflow-x:auto;
-}
+        /* TABLE */
 
-/* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-radius: 8px;
+            overflow: hidden;
+        }
 
-table{
-width:100%;
-border-collapse:collapse;
-background:white;
-box-shadow:0 4px 12px rgba(0,0,0,0.08);
-border-radius:8px;
-overflow:hidden;
-}
+        th,
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
 
-th,td{
-padding:12px;
-border-bottom:1px solid #e5e7eb;
-font-size:14px;
-}
+        th {
+            background: #0f172a;
+            color: white;
+            text-align: center;
+        }
 
-th{
-background:#0f172a;
-color:white;
-text-align:center;
-}
+        td {
+            text-align: center;
+        }
 
-td{
-text-align:center;
-}
+        /* ROW HOVER */
 
-/* ROW HOVER */
+        tr:hover {
+            background: #f9fafb;
+        }
 
-tr:hover{
-background:#f9fafb;
-}
+        /* STATUS BADGES */
 
-/* STATUS BADGES */
+        .badge {
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            display: inline-block;
+        }
 
-.badge{
-padding:5px 12px;
-border-radius:6px;
-font-size:12px;
-font-weight:600;
-white-space:nowrap;
-display:inline-block;
-}
+        /* STATUS COLORS */
 
-/* STATUS COLORS */
+        .completed {
+            background: #dcfce7;
+            color: #166534;
+        }
 
-.completed{
-background:#dcfce7;
-color:#166534;
-}
+        .evaluated {
+            background: #dcfce7;
+            color: #166534;
+        }
 
-.evaluated{
-background:#dcfce7;
-color:#166534;
-}
+        .pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
 
-.pending{
-background:#fef3c7;
-color:#92400e;
-}
+        .terminated {
+            background: #fecaca;
+            color: #7f1d1d;
+        }
 
-.terminated{
-background:#fecaca;
-color:#7f1d1d;
-}
+        /* SCORE */
 
-/* SCORE */
+        .score {
+            font-weight: 600;
+            color: #2563eb;
+        }
 
-.score{
-font-weight:600;
-color:#2563eb;
-}
+        /* MOBILE */
 
-/* MOBILE */
+        @media (max-width:768px) {
 
-@media (max-width:768px){
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
 
-.header{
-flex-direction:column;
-align-items:flex-start;
-gap:10px;
-}
+            .header-title {
+                font-size: 19px;
+            }
 
-.header-title{
-font-size:19px;
-}
+            th,
+            td {
+                padding: 10px;
+                font-size: 13px;
+            }
 
-th,td{
-padding:10px;
-font-size:13px;
-}
+        }
 
-}
+        @media (max-width:500px) {
 
-@media (max-width:500px){
+            .container {
+                margin-top: 20px;
+            }
 
-.container{
-margin-top:20px;
-}
+            th,
+            td {
+                font-size: 12px;
+                padding: 8px;
+            }
 
-th,td{
-font-size:12px;
-padding:8px;
-}
-
-}
-
-</style>
+        }
+    </style>
 
 </head>
 
 <body>
 
-<div class="header">
+    <div class="header">
 
-<a href="/teacher_dashboard" class="back">← Dashboard</a>
+        <a href="/teacher_dashboard" class="back">← Dashboard</a>
 
-<div class="header-title">
-Student Exam Results
-</div>
+        <div class="header-title">
+            Student Exam Results
+        </div>
 
-</div>
+    </div>
 
-<div class="container">
+    <div class="container">
 
-<div class="table-wrapper">
+        <div class="table-wrapper">
 
-<table>
+            <table>
 
-<thead>
+                <thead>
 
-<tr>
-<th>Student</th>
-<th>Total Questions</th>
-<th>Score</th>
-<th>Percentage</th>
-<th>Violations</th>
-<th>Status</th>
-</tr>
+                    <tr>
+                        <th>Student</th>
+                        <th>Total Questions</th>
+                        <th>Score</th>
+                        <th>Percentage</th>
+                        <th>Violations</th>
+                        <th>Status</th>
+                    </tr>
 
-</thead>
+                </thead>
 
-<tbody>
+                <tbody>
 
-{% if results %}
+                    {% if results %}
 
-{% for r in results %}
+                    {% for r in results %}
 
-<tr>
+                    <tr>
 
-<td>{{ r.name }}</td>
+                        <td>{{ r.name }}</td>
 
-<td>{{ r.total or 0 }}</td>
+                        <td>{{ r.total or 0 }}</td>
 
-<td class="score">
+                        <td class="score">
 
-{% if r.status == "PENDING_REVIEW" %}
-<span class="badge pending">Pending</span>
+                            {% if r.status == "PENDING_REVIEW" %}
+                            <span class="badge pending">Pending</span>
 
-{% else %}
-{{ r.score or 0 }} / {{ r.total or 0 }}
+                            {% else %}
+                            {{ r.score or 0 }} / {{ r.total or 0 }}
 
-{% endif %}
+                            {% endif %}
 
-</td>
-</td>
+                        </td>
+                        </td>
 
-<td>
+                        <td>
 
-{% if r.status == "PENDING_REVIEW" %}
-<span class="badge pending">Pending</span>
+                            {% if r.status == "PENDING_REVIEW" %}
+                            <span class="badge pending">Pending</span>
 
-{% else %}
-{{ r.percentage or 0 }}%
+                            {% else %}
+                            {{ r.percentage or 0 }}%
 
-{% endif %}
+                            {% endif %}
 
-</td>
+                        </td>
 
-<td>{{ r.violations or 0 }}</td>
+                        <td>{{ r.violations or 0 }}</td>
 
-<td>
+                        <td>
 
-{% if r.status == "COMPLETED" %} <span class="badge completed">Completed</span>
+                            {% if r.status == "COMPLETED" %} <span class="badge completed">Completed</span>
 
-{% elif r.status == "EVALUATED" %} <span class="badge evaluated">Evaluated</span>
+                            {% elif r.status == "EVALUATED" %} <span class="badge evaluated">Evaluated</span>
 
-{% elif r.status == "PARTIAL_EVALUATED" %} <span class="badge pending">Partial</span>
+                            {% elif r.status == "PARTIAL_EVALUATED" %} <span class="badge pending">Partial</span>
 
-{% elif r.status == "PENDING_REVIEW" %} <span class="badge pending">Pending Review</span>
+                            {% elif r.status == "PENDING_REVIEW" %} <span class="badge pending">Pending Review</span>
 
-{% elif r.status == "TERMINATED" %} <span class="badge terminated">Terminated</span>
+                            {% elif r.status == "TERMINATED" %} <span class="badge terminated">Terminated</span>
 
-{% else %} <span class="badge">{{ r.status }}</span>
+                            {% else %} <span class="badge">{{ r.status }}</span>
 
-{% endif %}
+                            {% endif %}
 
-</td>
+                        </td>
 
-</tr>
+                    </tr>
 
-{% endfor %}
+                    {% endfor %}
 
-{% else %}
+                    {% else %}
 
-<tr>
-<td colspan="6">No exam results found</td>
-</tr>
+                    <tr>
+                        <td colspan="6">No exam results found</td>
+                    </tr>
 
-{% endif %}
+                    {% endif %}
 
-</tbody>
+                </tbody>
 
-</table>
+            </table>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 </body>
 

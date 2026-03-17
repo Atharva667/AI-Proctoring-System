@@ -1,33 +1,35 @@
 <!DOCTYPE html>
 
 <html>
+
 <head>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/theme.css') }}">
-<script src="{{ url_for('static', filename='js/theme.js') }}"></script>
-<title>Teacher Login</title>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="static/css/teacher_login.css">
+    <script src="{{ url_for('static', filename='js/theme.js') }}"></script>
+    <title>Teacher Login</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/css/teacher_login.css">
 
 </head>
 
 <body>
 
-<div class="box">
+    <div class="box">
 
-<h2>Teacher Login</h2>
+        <h2>Teacher Login</h2>
 
-<form method="POST" action="/teacher_login">
+        <form method="POST" action="/teacher_login">
 
-<input type="email" name="email" placeholder="Email" required>
+            <input type="email" name="email" placeholder="Email" required>
 
-<input type="password" name="password" placeholder="Password" required>
+            <input type="password" name="password" placeholder="Password" required>
 
-<button type="submit">Login</button>
+            <button type="submit">Login</button>
 
-</form>
+        </form>
 
-</div>
+    </div>
 
 </body>
+
 </html>
