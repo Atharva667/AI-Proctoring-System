@@ -20,27 +20,41 @@
 <body>
 
 <header class="navbar">
-    <div class="logo">
-        <i class="fa-solid fa-robot"></i> AKS Proctoring
+
+    <div class="nav-left">
+        <div class="logo">
+            <i class="fa-solid fa-robot"></i> AKS Proctoring
+        </div>
     </div>
 
-      <!-- THEME TOGGLE -->
+    <div class="nav-right">
 
-        <div class="theme-toggle">
-
-            <i class="fa-solid fa-sun"></i>
-
-            <label class="switch">
-                <input type="checkbox" id="themeSwitch">
-                <span class="slider"></span>
-            </label>
-
+        <!-- THEME BUTTON -->
+        <button id="themeBtn" class="theme-btn">
             <i class="fa-solid fa-moon"></i>
+        </button>
 
-        </div>
+        <!-- HAMBURGER -->
+        <button class="hamburger" id="menuBtn">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+    </div>
+
 </header>
 
-<nav class="menu">
+<!-- MOBILE MENU -->
+<nav class="mobile-menu" id="mobileMenu">
+    <a href="/">Home</a>
+    <a href="/login">Student Login</a>
+    <a href="/register">Student Register</a>
+    <a href="/teacher_register">Teacher Register</a>
+    <a href="/teacher_login">Teacher Login</a>
+    <a href="/teacher_status">Application Status</a>
+</nav>
+
+<!-- DESKTOP MENU -->
+<nav class="menu desktop-menu">
     <a href="/">Home</a>
     <a href="/login">Student Login</a>
     <a href="/register">Student Register</a>
@@ -123,63 +137,6 @@
     </div>
 </section>
 
-
-
-    <!-- ================= FEATURES ================= -->
-
-    <section class="features">
-
-        <h2>Key Features</h2>
-
-        <div class="feature-grid">
-
-            <div class="feature-card">
-                <i class="fa-solid fa-eye"></i>
-                <h3>Eye & Head Tracking</h3>
-                <p>Tracks suspicious movements to prevent unfair practices.</p>
-            </div>
-
-
-            <div class="feature-card">
-                <i class="fa-solid fa-user"></i>
-                <h3>Face Detection</h3>
-                <p>Detects no face, multiple faces, and excessive head movements in real time.</p>
-            </div>
-
-
-            <div class="feature-card">
-                <i class="fa-solid fa-window-restore"></i>
-                <h3>Tab Monitoring</h3>
-                <p>Detects tab switching and alerts students instantly.</p>
-            </div>
-
-
-            <div class="feature-card">
-                <i class="fa-solid fa-ban"></i>
-                <h3>Auto Termination</h3>
-                <p>Automatically terminates exam after repeated violations.</p>
-            </div>
-
-
-            <div class="feature-card">
-                <i class="fa-solid fa-file-lines"></i>
-                <h3>Activity Logs</h3>
-                <p>Complete logging of student behavior during exam.</p>
-            </div>
-
-
-            <div class="feature-card">
-                <i class="fa-solid fa-gauge-high"></i>
-                <h3>Real-Time AI Engine</h3>
-                <p>Python-based AI engine runs independently for accuracy.</p>
-            </div>
-
-        </div>
-
-    </section>
-
-
-
     <!-- ================= FOOTER ================= -->
 
     <footer class="footer">
@@ -192,22 +149,37 @@
     </footer>
 
 
-    <script>
+<script>
+const themeBtn = document.getElementById("themeBtn");
+const body = document.body;
+const icon = themeBtn.querySelector("i");
 
-        const switchBtn = document.getElementById("themeSwitch")
+// THEME
+if (localStorage.getItem("theme") === "light") {
+    body.classList.add("light-mode");
+    icon.classList.replace("fa-moon", "fa-sun");
+}
 
-        switchBtn.addEventListener("change", function () {
+themeBtn.addEventListener("click", () => {
+    body.classList.toggle("light-mode");
 
-            if (this.checked) {
-                setTheme("dark")
-            } else {
-                setTheme("light")
-            }
+    if (body.classList.contains("light-mode")) {
+        icon.classList.replace("fa-moon", "fa-sun");
+        localStorage.setItem("theme", "light");
+    } else {
+        icon.classList.replace("fa-sun", "fa-moon");
+        localStorage.setItem("theme", "dark");
+    }
+});
 
-        })
+// HAMBURGER MENU
+const menuBtn = document.getElementById("menuBtn");
+const mobileMenu = document.getElementById("mobileMenu");
 
-    </script>
-
+menuBtn.addEventListener("click", () => {
+    mobileMenu.classList.toggle("active");
+});
+</script>
 
 </body>
 
