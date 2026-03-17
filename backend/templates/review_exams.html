@@ -242,21 +242,17 @@ Review Student Exams
 
 <td>
 
-{% if e.status == "PENDING_REVIEW" %}
-
 <a href="/evaluate_exam/{{ e.id }}">
-<button class="evaluate-btn">Evaluate</button>
+    {% if e.status == "PENDING_REVIEW" %}
+        <button class="evaluate-btn">Evaluate</button>
+    {% else %}
+        <button class="evaluate-btn" style="background:#2563eb;">
+            View
+        </button>
+    {% endif %}
 </a>
 
-{% else %}
-
-<span style="color:gray;font-weight:500;">Done</span>
-
-{% endif %}
-
 </td>
-</td>
-
 </tr>
 
 {% endfor %}

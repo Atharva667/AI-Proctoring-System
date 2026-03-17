@@ -288,7 +288,7 @@ def get_questions():
                     r["option3"],
                     r["option4"]
                 ],
-                "answer": r["correct_answer"]
+                "answer": int(r["correct_answer"])
             })
 
         return jsonify({"questions": questions})
@@ -944,7 +944,7 @@ er.score,
 CASE 
 WHEN er.total > 0 THEN ROUND((er.score/er.total)*100,2)
 ELSE 0 
-END AS percentage
+END AS percentage,
 er.violations,
 er.status
 FROM exam_results er
@@ -976,7 +976,13 @@ def evaluate_exam(result_id):
     cursor = db.cursor(dictionary=True)
 
     # ✅ GET RESULT
-    cursor.execute("SELECT * FROM exam_results WHERE id=%s", (result_id,))
+    cursor.execute("""
+    SELECT er.*, s.name
+    FROM exam_results er
+    JOIN students s ON er.student_id = s.id
+    WHERE er.id=%s
+""", (result_id,))
+
     result = cursor.fetchone()
 
     if not result:
@@ -1007,6 +1013,7 @@ def evaluate_exam(result_id):
     return render_template(
         "evaluate_exam.html",
         questions=questions,
+        exam=result,
         answers=answers,
         result_id=result_id
     )
