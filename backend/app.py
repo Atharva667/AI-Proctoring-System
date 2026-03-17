@@ -253,7 +253,7 @@ def get_questions():
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # get latest exam
+        # ✅ GET LATEST EXAM ID
         cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
         exam = cursor.fetchone()
 
@@ -262,13 +262,13 @@ def get_questions():
 
         exam_id = exam["id"]
 
+        # ✅ GET QUESTIONS FOR THAT EXAM
         cursor.execute("""
-SELECT *
-FROM exam_questions
-WHERE exam_id = (
-    SELECT MAX(id) FROM exams
-)
-""")
+            SELECT *
+            FROM exam_questions
+            WHERE exam_id = %s
+            ORDER BY id
+        """, (exam_id,))
 
         rows = cursor.fetchall()
 
@@ -278,17 +278,16 @@ WHERE exam_id = (
         questions = []
 
         for r in rows:
-            options = [
-                r["option1"],
-                r["option2"],
-                r["option3"],
-                r["option4"]
-            ]
-
             questions.append({
+                "exam_id": r["exam_id"],   # 🔥 VERY IMPORTANT
                 "question": r["question"],
                 "type": r["question_type"],
-                "options": options,
+                "options": [
+                    r["option1"],
+                    r["option2"],
+                    r["option3"],
+                    r["option4"]
+                ],
                 "answer": r["correct_answer"]
             })
 
@@ -479,17 +478,16 @@ def review_exams():
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
-SELECT 
-er.id,
-s.name,
-er.total,
-er.score,
-er.status
-FROM exam_results er
-JOIN students s ON er.student_id = s.id
-WHERE er.status = 'PENDING_REVIEW'
-ORDER BY er.id DESC
-""")
+                        SELECT 
+                        er.id,
+                        s.name,
+                        er.total,
+                        er.score,
+                        er.status
+                        FROM exam_results er
+                        JOIN students s ON er.student_id = s.id
+                        ORDER BY er.id DESC
+                        """)
         exams = cursor.fetchall()
 
         cursor.close()
@@ -977,7 +975,7 @@ def evaluate_exam(result_id):
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    # 🔥 GET RESULT
+    # ✅ GET RESULT
     cursor.execute("SELECT * FROM exam_results WHERE id=%s", (result_id,))
     result = cursor.fetchone()
 
@@ -985,9 +983,12 @@ def evaluate_exam(result_id):
         return "Exam record not found"
 
     exam_id = result["exam_id"]
-    answers = (result["answers"] or "").split("|")
 
-    # 🔥 GET QUESTIONS
+    # ❌ THIS WAS YOUR BUG → exam_id mismatch earlier
+    if not exam_id:
+        return "Exam ID missing"
+
+    # ✅ GET QUESTIONS
     cursor.execute("""
         SELECT *
         FROM exam_questions
@@ -996,6 +997,9 @@ def evaluate_exam(result_id):
     """, (exam_id,))
 
     questions = cursor.fetchall()
+
+    # ✅ GET ANSWERS
+    answers = (result["answers"] or "").split("|")
 
     cursor.close()
     db.close()
@@ -1006,7 +1010,6 @@ def evaluate_exam(result_id):
         answers=answers,
         result_id=result_id
     )
-
 
 @app.route("/log_event", methods=["POST"])
 def log_event_api():
