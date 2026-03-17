@@ -95,6 +95,7 @@ function showLoginSuccess() {
 }
 
 function login() {
+
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
@@ -103,22 +104,40 @@ function login() {
         return;
     }
 
+    // ✅ ADD TIMEOUT CONTROLLER
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000); // 8 sec
+
     fetch("/login", {
         method: "POST",
+        signal: controller.signal,   // ✅ IMPORTANT
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
     })
     .then(res => res.json())
     .then(data => {
+
+        clearTimeout(timeout); // ✅ stop timeout
+
         if (data.status === "success") {
             showLoginSuccess();
         } else {
             alert(data.message);
         }
+
     })
     .catch(err => {
+
         console.error("Login error:", err);
-        alert("Server error. Try again.");
+
+        // ✅ SMART MESSAGE (instead of generic error)
+        aalert("Server is waking up (free hosting). Please wait 5 seconds and try again.");
+
+        // ✅ AUTO RECOVERY
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+
     });
 }
 </script>

@@ -56,6 +56,11 @@ def get_db():
 # ---------------- PAGES ----------------
 
 
+@app.route("/ping")
+def ping():
+    return "ok"
+
+
 @app.route("/get_sessions")
 def get_sessions():
     if not os.path.exists(LOG_FILE):
