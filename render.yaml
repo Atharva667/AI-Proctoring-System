@@ -4,6 +4,6 @@ services:
   name: ai-proctoring-system
   runtime: python
   buildCommand: "pip install -r backend/requirements.txt"
-  startCommand: "cd backend && gunicorn app:app --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60"
+  startCommand: "cd backend && python app.py --bind 0.0.0.0:$PORT --workers 2 --threads 2 --timeout 60"
   plan: free
   pythonVersion: "3.10.12"

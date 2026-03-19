@@ -5,10 +5,10 @@ import mysql.connector
 import os
 from datetime import datetime
 import base64
-import numpy as np
-import cv2
-from services.ai_proctoring import detect_faces
+
 from werkzeug.security import generate_password_hash, check_password_hash
+
+print("🚀 APP STARTING...")
 
  
 # ---------------- CONFIG ----------------
@@ -27,6 +27,10 @@ LOG_FILE = os.path.join(BASE_DIR, "activity_log.txt")
 
 @app.route('/analyze_frame', methods=['POST'])
 def analyze_frame():
+
+    import numpy as np
+    import cv2
+    from services.ai_proctoring import detect_faces
 
     data = request.json['image']
     encoded = data.split(',')[1]
