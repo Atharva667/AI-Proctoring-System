@@ -423,22 +423,22 @@
 
                 <div class="card">
                     <h3>Total Exams Created</h3>
-                    <p>5</p>
+                    <p id="totalExams">0</p>
                 </div>
 
                 <div class="card">
                     <h3>Students Appeared</h3>
-                    <p>32</p>
+                    <p id="students">0</p>
                 </div>
 
                 <div class="card">
                     <h3>Pending Reviews</h3>
-                    <p>4</p>
+                    <p id="pending">0</p>
                 </div>
 
                 <div class="card">
                     <h3>Total Results Generated</h3>
-                    <p>28</p>
+                    <p id="results">0</p>
                 </div>
 
             </div>
@@ -530,6 +530,23 @@
             }, 800); // loader visible for 0.8 seconds
 
         });
+
+        async function safeStats() {
+            try {
+                let res = await fetch("/api/dashboard_stats");
+                let data = await res.json();
+
+                document.getElementById("totalExams").innerText = data.total_exams;
+                document.getElementById("students").innerText = data.students;
+                document.getElementById("pending").innerText = data.pending;
+                document.getElementById("results").innerText = data.results;
+
+            } catch {
+                setTimeout(safeStats, 3000); // retry
+            }
+        }
+
+        safeStats();
 
 
     </script>

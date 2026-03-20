@@ -355,6 +355,36 @@ def teacher_dashboard():
 
     return render_template("teacher_dashboard.html")
 
+@app.route("/api/dashboard_stats")
+def dashboard_stats():
+    conn = get_db()
+    cursor = conn.cursor()
+
+    # Total Exams
+    cursor.execute("SELECT COUNT(*) FROM exams")
+    total_exams = cursor.fetchone()[0]
+
+    # Students Appeared
+    cursor.execute("SELECT COUNT(DISTINCT student_id) FROM exam_results")
+    students = cursor.fetchone()[0]
+
+    # Pending Reviews
+    cursor.execute("SELECT COUNT(*) FROM exam_results WHERE status='PENDING_REVIEW'")
+    pending = cursor.fetchone()[0]
+
+    # Total Results
+    cursor.execute("SELECT COUNT(*) FROM exam_results")
+    results = cursor.fetchone()[0]
+
+    conn.close()
+
+    return {
+        "total_exams": total_exams,
+        "students": students,
+        "pending": pending,
+        "results": results
+    }
+
 @app.route("/create_exam")
 def create_exam():
 
