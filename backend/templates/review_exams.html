@@ -54,8 +54,8 @@
         /* MAIN CONTAINER */
 
         .container {
-            width: 90%;
-            max-width: 1100px;
+            width: 95%;
+            max-width: 1400px;
             margin: auto;
             margin-top: 35px;
         }
@@ -71,6 +71,7 @@
             border-collapse: collapse;
             background: white;
             border-radius: 8px;
+            min-width: 800px;
             overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
@@ -241,32 +242,28 @@
                     </td>
 
                     <td>
-                    <td>
+                    <td style="display:flex; gap:8px; justify-content:center;">
 
-    {% if e.pending_id %}
-        <!-- Pending → Evaluate -->
-        <a href="/evaluate_exam/{{ e.pending_id }}">
-            <button class="evaluate-btn">
-                Evaluate
-            </button>
-        </a>
+                        {% if e.pending_id %}
+                        <a href="/evaluate_exam/{{ e.pending_id }}">
+                            <button class="evaluate-btn">Evaluate</button>
+                        </a>
+                        {% else %}
+                        <a href="/evaluate_exam/{{ e.latest_id }}">
+                            <button class="evaluate-btn" style="background:#2563eb;">
+                                View
+                            </button>
+                        </a>
+                        {% endif %}
 
-    {% else %}
-        <!-- No pending → View latest -->
-        <a href="/evaluate_exam/{{ e.latest_id }}">
-            <button class="evaluate-btn" style="background:#2563eb;">
-                View
-            </button>
-        </a>
-    {% endif %}
-     <!-- OPTIONAL BUTTON -->
-    <a href="/student_attempts/{{ e.student_id }}">
-        <button class="evaluate-btn" style="background:#6b7280; margin-left:6px;">
-            All Attempts
-        </button>
-    </a>
+                        <!-- All Attempts -->
+                        <a href="/student_attempts/{{ e.student_id }}">
+                            <button class="evaluate-btn" style="background:#6b7280;">
+                                All Attempts
+                            </button>
+                        </a>
 
-</td>
+                    </td>
                     </td>
 
                 </tr>

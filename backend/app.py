@@ -521,7 +521,7 @@ def review_exams():
         s.id as student_id,
         s.name,
         COUNT(er.id) as attempts,
-        MAX(er.score) as best_score,
+        MAX(CAST(er.score AS SIGNED)) as best_score,
         MAX(er.total) as total,
         MAX(er.id) as latest_id,
         MAX(CASE WHEN er.status='PENDING_REVIEW' THEN er.id ELSE NULL END) as pending_id,
@@ -530,7 +530,7 @@ def review_exams():
     JOIN students s ON er.student_id = s.id
     GROUP BY s.id, s.name
     ORDER BY MAX(er.id) DESC
-""")
+""")   
         exams = cursor.fetchall()
 
         cursor.close()
