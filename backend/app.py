@@ -517,16 +517,18 @@ def review_exams():
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
-                        SELECT 
-                        er.id,
-                        s.name,
-                        er.total,
-                        er.score,
-                        er.status
-                        FROM exam_results er
-                        JOIN students s ON er.student_id = s.id
-                        ORDER BY er.id DESC
-                        """)
+    SELECT 
+        s.id as student_id,
+        s.name,
+        COUNT(er.id) as attempts,
+        MAX(er.score) as best_score,
+        MAX(er.total) as total,
+        SUM(CASE WHEN er.status='PENDING_REVIEW' THEN 1 ELSE 0 END) as pending_count
+    FROM exam_results er
+    JOIN students s ON er.student_id = s.id
+    GROUP BY s.id, s.name
+    ORDER BY MAX(er.id) DESC
+""")
         exams = cursor.fetchall()
 
         cursor.close()
@@ -537,6 +539,23 @@ def review_exams():
     except Exception as e:
         print("REVIEW_EXAMS ERROR:", e)
         return "Server error loading exams"
+    
+@app.route("/student_attempts/<int:student_id>")
+def student_attempts(student_id):
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT *
+        FROM exam_results
+        WHERE student_id = %s
+        ORDER BY id DESC
+    """, (student_id,))
+
+    attempts = cursor.fetchall()
+
+    return render_template("student_attempts.html", attempts=attempts)
 
 
 
