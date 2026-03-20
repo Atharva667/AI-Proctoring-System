@@ -241,11 +241,32 @@
                     </td>
 
                     <td>
-                        <a href="/student_attempts/{{ e.student_id }}">
-                            <button class="evaluate-btn" style="background:#2563eb;">
-                                View
-                            </button>
-                        </a>
+                    <td>
+
+    {% if e.pending_id %}
+        <!-- Pending → Evaluate -->
+        <a href="/evaluate_exam/{{ e.pending_id }}">
+            <button class="evaluate-btn">
+                Evaluate
+            </button>
+        </a>
+
+    {% else %}
+        <!-- No pending → View latest -->
+        <a href="/evaluate_exam/{{ e.latest_id }}">
+            <button class="evaluate-btn" style="background:#2563eb;">
+                View
+            </button>
+        </a>
+    {% endif %}
+     <!-- OPTIONAL BUTTON -->
+    <a href="/student_attempts/{{ e.student_id }}">
+        <button class="evaluate-btn" style="background:#6b7280; margin-left:6px;">
+            All Attempts
+        </button>
+    </a>
+
+</td>
                     </td>
 
                 </tr>

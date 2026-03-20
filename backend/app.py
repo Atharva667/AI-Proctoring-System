@@ -523,6 +523,8 @@ def review_exams():
         COUNT(er.id) as attempts,
         MAX(er.score) as best_score,
         MAX(er.total) as total,
+        MAX(er.id) as latest_id,
+        MAX(CASE WHEN er.status='PENDING_REVIEW' THEN er.id ELSE NULL END) as pending_id,
         SUM(CASE WHEN er.status='PENDING_REVIEW' THEN 1 ELSE 0 END) as pending_count
     FROM exam_results er
     JOIN students s ON er.student_id = s.id
