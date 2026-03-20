@@ -63,35 +63,34 @@
         /* TABLE */
 
         .table-wrapper {
+            width: 100%;
             overflow-x: auto;
         }
 
         table {
             width: 100%;
+            min-width: 900px;
             border-collapse: collapse;
             background: white;
-            border-radius: 8px;
-            min-width: 800px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
         }
 
-        th {
-            background: #2d3e60;
-            color: white;
-            padding: 14px;
-            text-align: left;
-            font-size: 14px;
-        }
-
+        th,
         td {
-            padding: 13px;
-            border-bottom: 1px solid #eee;
+            padding: 14px;
             font-size: 14px;
+            text-align: center;
         }
 
-        tr:hover {
-            background: #f9fafb;
+        th:first-child,
+        td:first-child {
+            text-align: left;
+        }
+
+        th:first-child,
+        td:first-child {
+            text-align: left;
         }
 
         /* ALIGN CENTER FOR NUMERIC COLUMNS */
@@ -182,6 +181,19 @@
             }
 
         }
+
+        @media (max-width:768px) {
+
+    table {
+        min-width: 700px;
+    }
+
+    th, td {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+}
     </style>
 
 </head>
@@ -242,27 +254,27 @@
                     </td>
 
                     <td>
-                    <td style="display:flex; gap:8px; justify-content:center;">
+                        <div style="display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
 
-                        {% if e.pending_id %}
-                        <a href="/evaluate_exam/{{ e.pending_id }}">
-                            <button class="evaluate-btn">Evaluate</button>
-                        </a>
-                        {% else %}
-                        <a href="/evaluate_exam/{{ e.latest_id }}">
-                            <button class="evaluate-btn" style="background:#2563eb;">
-                                View
-                            </button>
-                        </a>
-                        {% endif %}
+                            {% if e.pending_id %}
+                            <a href="/evaluate_exam/{{ e.pending_id }}">
+                                <button class="evaluate-btn">Evaluate</button>
+                            </a>
+                            {% else %}
+                            <a href="/evaluate_exam/{{ e.latest_id }}">
+                                <button class="evaluate-btn" style="background:#2563eb;">
+                                    View
+                                </button>
+                            </a>
+                            {% endif %}
 
-                        <!-- All Attempts -->
-                        <a href="/student_attempts/{{ e.student_id }}">
-                            <button class="evaluate-btn" style="background:#6b7280;">
-                                All Attempts
-                            </button>
-                        </a>
+                            <a href="/student_attempts/{{ e.student_id }}">
+                                <button class="evaluate-btn" style="background:#6b7280;">
+                                    All Attempts
+                                </button>
+                            </a>
 
+                        </div>
                     </td>
                     </td>
 
