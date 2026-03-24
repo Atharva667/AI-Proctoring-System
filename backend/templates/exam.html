@@ -157,73 +157,57 @@
         }
 
 
-        /* ================= VIDEO WRAPPER ================= */
+/* ================= CAMERA WRAPPER ================= */
 
-        .video-wrapper {
-            position: sticky;
-            bottom: 10px;
+.video-wrapper {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+}
 
-            display: flex;
-            justify-content: flex-end;
+/* ================= VIDEO STYLE ================= */
 
-            padding: 10px;
-            z-index: 10;
-        }
+#proctorVideo {
+    width: 180px;
+    height: 130px;
+    border-radius: 10px;
+    object-fit: cover;
+    border: 2px solid #1f2937;
+    background: black;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
 
-        /* VIDEO STYLE */
-        #proctorVideo {
-            width: 140px;
-            height: 100px;
+/* ================= TABLET ================= */
 
-            border-radius: 10px;
-            object-fit: cover;
+@media (max-width: 768px) {
 
-            border: 2px solid #1f2937;
-            background: black;
+    .video-wrapper {
+        bottom: 15px;
+        right: 15px;
+    }
 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
+    #proctorVideo {
+        width: 140px;
+        height: 100px;
+    }
+}
 
-        /* MOBILE */
-        @media (max-width:768px) {
+/* ================= MOBILE ================= */
 
-            #proctorVideo {
-                width: 110px;
-                height: 80px;
-            }
+@media (max-width: 480px) {
 
-            .video-wrapper {
-                justify-content: center;
-                /* center on mobile */
-            }
-        }
+    .video-wrapper {
+        bottom: 10px;
+        right: 10px;
+    }
 
-        /* MOBILE */
-        @media (max-width:768px) {
-
-            #proctorVideo {
-                width: 120px;
-                height: 90px;
-
-                right: 10px;
-                bottom: 10px;
-
-                border-radius: 10px;
-                border: 1.5px solid #1f2937;
-            }
-        }
-
-        /* SMALL MOBILE */
-        @media (max-width:480px) {
-
-            #proctorVideo {
-                width: 100px;
-                height: 75px;
-
-                right: 8px;
-                bottom: 8px;
-            }
-        }
+    #proctorVideo {
+        width: 110px;
+        height: 80px;
+        border-radius: 8px;
+    }
+}
 
         /* ================= MOBILE ================= */
 
@@ -685,45 +669,49 @@ border-radius:4px;">
 
         }
 
-        function submitExam() {
+function submitExam() {
 
-            let score = 0;
+    let score = 0;
 
-            questions.forEach((q, i) => {
-
-                if (q.type === "mcq") {
-
-                    if (answers[i] !== null && answers[i] !== undefined) {
-
-                        const userAns = Number(answers[i]);
-                        const correctAns = Number(q.answer);
-
-                        console.log("Q", i, "User:", userAns, "Correct:", correctAns);
-
-                        if (userAns === correctAns) {
-                            score++;
-                        }
-
-                    }
-
+    questions.forEach((q, i) => {
+        if (q.type === "mcq") {
+            if (answers[i] !== null && answers[i] !== undefined) {
+                if (Number(answers[i]) === Number(q.answer)) {
+                    score++;
                 }
-
-            });
-
-            fetch("/submit_exam", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    exam_id: questions[0].exam_id,
-                    score: score,
-                    total: questions.length,
-                    violations: violations,
-                    answers: answers
-                })
-            })
-                .then(() => window.location.href = "/exam_success");
-
+            }
         }
+    });
+
+    fetch("/submit_exam", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            exam_id: questions[0].exam_id,
+            score: score,
+            total: questions.length,
+            violations: violations, // ✅ IMPORTANT
+            answers: answers
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+
+        if (data.status === "saved") {
+            alert("✅ Exam Submitted Successfully");
+            window.location.href = "/exam_success";
+        } else {
+            alert("❌ Submission failed");
+        }
+
+    })
+    .catch(err => {
+        console.error(err);
+        alert("❌ Server error");
+    });
+}
 
         /* ================= WARNINGS ================= */
 
@@ -766,6 +754,46 @@ border-radius:4px;">
             }
 
         });
+
+
+        function startAIProcessing() {
+
+    const video = document.getElementById("proctorVideo");
+
+    setInterval(() => {
+
+        if (!video.videoWidth) return; // ✅ IMPORTANT FIX
+
+        let canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
+
+        canvas.toBlob(blob => {
+
+            let formData = new FormData();
+            formData.append("frame", blob);
+
+            fetch("/process_frame", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+
+                console.log("AI:", data); // ✅ DEBUG
+
+                violations = data.violations;
+
+            })
+            .catch(err => console.error("AI ERROR:", err));
+
+        }, "image/jpeg");
+
+    }, 2000);
+}
 
     </script>
 
