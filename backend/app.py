@@ -35,6 +35,7 @@ CORS(app)
 
 app.config['SESSION_COOKIE_SAMESITE'] = "None"
 app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_PERMANENT'] = True
 
 # SAFE ADDITION (no conflict)
 
@@ -829,6 +830,7 @@ def start_exam():
 
     if not session.get("user_id"):
         return jsonify({"status": "unauthorized"}), 401
+    print("SESSION IN EXAM:", dict(session))
 
 
 
