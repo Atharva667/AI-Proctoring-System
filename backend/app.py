@@ -10,6 +10,36 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 print("🚀 APP STARTING...")
 
+
+# SAFE ADDITION (no conflict)
+
+from ai_models.proctoring_engine import ProctoringEngine
+import numpy as np
+import cv2
+
+ai_instances = {}
+
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+
+    student_id = session.get("user_id")
+
+    if not student_id:
+        return jsonify({"error": "unauthorized"}), 401
+
+    if student_id not in ai_instances:
+        ai_instances[student_id] = ProctoringEngine()
+
+    ai = ai_instances[student_id]
+
+    file = request.files['frame']
+    npimg = np.frombuffer(file.read(), np.uint8)
+    frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+
+    result = ai.process_frame(frame)
+
+    return jsonify(result)
+
  
 # ---------------- CONFIG ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -968,34 +998,54 @@ def start_session():
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
     try:
+        import json
+
         data = request.get_json()
 
         exam_id = int(data.get("exam_id"))
         score = int(data.get("score"))
         total = int(data.get("total"))
-        violations = int(data.get("violations"))
+
+        # 🔒 SAFE VIOLATION HANDLING (OLD + NEW)
+        violations_data = data.get("violations", 0)
+
+        if isinstance(violations_data, dict):
+            violations = sum(violations_data.values())  # total count
+            violations_text = json.dumps(violations_data)
+        else:
+            violations = int(violations_data)
+            violations_text = str(violations_data)
+
         answers = data.get("answers")
 
-        answers_text = "|".join([str(a) for a in answers])
+        # Convert answers safely
+        answers_text = "|".join([str(a) for a in answers]) if answers else ""
+
         student_id = session.get("user_id")
 
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # 🔥 CHECK IF DESCRIPTIVE EXISTS
+        # 🔥 CHECK IF DESCRIPTIVE QUESTIONS EXIST
         cursor.execute("""
             SELECT question_type FROM exam_questions WHERE exam_id=%s
         """, (exam_id,))
 
         questions = cursor.fetchall()
 
-        needs_review = any(q["question_type"] in ["short","paragraph"] for q in questions)
+        needs_review = any(
+            q["question_type"] in ["short", "paragraph"] 
+            for q in questions
+        )
 
         if needs_review:
             status = "PARTIAL_EVALUATED"
         else:
             status = "EVALUATED"
 
+        cursor.close()
+
+        # 🔥 INSERT RESULT (NO DB CHANGE)
         cursor = db.cursor()
 
         cursor.execute("""
@@ -1007,7 +1057,7 @@ def submit_exam():
             exam_id,
             total,
             score,
-            violations,
+            violations_text,   # ✅ SAFE STORE (JSON or int)
             answers_text,
             status
         ))
@@ -1022,7 +1072,7 @@ def submit_exam():
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({"status":"error"})
+        return jsonify({"status": "error"})
 
 
 @app.route("/teacher_results")
