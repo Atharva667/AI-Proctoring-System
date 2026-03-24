@@ -394,430 +394,284 @@ border-radius:4px;">
 
     </div>
 
-    <script>
-        let violations = {
-            no_face: 0,
-            multiple_faces: 0,
-            movement: 0,
-            camera_block: 0,
-            tab_switch: 0
-        };
+<script>
 
-        /* ================= STATE ================= */
+// ================= GLOBAL =================
+const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-        let questions = [];
-        let current = 0;
-        let answers = [];
-        let marked = [];
+let warningCount = 0;
+const MAX_WARNINGS = 3;
 
-        let time = 300;
+let lastWarningTime = 0;
 
-        const VIOLATION_COOLDOWN = 5000;
+let violations = {
+    no_face: 0,
+    multiple_faces: 0,
+    movement: 0,
+    camera_block: 0,
+    tab_switch: 0
+};
 
-        /* ================= START EXAM ================= */
+// ================= WARNING SYSTEM =================
+function triggerWarning(reason) {
 
-        async function startExam() {
+    let now = Date.now();
 
-            try {
+    if (now - lastWarningTime < 3000) return;
 
-                const res = await fetch("/get_questions");
-                const data = await res.json();
+    lastWarningTime = now;
 
-                if (!data.questions || data.questions.length === 0) {
-                    alert("Questions not loaded.");
-                    return;
-                }
+    warningCount++;
 
-                questions = data.questions;
+    alert(`⚠ WARNING ${warningCount}/${MAX_WARNINGS}\n${reason}`);
 
-                answers = new Array(questions.length).fill(null);
-                marked = new Array(questions.length).fill(false);
+    if (warningCount >= MAX_WARNINGS) {
+        alert("❌ Exam terminated due to violations");
+        window.location.href = "/exam_terminated";
+    }
+}
 
-                await document.documentElement.requestFullscreen();
+// ================= STATE =================
+let questions = [];
+let current = 0;
+let answers = [];
+let marked = [];
+let time = 300;
 
-                document.getElementById("startOverlay").style.display = "none";
+// ================= START EXAM =================
+async function startExam() {
+    try {
 
-                renderPalette();
-                renderQuestion();
-                updateCounters();
+        const res = await fetch("/get_questions");
+        const data = await res.json();
 
-                startTimer();
-                await startCamera();
-                startAIProcessing(); // 🔥 MUST
-
-            }
-            catch (err) {
-
-                console.error(err);
-                alert("Failed to start exam");
-
-            }
-
+        if (!data.questions || data.questions.length === 0) {
+            alert("Questions not loaded.");
+            return;
         }
 
-        /* ================= RENDER QUESTION ================= */
+        questions = data.questions;
 
-        function renderQuestion() {
+        answers = new Array(questions.length).fill(null);
+        marked = new Array(questions.length).fill(false);
 
-            const q = questions[current];
+        await document.documentElement.requestFullscreen();
 
-            document.getElementById("qNo").innerText = "Question " + (current + 1);
-            document.getElementById("questionText").innerText = q.question;
+        document.getElementById("startOverlay").style.display = "none";
 
-            const box = document.getElementById("optionsBox");
-            box.innerHTML = "";
+        renderPalette();
+        renderQuestion();
+        updateCounters();
 
-            /* ===== MCQ ===== */
+        startTimer();
+        await startCamera();
+        startAIProcessing();
 
-            if (q.type === "mcq") {
+    } catch (err) {
+        console.error(err);
+        alert("Failed to start exam");
+    }
+}
 
-                q.options.forEach((opt, i) => {
+// ================= TIMER =================
+function startTimer() {
+    setInterval(() => {
+        const m = Math.floor(time / 60);
+        const s = time % 60;
 
-                    const label = document.createElement("label");
-                    label.className = "option";
+        document.getElementById("timer").innerText =
+            `${m}:${s.toString().padStart(2, "0")}`;
 
-                    const radio = document.createElement("input");
+        time--;
 
-                    radio.type = "radio";
-                    radio.name = "optionGroup";
-                    radio.checked = answers[current] === i;
+        if (time < 0) submitExam();
+    }, 1000);
+}
 
-                    radio.onclick = () => {
-                        answers[current] = Number(i);
-                        marked[current] = false;
-                        renderPalette();
-                        updateCounters();
-                    };
+// ================= CAMERA =================
+async function startCamera() {
+    const video = document.getElementById("proctorVideo");
 
-                    label.appendChild(radio);
-                    label.append(" " + opt);
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        video.srcObject = stream;
+    } catch (err) {
+        alert("Camera access denied");
+    }
+}
 
-                    box.appendChild(label);
+// ================= AI PROCESS =================
+function startAIProcessing() {
 
-                });
+    const video = document.getElementById("proctorVideo");
 
-            }
+    setInterval(() => {
 
-            /* ===== SHORT ANSWER ===== */
+        if (!video.videoWidth) return;
 
-            else if (q.type === "short") {
+        let canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-                const input = document.createElement("input");
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
 
-                input.type = "text";
-                input.placeholder = "Type your answer here...";
-                input.style.padding = "10px";
-                input.style.fontSize = "15px";
-                input.style.width = "60%";
+        canvas.toBlob(blob => {
 
-                input.value = answers[current] || "";
+            let formData = new FormData();
+            formData.append("frame", blob);
 
-                input.oninput = () => {
-                    answers[current] = input.value;
-                    marked[current] = false;
-                    renderPalette();
-                    updateCounters();
-                };
-
-                box.appendChild(input);
-
-            }
-
-            /* ===== PARAGRAPH ANSWER ===== */
-
-            else if (q.type === "paragraph") {
-
-                const textarea = document.createElement("textarea");
-
-                textarea.placeholder = "Write your answer here...";
-                textarea.rows = 5;
-                textarea.style.width = "70%";
-                textarea.style.padding = "10px";
-                textarea.style.fontSize = "15px";
-
-                textarea.value = answers[current] || "";
-
-                textarea.oninput = () => {
-                    answers[current] = textarea.value;
-                    marked[current] = false;
-                    renderPalette();
-                    updateCounters();
-                };
-
-                box.appendChild(textarea);
-
-            }
-
-        }
-
-        /* ================= NAVIGATION ================= */
-
-        function nextQuestion() {
-
-            if (current < questions.length - 1) {
-                current++;
-                renderQuestion();
-            }
-
-        }
-
-        function saveAnswer() {
-            nextQuestion();
-        }
-
-        function markForReview() {
-
-            marked[current] = true;
-            renderPalette();
-            nextQuestion();
-
-        }
-
-        function clearAnswer() {
-
-            answers[current] = null;
-            marked[current] = false;
-
-            renderQuestion();
-            renderPalette();
-            updateCounters();
-
-        }
-
-        /* ================= PALETTE ================= */
-
-        function renderPalette() {
-
-            const p = document.getElementById("palette");
-            p.innerHTML = "";
-
-            questions.forEach((_, i) => {
-
-                const b = document.createElement("button");
-
-                b.innerText = i + 1;
-
-                b.className = marked[i]
-                    ? "marked"
-                    : answers[i] !== null
-                        ? "answered"
-                        : "not-answered";
-
-                b.onclick = () => {
-                    current = i;
-                    renderQuestion();
-                };
-
-                p.appendChild(b);
-
-            });
-
-        }
-
-        /* ================= COUNTERS ================= */
-
-        function updateCounters() {
-
-            let answered = answers.filter(a => a !== null).length;
-
-            document.getElementById("answeredCount").innerText = answered;
-            document.getElementById("remainingCount").innerText = questions.length - answered;
-
-        }
-
-        /* ================= TIMER ================= */
-
-        function startTimer() {
-
-            setInterval(() => {
-
-                const m = Math.floor(time / 60);
-                const s = time % 60;
-
-                document.getElementById("timer").innerText =
-                    `${m}:${s.toString().padStart(2, "0")}`;
-
-                time--;
-
-                if (time < 0) submitExam();
-
-            }, 1000);
-
-        }
-
-        /* ================= CAMERA ================= */
-
-        async function startCamera() {
-
-            const video = document.getElementById("proctorVideo");
-
-            try {
-
-                const stream = await navigator.mediaDevices.getUserMedia({
-                    video: true
-                });
-
-                video.srcObject = stream;
-
-            } catch (err) {
-
-                showWarning("Camera denied");
-
-            }
-
-        }
-
-        /* ================= SUBMIT ================= */
-
-        function confirmSubmit() {
-
-            if (confirm("Submit exam?")) {
-                submitExam();
-            }
-
-        }
-
-        function submitExam() {
-
-            let score = 0;
-
-            questions.forEach((q, i) => {
-                if (q.type === "mcq") {
-                    if (answers[i] !== null && answers[i] !== undefined) {
-                        if (Number(answers[i]) === Number(q.answer)) {
-                            score++;
-                        }
-                    }
-                }
-            });
-
-            fetch("/submit_exam", {
+            fetch("/process_frame", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    exam_id: questions[0]?.exam_id || 1,
-                    score: score,
-                    total: questions.length,
-                    violations: violations || 0,
-                    answers: answers
-                })
+                body: formData
             })
-                .then(res => {
-                    return res.text().then(text => {
-                        try {
-                            return JSON.parse(text);
-                        } catch (e) {
-                            console.error("❌ Not JSON response:", text);
-                            throw new Error("Server returned HTML (502/500)");
-                        }
-                    });
-                })
-                .then(data => {
+            .then(res => res.json())
+            .then(data => {
 
-                    console.log("Server:", data);
+                if (data.violations) {
+                    violations = data.violations;
+                }
 
-                    if (data.status === "saved") {
-                        alert("✅ Exam Submitted Successfully");
-                        window.location.href = "/exam_success";
-                    } else {
-                        alert("❌ Submission failed: " + (data.message || ""));
-                    }
+                // SMART WARNING (NO SPAM)
+                if (data.no_face > 0 && violations.no_face === 0) {
+                    triggerWarning("Face not detected");
+                }
 
-                })
-                .catch(err => {
-                    console.error("Submit error:", err);
-                    alert("❌ Server error (check logs)");
-                });
+                if (data.multiple_faces > 0 && violations.multiple_faces === 0) {
+                    triggerWarning("Multiple faces detected");
+                }
+
+            })
+            .catch(err => console.error("AI ERROR:", err));
+
+        }, "image/jpeg");
+
+    }, 4000); // optimized
+}
+
+// ================= TAB SWITCH =================
+document.addEventListener("visibilitychange", () => {
+    if (document.hidden) {
+        violations.tab_switch++;
+
+        if (isMobile) {
+            triggerWarning("App switched / multitasking detected");
+        } else {
+            triggerWarning("Tab switching detected");
         }
+    }
+});
 
-        /* ================= WARNINGS ================= */
+// ================= WINDOW SWITCH =================
+window.addEventListener("blur", () => {
+    violations.tab_switch++;
 
-        function showWarning(msg) {
+    if (isMobile) {
+        triggerWarning("App minimized or switched");
+    } else {
+        triggerWarning("Window switched");
+    }
+});
 
-            const box = document.getElementById("warningBox");
+// ================= COPY / PASTE BLOCK =================
+document.addEventListener("copy", e => {
+    e.preventDefault();
+    triggerWarning("Copy not allowed");
+});
 
-            box.innerText = msg;
-            box.style.display = "block";
+document.addEventListener("paste", e => e.preventDefault());
+document.addEventListener("cut", e => e.preventDefault());
 
-            setTimeout(() => box.style.display = "none", 3000);
+// ================= RIGHT CLICK =================
+document.addEventListener("contextmenu", e => e.preventDefault());
 
-        }
+// ================= KEYBOARD BLOCK =================
+document.addEventListener("keydown", function (e) {
 
+    if (
+        (e.ctrlKey && e.key === "c") ||
+        (e.ctrlKey && e.key === "v") ||
+        (e.ctrlKey && e.key === "u") ||
+        (e.ctrlKey && e.shiftKey && e.key === "I")
+    ) {
+        e.preventDefault();
+        triggerWarning("Shortcut blocked");
+    }
 
+});
 
+// ================= FULLSCREEN =================
+document.addEventListener("fullscreenchange", () => {
+    if (!document.fullscreenElement) {
+        triggerWarning("Fullscreen exited");
+    }
+});
 
-        /* ================= TAB SWITCH DETECTION ================= */
+// ================= MOBILE SECURITY =================
+window.addEventListener("resize", () => {
+    if (isMobile && window.innerWidth < 350) {
+        triggerWarning("Split screen detected");
+    }
+});
 
-        function sendViolation(message) {
+window.addEventListener("orientationchange", () => {
+    triggerWarning("Screen orientation changed");
+});
 
-            fetch("/log_event", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    event: "VIOLATION| " + message
-                })
-            });
+document.addEventListener("selectstart", e => e.preventDefault());
 
-            showWarning(message);
-        }
+// ================= SUBMIT =================
+function confirmSubmit() {
+    if (confirm("Submit exam?")) {
+        submitExam();
+    }
+}
 
-        /* Detect tab change */
-        document.addEventListener("visibilitychange", () => {
+function submitExam() {
 
-            if (document.hidden) {
-                violations.tab_switch++;
-                sendViolation("Tab switched / minimized");
+    let score = 0;
+
+    questions.forEach((q, i) => {
+        if (q.type === "mcq") {
+            if (answers[i] !== null && answers[i] !== undefined) {
+                if (Number(answers[i]) === Number(q.answer)) {
+                    score++;
+                }
             }
+        }
+    });
 
-        });
+    fetch("/submit_exam", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            exam_id: questions[0]?.exam_id || 1,
+            score: score,
+            total: questions.length,
+            violations: violations || 0,
+            answers: answers
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
 
-
-        function startAIProcessing() {
-
-            const video = document.getElementById("proctorVideo");
-
-            setInterval(() => {
-
-                if (!video.videoWidth) return; // ✅ IMPORTANT FIX
-
-                let canvas = document.createElement("canvas");
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-
-                let ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0);
-
-                canvas.toBlob(blob => {
-
-                    let formData = new FormData();
-                    formData.append("frame", blob);
-
-                    fetch("/process_frame", {
-                        method: "POST",
-                        body: formData
-                    })
-                        .then(res => res.json())
-                        .then(data => {
-
-                            console.log("AI:", data);
-
-                            if (data.violations) {
-                                violations = data.violations;
-                            }
-
-                        })
-                        .catch(err => console.error("AI ERROR:", err));
-
-                }, "image/jpeg");
-
-            }, 2000);
+        if (data.status === "saved") {
+            alert("✅ Exam Submitted Successfully");
+            window.location.href = "/exam_success";
+        } else {
+            alert("❌ Submission failed");
         }
 
-    </script>
+    })
+    .catch(err => {
+        console.error(err);
+        alert("❌ Server error");
+    });
+}
+
+</script>
 
 </body>
 
