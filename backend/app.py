@@ -19,6 +19,20 @@ PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
 sys.path.append(PROJECT_ROOT)
 
 
+
+
+ 
+# ---------------- CONFIG ----------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, "templates"),
+    static_folder=os.path.join(BASE_DIR, "static")
+)
+app.secret_key = "ai_proctoring_secret_key"
+CORS(app)
+
 # SAFE ADDITION (no conflict)
 
 from ai_models.proctoring_engine import ProctoringEngine
@@ -47,18 +61,6 @@ def process_frame():
     result = ai.process_frame(frame)
 
     return jsonify(result)
-
- 
-# ---------------- CONFIG ----------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-
-app = Flask(
-    __name__,
-    template_folder=os.path.join(BASE_DIR, "templates"),
-    static_folder=os.path.join(BASE_DIR, "static")
-)
-app.secret_key = "ai_proctoring_secret_key"
-CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "activity_log.txt")
