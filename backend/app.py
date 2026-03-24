@@ -343,6 +343,7 @@ def get_questions():
                 "answer": int(r["correct_answer"])
             })
 
+        print("SESSION:", dict(session))
         return jsonify({"questions": questions})
 
     except Exception as e:
@@ -826,8 +827,8 @@ def start_exam():
         session.clear()
         return jsonify({"status": "unauthorized"}), 401
 
-    session["state"] = "in_exam"
-    return jsonify({"status": "ok"})
+    if not session.get("user_id"):
+        return jsonify({"status": "unauthorized"}), 401
 
 
 
