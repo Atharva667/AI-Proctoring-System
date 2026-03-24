@@ -394,116 +394,147 @@ border-radius:4px;">
 
     </div>
 
-<script>
+    <script>
 
-// ================= GLOBAL =================
-const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        // ================= GLOBAL =================
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
 
-let warningCount = 0;
-const MAX_WARNINGS = 3;
+        let warningCount = 0;
+        const MAX_WARNINGS = 3;
 
-let lastWarningTime = 0;
+        let lastWarningTime = 0;
 
-let violations = {
-    no_face: 0,
-    multiple_faces: 0,
-    movement: 0,
-    camera_block: 0,
-    tab_switch: 0
-};
+        let violations = {
+            no_face: 0,
+            multiple_faces: 0,
+            movement: 0,
+            camera_block: 0,
+            tab_switch: 0
+        };
 
-// ================= WARNING SYSTEM =================
-function triggerWarning(reason) {
+        // ================= WARNING SYSTEM =================
 
-    let now = Date.now();
 
-    if (now - lastWarningTime < 3000) return;
+        function triggerWarning(reason) {
 
-    lastWarningTime = now;
+            let now = Date.now();
 
-    warningCount++;
+            if (now - lastWarningTime < 5000) return; // 🔥 5 sec cooldown
 
-    alert(`⚠ WARNING ${warningCount}/${MAX_WARNINGS}\n${reason}`);
+            lastWarningTime = now;
 
-    if (warningCount >= MAX_WARNINGS) {
-        alert("❌ Exam terminated due to violations");
-        window.location.href = "/exam_terminated";
-    }
-}
+            warningCount++;
 
-// ================= STATE =================
-let questions = [];
-let current = 0;
-let answers = [];
-let marked = [];
-let time = 300;
+            alert(`⚠ WARNING ${warningCount}/${MAX_WARNINGS}\n${reason}`);
 
-// ================= START EXAM =================
-async function startExam() {
-    try {
+            if (warningCount >= MAX_WARNINGS) {
+                alert("❌ Exam terminated");
+                window.location.href = "/exam_terminated";
+            }
+        }
+        // ================= STATE =================
+        let questions = [];
+        let current = 0;
+        let answers = [];
+        let marked = [];
+        let time = 300;
 
-        const res = await fetch("/get_questions");
-        const data = await res.json();
+        // ================= START EXAM =================
+        async function startExam() {
 
-        if (!data.questions || data.questions.length === 0) {
-            alert("Questions not loaded.");
-            return;
+            try {
+
+                await document.documentElement.requestFullscreen();
+
+                let res = await fetch("/start_exam", {
+                    method: "POST",
+                    credentials: "include"
+                });
+
+                let data = await res.json();
+
+                console.log("START RESPONSE:", data);
+
+                if (data.status === "ok") {
+                    loadQuestions(); // ✅ NOW WORKS
+                } else {
+                    alert("Session expired. Login again.");
+                    window.location.href = "/login";
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("Failed to start exam");
+            }
         }
 
-        questions = data.questions;
+        async function loadQuestions() {
 
-        answers = new Array(questions.length).fill(null);
-        marked = new Array(questions.length).fill(false);
+            try {
 
-        await document.documentElement.requestFullscreen();
+                const res = await fetch("/get_questions", {
+                    credentials: "include"
+                });
 
-        document.getElementById("startOverlay").style.display = "none";
+                const data = await res.json();
 
-        renderPalette();
-        renderQuestion();
-        updateCounters();
+                console.log("QUESTIONS:", data);
 
-        startTimer();
-        await startCamera();
-        startAIProcessing();
+                if (!data.questions || data.questions.length === 0) {
+                    alert("No questions found");
+                    return;
+                }
 
-    } catch (err) {
-        console.error(err);
-        alert("Failed to start exam");
-    }
-}
+                questions = data.questions;
+
+                answers = new Array(questions.length).fill(null);
+                marked = new Array(questions.length).fill(false);
+
+                renderPalette();
+                renderQuestion();
+                updateCounters();
+
+                startTimer();
+                startCamera();
+                startAIProcessing();
+
+            } catch (err) {
+                console.error("LOAD ERROR:", err);
+                alert("Failed to load questions");
+            }
+        }
 
 
-// ================= RENDER PALETTE =================
-function renderPalette() {
+        // ================= RENDER PALETTE =================
+        function renderPalette() {
 
-    let html = "";
+            let html = "";
 
-    for (let i = 0; i < questions.length; i++) {
-        html += `
+            for (let i = 0; i < questions.length; i++) {
+                html += `
             <button onclick="goToQuestion(${i})"
                 style="margin:5px;padding:10px;
                 background:${answers[i] !== null ? '#22c55e' : '#e5e7eb'};">
                 ${i + 1}
             </button>
         `;
-    }
+            }
 
-    document.getElementById("palette").innerHTML = html;
-}
+            document.getElementById("palette").innerHTML = html;
+        }
 
-// ================= RENDER QUESTION =================
-function renderQuestion() {
+        // ================= RENDER QUESTION =================
+        function renderQuestion() {
 
-    let q = questions[current];
+            let q = questions[current];
 
-    let html = `<h3>Question ${current + 1}</h3>`;
-    html += `<p>${q.question}</p>`;
+            let html = `<h3>Question ${current + 1}</h3>`;
+            html += `<p>${q.question}</p>`;
 
-    if (q.type === "mcq") {
+            if (q.type === "mcq") {
 
-        [q.option1, q.option2, q.option3, q.option4].forEach((opt, i) => {
-            html += `
+                [q.option1, q.option2, q.option3, q.option4].forEach((opt, i) => {
+                    html += `
                 <label>
                     <input type="radio" name="ans"
                         ${answers[current] == i ? "checked" : ""}
@@ -511,234 +542,240 @@ function renderQuestion() {
                     ${opt}
                 </label><br>
             `;
-        });
+                });
 
-    } else {
-        html += `
+            } else {
+                html += `
             <textarea onchange="answers[${current}] = this.value">
                 ${answers[current] || ""}
             </textarea>
         `;
-    }
+            }
 
-    document.getElementById("questionBox").innerHTML = html;
-}
-
-// ================= NAVIGATION =================
-function goToQuestion(i) {
-    current = i;
-    renderQuestion();
-}
-
-// ================= COUNTERS =================
-function updateCounters() {
-
-    let answered = answers.filter(a => a !== null).length;
-
-    document.getElementById("answered").innerText = answered;
-    document.getElementById("remaining").innerText = questions.length - answered;
-}
-
-
-// ================= TIMER =================
-function startTimer() {
-    setInterval(() => {
-        const m = Math.floor(time / 60);
-        const s = time % 60;
-
-        document.getElementById("timer").innerText =
-            `${m}:${s.toString().padStart(2, "0")}`;
-
-        time--;
-
-        if (time < 0) submitExam();
-    }, 1000);
-}
-
-// ================= CAMERA =================
-async function startCamera() {
-    const video = document.getElementById("proctorVideo");
-
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        video.srcObject = stream;
-    } catch (err) {
-        alert("Camera access denied");
-    }
-}
-
-// ================= AI PROCESS =================
-function startAIProcessing() {
-
-    const video = document.getElementById("proctorVideo");
-
-    setInterval(() => {
-
-        if (!video.videoWidth) return;
-
-        let canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
-        let ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0);
-
-        canvas.toBlob(blob => {
-
-            let formData = new FormData();
-            formData.append("frame", blob);
-
-            fetch("/process_frame", {
-                method: "POST",
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-
-                if (data.violations) {
-                    violations = data.violations;
-                }
-
-                // SMART WARNING (NO SPAM)
-                if (data.no_face > 0 && violations.no_face === 0) {
-                    triggerWarning("Face not detected");
-                }
-
-                if (data.multiple_faces > 0 && violations.multiple_faces === 0) {
-                    triggerWarning("Multiple faces detected");
-                }
-
-            })
-            .catch(err => console.error("AI ERROR:", err));
-
-        }, "image/jpeg");
-
-    }, 4000); // optimized
-}
-
-// ================= TAB SWITCH =================
-document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-        violations.tab_switch++;
-
-        if (isMobile) {
-            triggerWarning("App switched / multitasking detected");
-        } else {
-            triggerWarning("Tab switching detected");
+            document.getElementById("questionBox").innerHTML = html;
         }
-    }
-});
 
-// ================= WINDOW SWITCH =================
-window.addEventListener("blur", () => {
-    violations.tab_switch++;
+        // ================= NAVIGATION =================
+        function goToQuestion(i) {
+            current = i;
+            renderQuestion();
+        }
 
-    if (isMobile) {
-        triggerWarning("App minimized or switched");
-    } else {
-        triggerWarning("Window switched");
-    }
-});
+        // ================= COUNTERS =================
+        function updateCounters() {
 
-// ================= COPY / PASTE BLOCK =================
-document.addEventListener("copy", e => {
-    e.preventDefault();
-    triggerWarning("Copy not allowed");
-});
+            let answered = answers.filter(a => a !== null).length;
 
-document.addEventListener("paste", e => e.preventDefault());
-document.addEventListener("cut", e => e.preventDefault());
+            document.getElementById("answered").innerText = answered;
+            document.getElementById("remaining").innerText = questions.length - answered;
+        }
 
-// ================= RIGHT CLICK =================
-document.addEventListener("contextmenu", e => e.preventDefault());
 
-// ================= KEYBOARD BLOCK =================
-document.addEventListener("keydown", function (e) {
+        // ================= TIMER =================
+        function startTimer() {
+            setInterval(() => {
+                const m = Math.floor(time / 60);
+                const s = time % 60;
 
-    if (
-        (e.ctrlKey && e.key === "c") ||
-        (e.ctrlKey && e.key === "v") ||
-        (e.ctrlKey && e.key === "u") ||
-        (e.ctrlKey && e.shiftKey && e.key === "I")
-    ) {
-        e.preventDefault();
-        triggerWarning("Shortcut blocked");
-    }
+                document.getElementById("timer").innerText =
+                    `${m}:${s.toString().padStart(2, "0")}`;
 
-});
+                time--;
 
-// ================= FULLSCREEN =================
-document.addEventListener("fullscreenchange", () => {
-    if (!document.fullscreenElement) {
-        triggerWarning("Fullscreen exited");
-    }
-});
+                if (time < 0) submitExam();
+            }, 1000);
+        }
 
-// ================= MOBILE SECURITY =================
-window.addEventListener("resize", () => {
-    if (isMobile && window.innerWidth < 350) {
-        triggerWarning("Split screen detected");
-    }
-});
+        // ================= CAMERA =================
+        async function startCamera() {
+            const video = document.getElementById("proctorVideo");
 
-window.addEventListener("orientationchange", () => {
-    triggerWarning("Screen orientation changed");
-});
-
-document.addEventListener("selectstart", e => e.preventDefault());
-
-// ================= SUBMIT =================
-function confirmSubmit() {
-    if (confirm("Submit exam?")) {
-        submitExam();
-    }
-}
-
-function submitExam() {
-
-    let score = 0;
-
-    questions.forEach((q, i) => {
-        if (q.type === "mcq") {
-            if (answers[i] !== null && answers[i] !== undefined) {
-                if (Number(answers[i]) === Number(q.answer)) {
-                    score++;
-                }
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (err) {
+                alert("Camera access denied");
             }
         }
-    });
 
-    fetch("/submit_exam", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            exam_id: questions[0]?.exam_id || 1,
-            score: score,
-            total: questions.length,
-            violations: violations || 0,
-            answers: answers
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
+        // ================= AI PROCESS =================
+        function startAIProcessing() {
 
-        if (data.status === "saved") {
-            alert("✅ Exam Submitted Successfully");
-            window.location.href = "/exam_success";
-        } else {
-            alert("❌ Submission failed");
+            const video = document.getElementById("proctorVideo");
+
+            setInterval(() => {
+
+                if (!video.videoWidth) return;
+
+                let canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+
+                let ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0);
+
+                canvas.toBlob(blob => {
+
+                    let formData = new FormData();
+                    formData.append("frame", blob);
+
+                    fetch("/process_frame", {
+                        method: "POST",
+                        body: formData
+                    })
+                        .then(res => res.json())
+                        .then(data => {
+
+                            if (data.violations) {
+                                violations = data.violations;
+                            }
+
+                            // SMART WARNING (NO SPAM)
+                            if (data.no_face > 0 && violations.no_face === 0) {
+                                triggerWarning("Face not detected");
+                            }
+
+                            if (data.multiple_faces > 0 && violations.multiple_faces === 0) {
+                                triggerWarning("Multiple faces detected");
+                            }
+
+                        })
+                        .catch(err => console.error("AI ERROR:", err));
+
+                }, "image/jpeg");
+
+            }, 4000); // optimized
         }
 
-    })
-    .catch(err => {
-        console.error(err);
-        alert("❌ Server error");
-    });
-}
+        // ================= TAB SWITCH =================
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) {
+                violations.tab_switch++;
 
-</script>
+                if (isMobile) {
+                    triggerWarning("App switched / multitasking detected");
+                } else {
+                    triggerWarning("Tab switching detected");
+                }
+            }
+        });
+
+        // ================= WINDOW SWITCH =================
+        window.addEventListener("blur", () => {
+            violations.tab_switch++;
+
+            if (isMobile) {
+                triggerWarning("App minimized or switched");
+            } else {
+                triggerWarning("Window switched");
+            }
+        });
+
+        // ================= COPY / PASTE BLOCK =================
+        document.addEventListener("copy", e => {
+            e.preventDefault();
+            triggerWarning("Copy not allowed");
+        });
+
+        document.addEventListener("paste", e => e.preventDefault());
+        document.addEventListener("cut", e => e.preventDefault());
+
+        // ================= RIGHT CLICK =================
+        document.addEventListener("contextmenu", e => e.preventDefault());
+
+        // ================= KEYBOARD BLOCK =================
+        document.addEventListener("keydown", function (e) {
+
+            if (
+                (e.ctrlKey && e.key === "c") ||
+                (e.ctrlKey && e.key === "v") ||
+                (e.ctrlKey && e.key === "u") ||
+                (e.ctrlKey && e.shiftKey && e.key === "I")
+            ) {
+                e.preventDefault();
+                triggerWarning("Shortcut blocked");
+            }
+
+        });
+
+        // ================= FULLSCREEN =================
+        document.addEventListener("fullscreenchange", () => {
+            if (!document.fullscreenElement) {
+                triggerWarning("Fullscreen exited");
+            }
+        });
+
+        // ================= MOBILE SECURITY =================
+        window.addEventListener("resize", () => {
+            if (isMobile && window.innerWidth < 350) {
+                triggerWarning("Split screen detected");
+            }
+        });
+
+        let orientationTriggered = false;
+
+        window.addEventListener("orientationchange", () => {
+
+            if (!orientationTriggered) {
+                triggerWarning("Screen orientation changed");
+                orientationTriggered = true;
+            }
+
+        });
+        document.addEventListener("selectstart", e => e.preventDefault());
+
+        // ================= SUBMIT =================
+        function confirmSubmit() {
+            if (confirm("Submit exam?")) {
+                submitExam();
+            }
+        }
+
+        function submitExam() {
+
+            let score = 0;
+
+            questions.forEach((q, i) => {
+                if (q.type === "mcq") {
+                    if (answers[i] !== null && answers[i] !== undefined) {
+                        if (Number(answers[i]) === Number(q.answer)) {
+                            score++;
+                        }
+                    }
+                }
+            });
+
+            fetch("/submit_exam", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    exam_id: questions[0]?.exam_id || 1,
+                    score: score,
+                    total: questions.length,
+                    violations: violations || 0,
+                    answers: answers
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.status === "saved") {
+                        alert("✅ Exam Submitted Successfully");
+                        window.location.href = "/exam_success";
+                    } else {
+                        alert("❌ Submission failed");
+                    }
+
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("❌ Server error");
+                });
+        }
+
+    </script>
 
 </body>
 
