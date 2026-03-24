@@ -10,6 +10,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 print("🚀 APP STARTING...")
 
+import sys
+import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
+
+sys.path.append(PROJECT_ROOT)
+
 
 # SAFE ADDITION (no conflict)
 
