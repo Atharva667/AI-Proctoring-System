@@ -473,6 +473,73 @@ async function startExam() {
     }
 }
 
+
+// ================= RENDER PALETTE =================
+function renderPalette() {
+
+    let html = "";
+
+    for (let i = 0; i < questions.length; i++) {
+        html += `
+            <button onclick="goToQuestion(${i})"
+                style="margin:5px;padding:10px;
+                background:${answers[i] !== null ? '#22c55e' : '#e5e7eb'};">
+                ${i + 1}
+            </button>
+        `;
+    }
+
+    document.getElementById("palette").innerHTML = html;
+}
+
+// ================= RENDER QUESTION =================
+function renderQuestion() {
+
+    let q = questions[current];
+
+    let html = `<h3>Question ${current + 1}</h3>`;
+    html += `<p>${q.question}</p>`;
+
+    if (q.type === "mcq") {
+
+        [q.option1, q.option2, q.option3, q.option4].forEach((opt, i) => {
+            html += `
+                <label>
+                    <input type="radio" name="ans"
+                        ${answers[current] == i ? "checked" : ""}
+                        onclick="answers[${current}] = ${i}">
+                    ${opt}
+                </label><br>
+            `;
+        });
+
+    } else {
+        html += `
+            <textarea onchange="answers[${current}] = this.value">
+                ${answers[current] || ""}
+            </textarea>
+        `;
+    }
+
+    document.getElementById("questionBox").innerHTML = html;
+}
+
+// ================= NAVIGATION =================
+function goToQuestion(i) {
+    current = i;
+    renderQuestion();
+}
+
+// ================= COUNTERS =================
+function updateCounters() {
+
+    let answered = answers.filter(a => a !== null).length;
+
+    document.getElementById("answered").innerText = answered;
+    document.getElementById("remaining").innerText = questions.length - answered;
+}
+
+
 // ================= TIMER =================
 function startTimer() {
     setInterval(() => {
