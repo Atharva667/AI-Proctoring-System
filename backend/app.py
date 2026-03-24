@@ -1012,50 +1012,46 @@ def submit_exam():
 
         data = request.get_json()
 
-        exam_id = int(data.get("exam_id"))
-        score = int(data.get("score"))
-        total = int(data.get("total"))
+        exam_id = int(data.get("exam_id", 0))
+        score = int(data.get("score", 0))
+        total = int(data.get("total", 0))
 
-        # 🔒 SAFE VIOLATION HANDLING (OLD + NEW)
+        # ✅ SAFE VIOLATIONS (FIXED)
         violations_data = data.get("violations", 0)
 
         if isinstance(violations_data, dict):
-            violations = sum(violations_data.values())  # total count
+            violations = sum(violations_data.values())
             violations_text = json.dumps(violations_data)
         else:
             violations = int(violations_data)
             violations_text = str(violations_data)
 
-        answers = data.get("answers")
+        # ✅ SAFE ANSWERS (FIXED)
+        answers = data.get("answers", [])
 
-        # Convert answers safely
-        answers_text = "|".join([str(a) for a in answers]) if answers else ""
+        if isinstance(answers, list):
+            answers_text = "|".join([str(a) for a in answers])
+        else:
+            answers_text = ""
 
         student_id = session.get("user_id")
+
+        if not student_id:
+            return jsonify({"status": "error", "message": "User not logged in"})
 
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # 🔥 CHECK IF DESCRIPTIVE QUESTIONS EXIST
         cursor.execute("""
             SELECT question_type FROM exam_questions WHERE exam_id=%s
         """, (exam_id,))
-
         questions = cursor.fetchall()
 
-        needs_review = any(
-            q["question_type"] in ["short", "paragraph"] 
-            for q in questions
-        )
+        needs_review = any(q["question_type"] in ["short", "paragraph"] for q in questions)
 
-        if needs_review:
-            status = "PARTIAL_EVALUATED"
-        else:
-            status = "EVALUATED"
+        status = "PARTIAL_EVALUATED" if needs_review else "EVALUATED"
 
         cursor.close()
-
-        # 🔥 INSERT RESULT (NO DB CHANGE)
         cursor = db.cursor()
 
         cursor.execute("""
@@ -1067,13 +1063,12 @@ def submit_exam():
             exam_id,
             total,
             score,
-            violations_text,   # ✅ SAFE STORE (JSON or int)
+            violations_text,  # ✅ SAFE
             answers_text,
             status
         ))
 
         db.commit()
-
         cursor.close()
         db.close()
 
@@ -1081,8 +1076,8 @@ def submit_exam():
 
     except Exception as e:
         import traceback
-    traceback.print_exc()
-    return jsonify({"status":"error", "message": str(e)})
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)})
 
 
 @app.route("/teacher_results")
