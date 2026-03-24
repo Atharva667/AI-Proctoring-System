@@ -1,3 +1,6 @@
+app.config['SESSION_COOKIE_SAMESITE'] = "None"
+app.config['SESSION_COOKIE_SECURE'] = True
+
 from flask import Flask, jsonify, request, render_template, session, redirect, url_for
 from flask import send_from_directory
 from flask_cors import CORS
@@ -819,7 +822,7 @@ def dashboard_page():
 
 @app.route("/start_exam", methods=["POST"])
 def start_exam():
-    if session.get("state") != "logged_in":
+    if not session.get("user_id"):
         session.clear()
         return jsonify({"status": "unauthorized"}), 401
 

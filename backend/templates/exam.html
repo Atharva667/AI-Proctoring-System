@@ -411,6 +411,7 @@ border-radius:4px;">
             camera_block: 0,
             tab_switch: 0
         };
+        let examStarted = false;
 
         // ================= WARNING SYSTEM =================
 
@@ -456,7 +457,13 @@ border-radius:4px;">
                 console.log("START RESPONSE:", data);
 
                 if (data.status === "ok") {
-                    loadQuestions(); // ✅ NOW WORKS
+
+                    examStarted = true; // ✅ ADD THIS
+
+                    setTimeout(() => {
+                        loadQuestions();
+                    }, 1000); // small delay
+
                 } else {
                     alert("Session expired. Login again.");
                     window.location.href = "/login";
@@ -649,26 +656,21 @@ border-radius:4px;">
 
         // ================= TAB SWITCH =================
         document.addEventListener("visibilitychange", () => {
+
+            if (!examStarted) return; // ✅ ADD THIS
+
             if (document.hidden) {
                 violations.tab_switch++;
-
-                if (isMobile) {
-                    triggerWarning("App switched / multitasking detected");
-                } else {
-                    triggerWarning("Tab switching detected");
-                }
+                triggerWarning("Tab switching detected");
             }
         });
-
         // ================= WINDOW SWITCH =================
         window.addEventListener("blur", () => {
-            violations.tab_switch++;
 
-            if (isMobile) {
-                triggerWarning("App minimized or switched");
-            } else {
-                triggerWarning("Window switched");
-            }
+            if (!examStarted) return; // ✅ ADD THIS
+
+            violations.tab_switch++;
+            triggerWarning("Window switched");
         });
 
         // ================= COPY / PASTE BLOCK =================
@@ -700,6 +702,9 @@ border-radius:4px;">
 
         // ================= FULLSCREEN =================
         document.addEventListener("fullscreenchange", () => {
+
+            if (!examStarted) return; // ✅ ADD THIS
+
             if (!document.fullscreenElement) {
                 triggerWarning("Fullscreen exited");
             }
