@@ -294,18 +294,18 @@ def get_questions():
         except:
             answer_value = 0   # fallback safe
 
-            questions.append({
-                "exam_id": r["exam_id"],
-                "question": r["question"],
-                "type": r["question_type"],
-                "options": [
+        questions.append({
+            "exam_id": r["exam_id"],
+            "question": r["question"],
+            "type": r["question_type"],
+            "options": [
                 r["option1"],
                 r["option2"],
                 r["option3"],
                 r["option4"]
-                             ],
-                "answer": answer_value
-                                })
+            ],
+            "answer": answer_value
+        })
 
         return jsonify({"questions": questions})
 
@@ -800,6 +800,7 @@ def start_exam():
     # ✅ Set exam state
     session["state"] = "in_exam"
     session.modified = True
+    session["exam_id"] = 12   # 👈 SET THIS (or dynamic later)
 
     print("SESSION STARTED:", dict(session))
 
