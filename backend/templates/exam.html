@@ -533,34 +533,36 @@ border-radius:4px;">
         // ================= RENDER QUESTION =================
         function renderQuestion() {
 
-            let q = questions[current];
+    let q = questions[current];
 
-            let html = `<h3>Question ${current + 1}</h3>`;
-            html += `<p>${q.question}</p>`;
+    document.getElementById("qNo").innerText = "Question " + (current + 1);
+    document.getElementById("questionText").innerText = q.question;
 
-            if (q.type === "mcq") {
+    let optionsHTML = "";
 
-                [q.option1, q.option2, q.option3, q.option4].forEach((opt, i) => {
-                    html += `
-                <label>
+    if (q.type === "mcq") {
+
+        q.options.forEach((opt, i) => {
+            optionsHTML += `
+                <div class="option">
                     <input type="radio" name="ans"
                         ${answers[current] == i ? "checked" : ""}
                         onclick="answers[${current}] = ${i}">
                     ${opt}
-                </label><br>
+                </div>
             `;
-                });
+        });
 
-            } else {
-                html += `
+    } else {
+        optionsHTML = `
             <textarea onchange="answers[${current}] = this.value">
                 ${answers[current] || ""}
             </textarea>
         `;
-            }
+    }
 
-            document.getElementById("questionBox").innerHTML = html;
-        }
+    document.getElementById("optionsBox").innerHTML = optionsHTML;
+}
 
         // ================= NAVIGATION =================
         function goToQuestion(i) {
