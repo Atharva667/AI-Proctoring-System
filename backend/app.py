@@ -793,8 +793,13 @@ def api_result():
 
 @app.route("/camera-verify")
 def camera_verify():
+
     if session.get("state") != "logged_in":
         return redirect(url_for("login_page"))
+
+    # 🔥 IMPORTANT FIX
+    session["verified"] = True
+
     return render_template("camera_verify.html")
 
 
@@ -824,40 +829,41 @@ def dashboard_page():
 
 @app.route("/start_exam", methods=["POST"])
 def start_exam():
+
     if not session.get("user_id"):
         session.clear()
         return jsonify({"status": "unauthorized"}), 401
 
-    if not session.get("user_id"):
-        return jsonify({"status": "unauthorized"}), 401
+    # ✅ SET EXAM STATE
+    session["state"] = "in_exam"
+    session.modified = True
+
     print("SESSION IN EXAM:", dict(session))
+
+    return jsonify({"status": "ok"})
 
 
 
 
 @app.route("/enter_exam")
 def enter_exam():
+
     if "user_id" not in session:
         return redirect(url_for("login_page"))
 
-    # Only dashboard can send here
-    if session.get("current_page") != "dashboard":
-        return redirect(url_for("dashboard_page"))
-
-    # Allow exam once
-    session["current_page"] = "exam"
+    # ✅ No restriction — allow exam flow
     return redirect(url_for("exam_page"))
+
 
 
 @app.route("/exam")
 def exam_page():
-    # ❌ Only allowed if exam was started properly
-    if session.get("state") != "in_exam":
+
+    if not session.get("user_id"):
         session.clear()
         return redirect(url_for("login_page"))
 
     return render_template("exam.html")
-
 
 
 
