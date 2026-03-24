@@ -533,17 +533,17 @@ border-radius:4px;">
         // ================= RENDER QUESTION =================
         function renderQuestion() {
 
-    let q = questions[current];
+            let q = questions[current];
 
-    document.getElementById("qNo").innerText = "Question " + (current + 1);
-    document.getElementById("questionText").innerText = q.question;
+            document.getElementById("qNo").innerText = "Question " + (current + 1);
+            document.getElementById("questionText").innerText = q.question;
 
-    let optionsHTML = "";
+            let optionsHTML = "";
 
-    if (q.type === "mcq") {
+            if (q.type === "mcq") {
 
-        q.options.forEach((opt, i) => {
-            optionsHTML += `
+                q.options.forEach((opt, i) => {
+                    optionsHTML += `
                 <div class="option">
                     <input type="radio" name="ans"
                         ${answers[current] == i ? "checked" : ""}
@@ -551,18 +551,18 @@ border-radius:4px;">
                     ${opt}
                 </div>
             `;
-        });
+                });
 
-    } else {
-        optionsHTML = `
+            } else {
+                optionsHTML = `
             <textarea onchange="answers[${current}] = this.value">
                 ${answers[current] || ""}
             </textarea>
         `;
-    }
+            }
 
-    document.getElementById("optionsBox").innerHTML = optionsHTML;
-}
+            document.getElementById("optionsBox").innerHTML = optionsHTML;
+        }
 
         // ================= NAVIGATION =================
         function goToQuestion(i) {
@@ -575,8 +575,8 @@ border-radius:4px;">
 
             let answered = answers.filter(a => a !== null).length;
 
-            document.getElementById("answered").innerText = answered;
-            document.getElementById("remaining").innerText = questions.length - answered;
+            document.getElementById("answeredCount").innerText = answered;
+            document.getElementById("remainingCount").innerText = questions.length - answered;
         }
 
 
