@@ -262,7 +262,7 @@ def get_questions():
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # ✅ GET LATEST EXAM ID
+        # GET LATEST EXAM
         cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
         exam = cursor.fetchone()
 
@@ -271,7 +271,7 @@ def get_questions():
 
         exam_id = exam["id"]
 
-        # ✅ GET QUESTIONS FOR THAT EXAM
+        # GET QUESTIONS
         cursor.execute("""
             SELECT *
             FROM exam_questions
@@ -284,28 +284,29 @@ def get_questions():
         cursor.close()
         db.close()
 
+        # ✅ CORRECT INDENT STARTS HERE
         questions = []
 
         for r in rows:
             answer_value = r["correct_answer"]
 
-        try:
-            answer_value = int(answer_value)
-        except:
-            answer_value = 0   # fallback safe
+            try:
+                answer_value = int(answer_value)
+            except:
+                answer_value = 0
 
-        questions.append({
-            "exam_id": r["exam_id"],
-            "question": r["question"],
-            "type": r["question_type"],
-            "options": [
-                r["option1"],
-                r["option2"],
-                r["option3"],
-                r["option4"]
-            ],
-            "answer": answer_value
-        })
+            questions.append({
+                "exam_id": r["exam_id"],
+                "question": r["question"],
+                "type": r["question_type"],
+                "options": [
+                    r["option1"],
+                    r["option2"],
+                    r["option3"],
+                    r["option4"]
+                ],
+                "answer": answer_value
+            })
 
         return jsonify({"questions": questions})
 

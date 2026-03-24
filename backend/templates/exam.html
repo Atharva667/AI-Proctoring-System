@@ -445,8 +445,7 @@ async function startExam() {
     try {
         // 1. Camera start FIRST
         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById("video").srcObject = stream;
-
+        document.getElementById("proctorVideo").srcObject = stream;
         // 2. Backend session start
         const res = await fetch("/start_exam", {
             method: "POST",
@@ -464,8 +463,7 @@ async function startExam() {
         }
 
         // 3. UI SHOW FIRST (CRITICAL 🔥)
-        document.getElementById("start-screen").style.display = "none";
-        document.getElementById("exam-container").style.display = "block";
+        document.getElementById("startOverlay").style.display = "none";
 
         // 4. THEN load questions
         await loadQuestions();
