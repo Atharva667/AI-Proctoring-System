@@ -287,18 +287,25 @@ def get_questions():
         questions = []
 
         for r in rows:
+            answer_value = r["correct_answer"]
+
+        try:
+            answer_value = int(answer_value)
+        except:
+            answer_value = 0   # fallback safe
+
             questions.append({
-                "exam_id": r["exam_id"],   # 🔥 VERY IMPORTANT
+                "exam_id": r["exam_id"],
                 "question": r["question"],
                 "type": r["question_type"],
                 "options": [
-                    r["option1"],
-                    r["option2"],
-                    r["option3"],
-                    r["option4"]
-                ],
-                "answer": int(r["correct_answer"])
-            })
+                r["option1"],
+                r["option2"],
+                r["option3"],
+                r["option4"]
+                             ],
+                "answer": answer_value
+                                })
 
         return jsonify({"questions": questions})
 
