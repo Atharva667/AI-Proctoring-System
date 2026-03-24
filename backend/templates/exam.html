@@ -443,6 +443,10 @@ border-radius:4px;">
         // ================= START EXAM =================
         async function startExam() {
             try {
+                // ✅ FULLSCREEN START (IMPORTANT)
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                }
                 // 1. Camera start FIRST
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 document.getElementById("proctorVideo").srcObject = stream;
@@ -809,13 +813,13 @@ border-radius:4px;">
                     exam_id: questions[0]?.exam_id || 1,
                     score: score,
                     total: questions.length,
-                    violations: violations || 0,
+                    violations: violations.no_face + violations.multiple_faces + violations.movement,
                     answers: answers
                 })
             })
                 .then(res => res.json())
                 .then(data => {
-
+                    console.log("SUBMIT RESPONSE:", data); // 🔥 ADD THIS
                     if (data.status === "saved") {
                         alert("✅ Exam Submitted Successfully");
                         window.location.href = "/exam_success";
