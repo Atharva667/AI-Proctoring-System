@@ -312,6 +312,18 @@ def get_questions():
     except Exception as e:
         print("ERROR:", e)
         return jsonify({"questions": []})
+
+
+@app.route("/process_frame", methods=["POST"])
+def process_frame():
+    return jsonify({
+        "violations": {
+            "no_face": 0,
+            "multiple_faces": 0,
+            "movement": 0,
+            "camera_block": 0
+        }
+    })
     
 @app.route("/debug_db")
 def debug_db():

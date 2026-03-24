@@ -441,75 +441,75 @@ border-radius:4px;">
         let time = 300;
 
         // ================= START EXAM =================
-        async function startExam() {
+async function startExam() {
+    try {
+        // 1. Camera start FIRST
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        document.getElementById("video").srcObject = stream;
 
-            try {
+        // 2. Backend session start
+        const res = await fetch("/start_exam", {
+            method: "POST",
+            credentials: "include"
+        });
 
-                await document.documentElement.requestFullscreen();
+        const data = await res.json();
 
-                let res = await fetch("/start_exam", {
-                    method: "POST",
-                    credentials: "include"
-                });
+        console.log("START RESPONSE:", data);
 
-                let data = await res.json();
-
-                console.log("START RESPONSE:", data);
-
-                if (data.status === "ok") {
-
-                    examStarted = true; // ✅ ADD THIS
-
-                    setTimeout(() => {
-                        loadQuestions();
-                    }, 1000); // small delay
-
-                } else {
-                    alert("Session expired. Login again.");
-                    window.location.href = "/login";
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("Failed to start exam");
-            }
+        if (data.status !== "ok") {
+            alert("Session expired. Login again.");
+            window.location.href = "/login";
+            return;
         }
 
-        async function loadQuestions() {
+        // 3. UI SHOW FIRST (CRITICAL 🔥)
+        document.getElementById("start-screen").style.display = "none";
+        document.getElementById("exam-container").style.display = "block";
 
-            try {
+        // 4. THEN load questions
+        await loadQuestions();
 
-                const res = await fetch("/get_questions", {
-                    credentials: "include"
-                });
+        // 5. THEN start background systems
+        startTimer();
+        startAIProcessing();
 
-                const data = await res.json();
+    } catch (err) {
+        console.error("START ERROR:", err);
+        alert("Failed to start exam");
+    }
+}
 
-                console.log("QUESTIONS:", data);
 
-                if (!data.questions || data.questions.length === 0) {
-                    alert("No questions found");
-                    return;
-                }
+async function loadQuestions() {
+    try {
+        const res = await fetch("/get_questions", {
+            credentials: "include"
+        });
 
-                questions = data.questions;
+        const data = await res.json();
 
-                answers = new Array(questions.length).fill(null);
-                marked = new Array(questions.length).fill(false);
+        console.log("QUESTIONS:", data);
 
-                renderPalette();
-                renderQuestion();
-                updateCounters();
-
-                startTimer();
-                startCamera();
-                startAIProcessing();
-
-            } catch (err) {
-                console.error("🔥 FULL ERROR:", err);
-                alert("ERROR: " + err.message);
-            }
+        if (!data.questions || data.questions.length === 0) {
+            alert("No questions found");
+            return;
         }
+
+        questions = data.questions;
+
+        answers = new Array(questions.length).fill(null);
+        marked = new Array(questions.length).fill(false);
+
+        renderPalette();
+        renderQuestion();
+        updateCounters();
+
+    } catch (err) {
+        console.error("🔥 FULL ERROR:", err);
+        alert("ERROR: " + err.message);
+    }
+}
 
 
         // ================= RENDER PALETTE =================
