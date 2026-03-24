@@ -1020,11 +1020,9 @@ def submit_exam():
         violations_data = data.get("violations", 0)
 
         if isinstance(violations_data, dict):
-            violations = sum(violations_data.values())
-            violations_text = json.dumps(violations_data)
+             violations = sum(violations_data.values())  # ✅ store ONLY total
         else:
             violations = int(violations_data)
-            violations_text = str(violations_data)
 
         # ✅ SAFE ANSWERS (FIXED)
         answers = data.get("answers", [])
@@ -1063,7 +1061,7 @@ def submit_exam():
             exam_id,
             total,
             score,
-            violations_text,  # ✅ SAFE
+            violations,  # ✅ SAFE
             answers_text,
             status
         ))
