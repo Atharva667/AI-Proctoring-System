@@ -697,27 +697,38 @@ border-radius:4px;">
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                    exam_id: questions[0].exam_id,
+                    exam_id: questions[0]?.exam_id || 1,
                     score: score,
                     total: questions.length,
-                    violations: violations, // ✅ IMPORTANT
+                    violations: violations || 0,
                     answers: answers
                 })
             })
-                .then(res => res.json())
+                .then(res => {
+                    return res.text().then(text => {
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            console.error("❌ Not JSON response:", text);
+                            throw new Error("Server returned HTML (502/500)");
+                        }
+                    });
+                })
                 .then(data => {
+
+                    console.log("Server:", data);
 
                     if (data.status === "saved") {
                         alert("✅ Exam Submitted Successfully");
                         window.location.href = "/exam_success";
                     } else {
-                        alert("❌ Submission failed");
+                        alert("❌ Submission failed: " + (data.message || ""));
                     }
 
                 })
                 .catch(err => {
-                    console.error(err);
-                    alert("❌ Server error");
+                    console.error("Submit error:", err);
+                    alert("❌ Server error (check logs)");
                 });
         }
 

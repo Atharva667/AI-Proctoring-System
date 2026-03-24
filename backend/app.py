@@ -1072,12 +1072,21 @@ def submit_exam():
         cursor.close()
         db.close()
 
-        return jsonify({"status": "saved"})
+        return jsonify({"status": "saved"}),200
 
     except Exception as e:
         import traceback
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)})
+    
+@app.errorhandler(Exception)
+def handle_exception(e):
+    import traceback
+    traceback.print_exc()
+    return jsonify({
+        "status": "error",
+        "message": str(e)
+    }), 500
 
 
 @app.route("/teacher_results")
