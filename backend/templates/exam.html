@@ -506,8 +506,8 @@ border-radius:4px;">
                 startAIProcessing();
 
             } catch (err) {
-                console.error("LOAD ERROR:", err);
-                alert("Failed to load questions");
+                console.error("🔥 FULL ERROR:", err);
+                alert("ERROR: " + err.message);
             }
         }
 
@@ -543,14 +543,17 @@ border-radius:4px;">
             if (q.type === "mcq") {
 
                 q.options.forEach((opt, i) => {
+
+                    if (!opt) return; // 🔥 ADD THIS
+
                     optionsHTML += `
-                <div class="option">
-                    <input type="radio" name="ans"
-                        ${answers[current] == i ? "checked" : ""}
-                        onclick="answers[${current}] = ${i}">
-                    ${opt}
-                </div>
-            `;
+        <div class="option">
+            <input type="radio" name="ans"
+                ${answers[current] == i ? "checked" : ""}
+                onclick="answers[${current}] = ${i}">
+            ${opt}
+        </div>
+    `;
                 });
 
             } else {
@@ -640,10 +643,9 @@ border-radius:4px;">
                             }
 
                             // SMART WARNING (NO SPAM)
-                            if (data.no_face > 0 && violations.no_face === 0) {
+                            if (data.violations?.no_face > 0) {
                                 triggerWarning("Face not detected");
                             }
-
                             if (data.multiple_faces > 0 && violations.multiple_faces === 0) {
                                 triggerWarning("Multiple faces detected");
                             }
