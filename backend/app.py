@@ -10,17 +10,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 print("🚀 APP STARTING...")
 
-import sys
-import os
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, ".."))
-
-sys.path.append(PROJECT_ROOT)
-
-
-
-
  
 # ---------------- CONFIG ----------------
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -32,39 +21,6 @@ app = Flask(
 )
 app.secret_key = "ai_proctoring_secret_key"
 CORS(app)
-
-app.config['SESSION_COOKIE_SAMESITE'] = "None"
-app.config['SESSION_COOKIE_SECURE'] = True
-app.config['SESSION_PERMANENT'] = True
-
-# SAFE ADDITION (no conflict)
-
-from ai_models.proctoring_engine import ProctoringEngine
-import numpy as np
-import cv2
-
-ai_instances = {}
-
-@app.route('/process_frame', methods=['POST'])
-def process_frame():
-
-    student_id = session.get("user_id")
-
-    if not student_id:
-        return jsonify({"error": "unauthorized"}), 401
-
-    if student_id not in ai_instances:
-        ai_instances[student_id] = ProctoringEngine()
-
-    ai = ai_instances[student_id]
-
-    file = request.files['frame']
-    npimg = np.frombuffer(file.read(), np.uint8)
-    frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
-
-    result = ai.process_frame(frame)
-
-    return jsonify(result)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "activity_log.txt")
@@ -344,7 +300,6 @@ def get_questions():
                 "answer": int(r["correct_answer"])
             })
 
-        print("SESSION:", dict(session))
         return jsonify({"questions": questions})
 
     except Exception as e:
@@ -793,13 +748,8 @@ def api_result():
 
 @app.route("/camera-verify")
 def camera_verify():
-
     if session.get("state") != "logged_in":
         return redirect(url_for("login_page"))
-
-    # 🔥 IMPORTANT FIX
-    session["verified"] = True
-
     return render_template("camera_verify.html")
 
 
@@ -829,17 +779,11 @@ def dashboard_page():
 
 @app.route("/start_exam", methods=["POST"])
 def start_exam():
-
-    if not session.get("user_id"):
+    if session.get("state") != "logged_in":
         session.clear()
         return jsonify({"status": "unauthorized"}), 401
 
-    # ✅ SET EXAM STATE
     session["state"] = "in_exam"
-    session.modified = True
-
-    print("SESSION IN EXAM:", dict(session))
-
     return jsonify({"status": "ok"})
 
 
@@ -847,23 +791,27 @@ def start_exam():
 
 @app.route("/enter_exam")
 def enter_exam():
-
     if "user_id" not in session:
         return redirect(url_for("login_page"))
 
-    # ✅ No restriction — allow exam flow
-    return redirect(url_for("exam_page"))
+    # Only dashboard can send here
+    if session.get("current_page") != "dashboard":
+        return redirect(url_for("dashboard_page"))
 
+    # Allow exam once
+    session["current_page"] = "exam"
+    return redirect(url_for("exam_page"))
 
 
 @app.route("/exam")
 def exam_page():
-
-    if not session.get("user_id"):
+    # ❌ Only allowed if exam was started properly
+    if session.get("state") != "in_exam":
         session.clear()
         return redirect(url_for("login_page"))
 
     return render_template("exam.html")
+
 
 
 
@@ -1020,48 +968,34 @@ def start_session():
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
     try:
-        import json
-
         data = request.get_json()
 
-        exam_id = int(data.get("exam_id", 0))
-        score = int(data.get("score", 0))
-        total = int(data.get("total", 0))
+        exam_id = int(data.get("exam_id"))
+        score = int(data.get("score"))
+        total = int(data.get("total"))
+        violations = int(data.get("violations"))
+        answers = data.get("answers")
 
-        # ✅ SAFE VIOLATIONS (FIXED)
-        violations_data = data.get("violations", 0)
-
-        if isinstance(violations_data, dict):
-             violations = sum(violations_data.values())  # ✅ store ONLY total
-        else:
-            violations = int(violations_data)
-
-        # ✅ SAFE ANSWERS (FIXED)
-        answers = data.get("answers", [])
-
-        if isinstance(answers, list):
-            answers_text = "|".join([str(a) for a in answers])
-        else:
-            answers_text = ""
-
+        answers_text = "|".join([str(a) for a in answers])
         student_id = session.get("user_id")
-
-        if not student_id:
-            return jsonify({"status": "error", "message": "User not logged in"})
 
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
+        # 🔥 CHECK IF DESCRIPTIVE EXISTS
         cursor.execute("""
             SELECT question_type FROM exam_questions WHERE exam_id=%s
         """, (exam_id,))
+
         questions = cursor.fetchall()
 
-        needs_review = any(q["question_type"] in ["short", "paragraph"] for q in questions)
+        needs_review = any(q["question_type"] in ["short","paragraph"] for q in questions)
 
-        status = "PARTIAL_EVALUATED" if needs_review else "EVALUATED"
+        if needs_review:
+            status = "PARTIAL_EVALUATED"
+        else:
+            status = "EVALUATED"
 
-        cursor.close()
         cursor = db.cursor()
 
         cursor.execute("""
@@ -1073,30 +1007,22 @@ def submit_exam():
             exam_id,
             total,
             score,
-            violations,  # ✅ SAFE
+            violations,
             answers_text,
             status
         ))
 
         db.commit()
+
         cursor.close()
         db.close()
 
-        return jsonify({"status": "saved"}),200
+        return jsonify({"status": "saved"})
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({"status": "error", "message": str(e)})
-    
-@app.errorhandler(Exception)
-def handle_exception(e):
-    import traceback
-    traceback.print_exc()
-    return jsonify({
-        "status": "error",
-        "message": str(e)
-    }), 500
+        return jsonify({"status":"error"})
 
 
 @app.route("/teacher_results")
@@ -1238,26 +1164,6 @@ def start_ai_engine():
     except Exception as e:
         print("❌ AI Engine Start Failed:", e)
         return jsonify({"status": "error"}), 500
-    
-@app.route("/live_monitor")
-def live_monitor():
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
-
-    cursor.execute("""
-        SELECT er.student_id, s.name, er.exam_id, er.violations, er.status
-        FROM exam_results er
-        JOIN students s ON er.student_id = s.id
-        ORDER BY er.exam_date DESC
-        LIMIT 10
-    """)
-
-    data = cursor.fetchall()
-
-    cursor.close()
-    db.close()
-
-    return jsonify(data)
 
 
 
