@@ -1081,8 +1081,8 @@ def submit_exam():
 
     except Exception as e:
         import traceback
-        traceback.print_exc()
-        return jsonify({"status": "error"})
+    traceback.print_exc()
+    return jsonify({"status":"error", "message": str(e)})
 
 
 @app.route("/teacher_results")
