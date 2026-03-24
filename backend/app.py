@@ -1,6 +1,3 @@
-app.config['SESSION_COOKIE_SAMESITE'] = "None"
-app.config['SESSION_COOKIE_SECURE'] = True
-
 from flask import Flask, jsonify, request, render_template, session, redirect, url_for
 from flask import send_from_directory
 from flask_cors import CORS
@@ -35,6 +32,9 @@ app = Flask(
 )
 app.secret_key = "ai_proctoring_secret_key"
 CORS(app)
+
+app.config['SESSION_COOKIE_SAMESITE'] = "None"
+app.config['SESSION_COOKIE_SECURE'] = True
 
 # SAFE ADDITION (no conflict)
 
