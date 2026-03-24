@@ -443,6 +443,7 @@ border-radius:4px;">
         // ================= START EXAM =================
         async function startExam() {
             try {
+                examStarted = true;
                 // ✅ FULLSCREEN START (IMPORTANT)
                 if (!document.fullscreenElement) {
                     await document.documentElement.requestFullscreen();
@@ -708,23 +709,43 @@ border-radius:4px;">
             }, 4000); // optimized
         }
 
-        // ================= TAB SWITCH =================
+        // ✅ VISIBILITY CHANGE (BEST FOR DESKTOP)
         document.addEventListener("visibilitychange", () => {
-
-            if (!examStarted) return; // ✅ ADD THIS
+            if (!examStarted) return;
 
             if (document.hidden) {
-                violations.tab_switch++;
-                triggerWarning("Tab switching detected");
+                triggerWarning("Tab switched / minimized");
             }
         });
-        // ================= WINDOW SWITCH =================
+        // ✅ WINDOW BLUR (SECONDARY)
         window.addEventListener("blur", () => {
+            if (!examStarted) return;
 
-            if (!examStarted) return; // ✅ ADD THIS
+            triggerWarning("Window focus lost");
+        });
 
-            violations.tab_switch++;
-            triggerWarning("Window switched");
+
+        document.addEventListener("pause", () => {
+            triggerWarning("App minimized");
+        });
+        // ✅ MOBILE APP SWITCH DETECTION
+        let lastActiveTime = Date.now();
+
+        setInterval(() => {
+            let now = Date.now();
+
+            // If user inactive for >5 sec → assume switch
+            if (examStarted && (now - lastActiveTime > 5000)) {
+                triggerWarning("Possible app switching detected");
+            }
+
+            lastActiveTime = now;
+
+        }, 3000);
+
+        // ✅ FOCUS RETURN (OPTIONAL DEBUG)
+        window.addEventListener("focus", () => {
+            console.log("User returned to exam");
         });
 
         // ================= COPY / PASTE BLOCK =================
