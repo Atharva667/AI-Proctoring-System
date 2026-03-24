@@ -1226,6 +1226,26 @@ def start_ai_engine():
     except Exception as e:
         print("❌ AI Engine Start Failed:", e)
         return jsonify({"status": "error"}), 500
+    
+@app.route("/live_monitor")
+def live_monitor():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    cursor.execute("""
+        SELECT er.student_id, s.name, er.exam_id, er.violations, er.status
+        FROM exam_results er
+        JOIN students s ON er.student_id = s.id
+        ORDER BY er.exam_date DESC
+        LIMIT 10
+    """)
+
+    data = cursor.fetchall()
+
+    cursor.close()
+    db.close()
+
+    return jsonify(data)
 
 
 
