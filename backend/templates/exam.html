@@ -564,12 +564,41 @@ border-radius:4px;">
     `;
                 });
 
-            } else {
+            } else if (q.type === "short") {
+
                 optionsHTML = `
-            <textarea onchange="answers[${current}] = this.value">
-                ${answers[current] || ""}
-            </textarea>
-        `;
+    <input type="text"
+        value="${answers[current] || ""}"
+        placeholder="Enter your answer"
+        style="
+            width:100%;
+            padding:12px;
+            border:1px solid #d1d5db;
+            border-radius:6px;
+            font-size:15px;
+        "
+        onchange="answers[${current}] = this.value"
+    >
+    `;
+            }
+
+            else if (q.type === "paragraph") {
+
+                optionsHTML = `
+    <textarea
+        rows="4"
+        placeholder="Write your answer"
+        style="
+            width:100%;
+            padding:12px;
+            border:1px solid #d1d5db;
+            border-radius:6px;
+            font-size:15px;
+            resize:vertical;
+        "
+        onchange="answers[${current}] = this.value"
+    >${answers[current] || ""}</textarea>
+    `;
             }
 
             document.getElementById("optionsBox").innerHTML = optionsHTML;
@@ -664,50 +693,49 @@ border-radius:4px;">
         // ================= AI PROCESS =================
         function startAIProcessing() {
 
-            const video = document.getElementById("proctorVideo");
+    const video = document.getElementById("proctorVideo");
 
-            setInterval(() => {
+    setInterval(() => {
 
-                if (!video.videoWidth) return;
+        if (!video.videoWidth) return;
 
-                let canvas = document.createElement("canvas");
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
+        let canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
-                let ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0);
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0);
 
-                canvas.toBlob(blob => {
+        const imageData = canvas.toDataURL("image/jpeg", 0.5);
 
-                    let formData = new FormData();
-                    formData.append("frame", blob);
+        fetch("/analyze_frame", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                image: imageData
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
 
-                    fetch("/process_frame", {
-                        method: "POST",
-                        body: formData
-                    })
-                        .then(res => res.json())
-                        .then(data => {
+            console.log("AI RESULT:", data);
 
-                            if (data.violations) {
-                                violations = data.violations;
-                            }
+            if (data.multiple_faces) {
+                triggerWarning("⚠ Multiple faces detected");
+            }
 
-                            // SMART WARNING (NO SPAM)
-                            if (data.violations?.no_face > 0) {
-                                triggerWarning("Face not detected");
-                            }
-                            if (data.multiple_faces > 0 && violations.multiple_faces === 0) {
-                                triggerWarning("Multiple faces detected");
-                            }
+            if (data.movement) {
+                triggerWarning("⚠ Suspicious movement detected");
+            }
 
-                        })
-                        .catch(err => console.error("AI ERROR:", err));
+        })
+        .catch(err => console.error("AI ERROR:", err));
 
-                }, "image/jpeg");
+    }, 4000);
 
-            }, 4000); // optimized
-        }
+}
 
         // ✅ VISIBILITY CHANGE (BEST FOR DESKTOP)
         document.addEventListener("visibilitychange", () => {

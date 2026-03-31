@@ -428,7 +428,7 @@
 
 <div class="answer-box"></div>
 
-<div class="add-option" onclick="addOption(this, 'q${qCount}')">
+<div class="add-option" onclick="addOption(this)">
 + Add option
 </div>
 
@@ -439,30 +439,40 @@
             container.appendChild(q);
 
         }
-        function addOption(btn, group) {
+        function addOption(btn) {
 
-            const optionIndex = btn.parentElement.querySelectorAll(".option").length;
+            const questionCard = btn.closest(".question-card");
+
+            // Get SAME radio group name from existing option
+            const radioName = questionCard.querySelector(".correct").name;
+
+            const optionIndex = questionCard.querySelectorAll(".option").length;
 
             const option = document.createElement("div");
             option.className = "option";
 
             option.innerHTML = `
-<input type="radio" class="correct" name="correct${group}" value="${optionIndex}">
+<input type="radio" class="correct" name="${radioName}" value="${optionIndex}">
 <input class="option-text" placeholder="Option">
 `;
 
             btn.previousElementSibling.appendChild(option);
-
         }
 
         function duplicateQuestion(btn) {
 
             const q = btn.closest(".question-card");
-
             const clone = q.cloneNode(true);
 
-            document.getElementById("questions").appendChild(clone);
+            // Generate new unique name
+            const newName = "correct" + Date.now();
 
+            clone.querySelectorAll(".correct").forEach(radio => {
+                radio.name = newName;
+                radio.checked = false;
+            });
+
+            document.getElementById("questions").appendChild(clone);
         }
 
         function deleteQuestion(btn) {
