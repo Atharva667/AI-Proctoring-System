@@ -30,7 +30,7 @@ def analyze_frame():
 
     import numpy as np
     import cv2
-    from services.ai_proctoring import detect_faces
+    from services.ai_proctoring import analyze_frame as analyze_logic
 
     data = request.json['image']
     encoded = data.split(',')[1]
@@ -40,9 +40,11 @@ def analyze_frame():
 
     frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
 
-    faces = detect_faces(frame)
+    user_id = request.remote_addr   # track user
 
-    return {"faces": faces}
+    result = analyze_logic(user_id, frame)
+
+    return jsonify(result)
 
 
 # ---------------- DATABASE ----------------
