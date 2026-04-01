@@ -706,7 +706,7 @@ border-radius:4px;">
         let ctx = canvas.getContext("2d");
         ctx.drawImage(video, 0, 0);
 
-        const imageData = canvas.toDataURL("image/jpeg", 0.5);
+        const imageData = canvas.toDataURL("image/jpeg", 0.9);
 
         fetch("/analyze_frame", {
             method: "POST",

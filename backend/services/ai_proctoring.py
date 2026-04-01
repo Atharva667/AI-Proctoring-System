@@ -4,19 +4,35 @@ import time
 # ================= GLOBAL STATE =================
 user_states = {}
 
-# ================= FACE DETECTION (OPENCV) =================
+# ================= FACE DETECTION =================
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 )
 
 def detect_faces(frame):
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.3, 5)
-    return faces   # ✅ returns list of faces
+    faces = face_cascade.detectMultiScale(
+        gray,
+        scaleFactor=1.1,
+        minNeighbors=4,
+        minSize=(40, 40)
+    )
+    return faces
 
 
 # ================= MAIN ANALYSIS =================
 def analyze_frame(user_id, frame):
+
+    # ✅ FIX 1: Frame safety
+    if frame is None:
+        return {
+            "faces": 0,
+            "multiple_faces": False,
+            "movement": False,
+            "movement_warnings": 0,
+            "face_warnings": 0,
+            "terminate": False
+        }
 
     faces = detect_faces(frame)
 
@@ -59,7 +75,6 @@ def analyze_frame(user_id, frame):
             dx = abs(center[0] - state["prev_center"][0])
             dy = abs(center[1] - state["prev_center"][1])
 
-            # ✅ movement threshold + cooldown
             if (dx + dy > 40) and (time.time() - state["last_move_time"] > 2):
                 movement = True
                 state["movement_warnings"] += 1
@@ -67,13 +82,13 @@ def analyze_frame(user_id, frame):
 
         state["prev_center"] = center
 
-    # ================= TERMINATION CHECK =================
+    # ================= TERMINATION =================
     terminate = False
 
     if state["movement_warnings"] >= 3 or state["face_warnings"] >= 3:
         terminate = True
 
-    # ================= FINAL RESPONSE =================
+    # ================= RESPONSE =================
     return {
         "faces": face_count,
         "multiple_faces": multiple_faces,
