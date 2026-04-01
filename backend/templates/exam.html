@@ -700,9 +700,8 @@ border-radius:4px;">
         if (!video.videoWidth) return;
 
         let canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-
+        canvas.width = video.videoWidth * 1.5;
+        canvas.height = video.videoHeight * 1.5;
         let ctx = canvas.getContext("2d");
         ctx.drawImage(video, 0, 0);
 
