@@ -1,341 +1,170 @@
-/* ================= GLOBAL ================= */
-body {
-    margin: 0;
-    padding: 0;
+/* ===== BODY ===== */
+body{
+    margin:0;
+    padding:0;
     font-family: "Segoe UI", Arial, sans-serif;
-    background: #f4f6f9;
-    color: #111827;
+    background:#f4f6f9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
 }
 
-/* ================= WRAPPER ================= */
-.wrapper {
-    width: 100%;
-    max-width: 440px;
-    margin: 40px auto;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-    overflow: hidden;
+/* ===== WRAPPER ===== */
+.wrapper{
+    width:100%;
+    max-width:420px;
+    margin:20px;
+    background:#ffffff;
+    border-radius:12px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+    overflow:hidden;
 }
 
-/* ================= HEADER ================= */
-.header {
-    background: #2563eb;
-    color: white;
-    padding: 16px;
-    text-align: center;
-    font-size: 20px;
-    font-weight: 600;
+/* ===== HEADER ===== */
+.header{
+    background:#2563eb;
+    color:white;
+    padding:16px;
+    text-align:center;
+    font-size:20px;
+    font-weight:600;
 }
 
-/* ================= FORM ================= */
-.form-container {
-    padding: 24px;
+/* ===== FORM ===== */
+.form-container{
+    padding:22px;
 }
 
-.form-container label {
-    font-weight: 600;
-    display: block;
-    margin-top: 14px;
-    font-size: 14px;
-    color: #374151;
+/* ===== LABEL ===== */
+label{
+    font-size:13px;
+    color:#374151;
+    margin-top:12px;
+    display:block;
 }
 
-/* ================= INPUT ================= */
-.form-container input,
-.form-container select {
-    width: 100%;
-    padding: 11px;
-    margin-top: 6px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    outline: none;
-    font-size: 14px;
-    background: #ffffff;
-    transition: 0.2s;
+/* ===== INPUT ===== */
+input, select{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    border:1px solid #d1d5db;
+    border-radius:6px;
+    font-size:14px;
+    outline:none;
 }
 
-.form-container input:focus,
-.form-container select:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37,99,235,0.15);
+input:focus, select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 2px rgba(37,99,235,0.15);
 }
 
-/* ================= TIP BOX ================= */
-.tip-box {
-    background: #f1f5f9;
-    border-left: 4px solid #2563eb;
-    padding: 10px;
-    font-size: 13px;
-    margin-bottom: 12px;
-    border-radius: 5px;
-    color: #374151;
+/* ===== ROWS ===== */
+.name-row, .row{
+    display:flex;
+    gap:8px;
+    margin-top:8px;
 }
 
-/* ================= NAME ROW ================= */
-.name-row {
-    display: flex;
-    gap: 8px;
+.name-row input, .row input, .row select{
+    flex:1;
 }
 
-.name-row input {
-    flex: 1;
+/* ===== TIP BOX ===== */
+.tip-box{
+    background:#f1f5f9;
+    border-left:4px solid #2563eb;
+    padding:10px;
+    font-size:13px;
+    margin-bottom:12px;
+    border-radius:5px;
 }
 
-/* ================= CLASS & ROLL ================= */
-.row {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
+/* ===== CAMERA ===== */
+.camera-box{
+    width:100%;
+    height:200px;
+    background:#000;
+    border-radius:8px;
+    margin-top:8px;
+    overflow:hidden;
 }
 
-.row select,
-.row input {
-    flex: 1;
+.camera-box video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
 }
 
-/* ================= SMALL TEXT ================= */
-.form-container small {
-    display: block;
-    margin-top: 5px;
-    color: #6b7280;
-    font-size: 12px;
+/* ===== PHOTO STATUS ===== */
+.photo-status{
+    font-size:13px;
+    margin:8px 0;
+    color:#dc2626;
+    text-align:center;
 }
 
-/* ================= CAMERA ================= */
-.photo-label {
-    margin-top: 15px;
-    font-weight: 600;
+.photo-status.success{
+    color:#16a34a;
 }
 
-.camera-box {
-    width: 100%;
-    height: 220px;
-    background: #000;
-    border-radius: 8px;
-    overflow: hidden;
-    margin-top: 8px;
-    border: 1px solid #d1d5db;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* ===== BUTTONS ===== */
+.btn, .button{
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border:none;
+    border-radius:6px;
+    font-size:15px;
+    cursor:pointer;
 }
 
-.camera-box video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transform: scaleX(-1);
+.btn{
+    background:#6b7280;
+    color:white;
 }
 
-/* ================= PHOTO STATUS ================= */
-.photo-status {
-    font-size: 13px;
-    margin: 8px 0 12px;
-    color: #dc2626;
-    text-align: center;
+.button{
+    background:#2563eb;
+    color:white;
 }
 
-.photo-status.success {
-    color: #16a34a;
+.button:hover{
+    background:#1e40af;
 }
 
-/* ================= BUTTONS ================= */
-.btn,
-.button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    font-size: 15px;
-    transition: 0.2s;
+/* ===== LOGIN ===== */
+.login-redirect{
+    text-align:center;
+    margin-top:14px;
+    font-size:14px;
 }
 
-/* Secondary button */
-.btn {
-    background: #6b7280;
-    color: white;
+.login-redirect a{
+    color:#2563eb;
+    text-decoration:none;
 }
 
-.btn:hover {
-    background: #4b5563;
-}
-
-/* Primary button */
-.button {
-    background: #2563eb;
-    color: white;
-}
-
-.button:hover {
-    background: #1e40af;
-}
-
-.button:disabled {
-    background: #9ca3af;
-    cursor: not-allowed;
-}
-
-/* ================= LOGIN REDIRECT ================= */
-.login-redirect {
-    margin-top: 16px;
-    text-align: center;
-    font-size: 14px;
-    color: #6b7280;
-}
-
-.login-redirect a {
-    color: #2563eb;
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.login-redirect a:hover {
-    text-decoration: underline;
-}
-
-/* ================= MOBILE ================= */
+/* ===== MOBILE ===== */
 @media (max-width:768px){
 
 .wrapper{
-    max-width:95%;
-    margin:20px auto;
+    max-width:100%;
+    margin:10px;
 }
 
-.form-container{
-    padding:20px;
-}
-
-.name-row{
+.name-row, .row{
     flex-direction:column;
-    gap:10px;
 }
 
-.row{
-    flex-direction:column;
-    gap:10px;
-}
-
-.form-container input,
-.form-container select{
+input, select{
     font-size:16px;
     padding:12px;
 }
 
 .camera-box{
-    height:200px;
-}
-
-.btn,
-.button{
-    font-size:16px;
-    padding:14px;
-}
-
-.login-redirect{
-    font-size:15px;
-}
-
-}
-
-
-/* ================= MOBILE RESPONSIVE ================= */
-@media (max-width:768px){
-
-body{
-    padding: 10px;
-}
-
-/* WRAPPER FULL WIDTH */
-.wrapper{
-    max-width: 100%;
-    margin: 10px auto;
-    border-radius: 10px;
-}
-
-/* FORM PADDING */
-.form-container{
-    padding: 18px;
-}
-
-/* HEADER */
-.header{
-    font-size: 18px;
-    padding: 14px;
-}
-
-/* LABEL */
-.form-container label{
-    font-size: 13px;
-}
-
-/* INPUT */
-.form-container input,
-.form-container select{
-    width: 100%;
-    font-size: 16px;   /* prevents zoom on mobile */
-    padding: 13px;
-}
-
-/* NAME ROW STACK */
-.name-row{
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* CLASS + ROLL STACK */
-.row{
-    flex-direction: column;
-    gap: 10px;
-}
-
-/* CAMERA */
-.camera-box{
-    height: 180px;
-}
-
-/* BUTTONS */
-.btn,
-.button{
-    font-size: 16px;
-    padding: 14px;
-    border-radius: 8px;
-}
-
-/* TIP BOX */
-.tip-box{
-    font-size: 12px;
-}
-
-/* LOGIN TEXT */
-.login-redirect{
-    font-size: 14px;
-}
-
-}
-
-/* ================= EXTRA SMALL DEVICES ================= */
-@media (max-width:480px){
-
-.header{
-    font-size: 16px;
-}
-
-.camera-box{
-    height: 160px;
-}
-
-.form-container{
-    padding: 15px;
-}
-
-.btn,
-.button{
-    font-size: 15px;
-    padding: 13px;
+    height:180px;
 }
 
 }

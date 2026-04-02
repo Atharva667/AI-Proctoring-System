@@ -140,7 +140,7 @@
             const loginInput = document.getElementById("login_input").value.trim();
             const password = document.getElementById("password").value.trim();
 
-            if (!first || !last || !email || !password) {
+            if (!first || !last || !loginInput || !password) {
                 alert("Required fields missing");
                 return;
             }
