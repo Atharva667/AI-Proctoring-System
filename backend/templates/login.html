@@ -66,8 +66,8 @@
 
             <!-- LEFT FORM -->
             <div class="login-form">
-                <label>Email:</label>
-                <input type="email" id="email" placeholder="Enter your email">
+                <label>Email or Phone Number:</label>
+                <input type="text" id="login_input" placeholder="Enter email or phone number">
 
                 <label>Password:</label>
                 <input type="password" id="password" placeholder="Enter your password">
@@ -104,50 +104,52 @@
 
         function login() {
 
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
+    const loginInput = document.getElementById("login_input").value.trim();
+    const password = document.getElementById("password").value.trim();
 
-            if (!email || !password) {
-                alert("Please enter email and password");
-                return;
-            }
+    if (!loginInput || !password) {
+        alert("Please enter email/phone and password");
+        return;
+    }
 
-            // ✅ ADD TIMEOUT CONTROLLER
-            const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 8000); // 8 sec
+    // ✅ TIMEOUT CONTROLLER
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
 
-            fetch("/login", {
-                method: "POST",
-                signal: controller.signal,   // ✅ IMPORTANT
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            })
-                .then(res => res.json())
-                .then(data => {
+    fetch("/login", {
+        method: "POST",
+        signal: controller.signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            login: loginInput,
+            password: password
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
 
-                    clearTimeout(timeout); // ✅ stop timeout
+        clearTimeout(timeout);
 
-                    if (data.status === "success") {
-                        showLoginSuccess();
-                    } else {
-                        alert(data.message);
-                    }
-
-                })
-                .catch(err => {
-
-                    console.error("Login error:", err);
-
-                    // ✅ SMART MESSAGE (instead of generic error)
-                    aalert("Server is waking up (free hosting). Please wait 5 seconds and try again.");
-
-                    // ✅ AUTO RECOVERY
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
-
-                });
+        if (data.status === "success") {
+            showLoginSuccess();
+        } else {
+            alert(data.message);
         }
+
+    })
+    .catch(err => {
+
+        console.error("Login error:", err);
+
+        // ❌ you had typo here → aalert ❌
+        alert("Server is waking up (free hosting). Please wait 5 seconds and try again.");
+
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+
+    });
+}
     </script>
 
 </body>

@@ -7,8 +7,7 @@
 
     <h2>Teacher Registration</h2>
 
-    <form action="/teacher_register" method="POST" enctype="multipart/form-data">
-
+<form action="/teacher_register" method="POST" enctype="multipart/form-data" onsubmit="validateTeacherForm(event)">
         <label>Full Name</label>
         <input type="text" name="name" required>
 
@@ -41,3 +40,28 @@
     </form>
 
 </div>
+
+<script>
+function validateTeacherForm(event) {
+
+    const password = document.querySelector('input[name="password"]').value;
+    const confirm = document.querySelector('input[name="confirm_password"]').value;
+
+    // Strong password regex
+    const strongRegex = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+
+    if (!strongRegex.test(password)) {
+        alert("Password must be 8+ characters, include uppercase, lowercase, number & special character.");
+        event.preventDefault();
+        return false;
+    }
+
+    if (password !== confirm) {
+        alert("Passwords do not match!");
+        event.preventDefault();
+        return false;
+    }
+
+    return true;
+}
+</script>

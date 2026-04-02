@@ -416,6 +416,53 @@ def create_exam():
     return render_template("create_exam.html")
 
 
+
+@app.route("/publish_exam", methods=["POST"])
+def publish_exam():
+
+    try:
+        if "teacher" not in session:
+            return jsonify({"error": "Unauthorized"}), 401
+
+        data = request.get_json()
+
+        title = data.get("title")
+        questions = data.get("questions")
+
+        # 🔥 VALIDATION
+        if not questions or len(questions) == 0:
+            return jsonify({"error": "Add at least one question"}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+
+        # 👉 Insert exam
+        cursor.execute("INSERT INTO exams (title) VALUES (%s)", (title,))
+        exam_id = cursor.lastrowid
+
+        # 👉 Insert questions
+        for q in questions:
+            cursor.execute("""
+                INSERT INTO questions (exam_id, question, type)
+                VALUES (%s, %s, %s)
+            """, (exam_id, q["question"], q["type"]))
+
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+        return jsonify({"message": "Exam created successfully"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+import re
+
+def is_strong_password(password):
+    return re.match(r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$', password)
+
 @app.route('/teacher_register', methods=['GET','POST'])
 def teacher_register():
 
@@ -425,14 +472,23 @@ def teacher_register():
             name = request.form['name']
             email = request.form['email']
             mobile = request.form['mobile']
+            password = request.form['password']
+            confirm_password = request.form['confirm_password']
+
+            # 🔐 PASSWORD VALIDATION
+            if not is_strong_password(password):
+                return "Password must be strong (8+ chars, uppercase, lowercase, number, special char)", 400
+
+            if password != confirm_password:
+                return "Passwords do not match", 400
 
             db = get_db()
             cursor = db.cursor()
 
             cursor.execute("""
-                INSERT INTO teachers (name,email,mobile,status)
-                VALUES (%s,%s,%s,'UNDER_REVIEW')
-            """,(name,email,mobile))
+                INSERT INTO teachers (name,email,mobile,password,status)
+                VALUES (%s,%s,%s,%s,'UNDER_REVIEW')
+            """,(name,email,mobile,password))
 
             db.commit()
 
@@ -856,24 +912,33 @@ def exam_page():
 def register_user():
     try:
         data = request.get_json(silent=True) or request.form
+
         name = data.get("name")
-        email = data.get("email")
+        login = data.get("login")   # 🔥 email OR phone
         password = data.get("password")
 
-        if not name or not email or not password:
+        if not name or not login or not password:
             return jsonify({
                 "status": "error",
                 "message": "All fields are required"
             }), 400
 
+        # 🔥 DETECT EMAIL OR PHONE
+        if "@" in login:
+            email = login
+            mobile = None
+        else:
+            email = None
+            mobile = login
+
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # Check if email already exists
-        cursor.execute(
-            "SELECT id FROM students WHERE email = %s",
-            (email,)
-        )
+        # 🔥 CHECK DUPLICATE (EMAIL OR PHONE)
+        cursor.execute("""
+            SELECT id FROM students 
+            WHERE email = %s OR mobile = %s
+        """, (email, mobile))
 
         existing = cursor.fetchone()
 
@@ -886,14 +951,14 @@ def register_user():
                 "message": "User already exists. Please login."
             }), 409
 
-        # Insert new user
+        # 🔐 HASH PASSWORD
         hashed_password = generate_password_hash(password)
 
-        cursor.execute(
-             "INSERT INTO students (name, email, password) VALUES (%s, %s, %s)",
-            (name, email, hashed_password)
-        )
-                
+        # 🔥 INSERT USER
+        cursor.execute("""
+            INSERT INTO students (name, email, mobile, password) 
+            VALUES (%s, %s, %s, %s)
+        """, (name, email, mobile, hashed_password))
 
         db.commit()
         cursor.close()
@@ -918,24 +983,32 @@ def register_user():
             "message": "Server error"
         }), 500
 
-
 # ---------------- LOGIN API ----------------
+from flask import request, jsonify, session
+from werkzeug.security import check_password_hash
 
 @app.route("/login", methods=["POST"])
 def login_user():
 
     data = request.get_json(silent=True) or request.form
 
-    email = data.get("email").strip()
-    password = data.get("password").strip()
+    login_input = data.get("login", "").strip()
+    password = data.get("password", "").strip()
+
+    if not login_input or not password:
+        return jsonify({
+            "status": "error",
+            "message": "Please enter email/phone and password"
+        })
 
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
-    cursor.execute(
-        "SELECT * FROM students WHERE email=%s",
-        (email,)
-    )
+    # 🔥 MAIN CHANGE (EMAIL OR PHONE)
+    cursor.execute("""
+        SELECT * FROM students
+        WHERE email=%s OR mobile=%s
+    """, (login_input, login_input))
 
     user = cursor.fetchone()
 
@@ -955,7 +1028,7 @@ def login_user():
 
     return jsonify({
         "status": "error",
-        "message": "Invalid email or password"
+        "message": "Invalid email/phone or password"
     })
 
 # ---------------- LOGOUT ----------------

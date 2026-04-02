@@ -526,7 +526,31 @@
 
         function publishExam() {
 
-            console.log("Publish clicked");
+            if (questions.length === 0) {
+                alert("Add at least one question!");
+                return;
+            }
+
+            fetch("/publish_exam", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: title,
+                    questions: questions
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.error) {
+                        alert(data.error);
+                        return;
+                    }
+
+                    alert("Exam created successfully!");
+                });
 
             const questions = [];
             const title = document.querySelector(".form-title input").value;

@@ -46,8 +46,8 @@
                 <input type="text" id="rollNo" placeholder="Roll Number">
             </div>
 
-            <label>Email:</label>
-            <input type="email" id="email" placeholder="Enter your email">
+            <label>Email or Phone Number:</label>
+            <input type="text" id="login_input" placeholder="Enter email or phone number">
 
             <label>Password:</label>
             <input type="password" id="password" placeholder="Create a password">
@@ -137,7 +137,7 @@
             const first = document.getElementById("firstName").value.trim();
             const middle = document.getElementById("middleName").value.trim();
             const last = document.getElementById("lastName").value.trim();
-            const email = document.getElementById("email").value.trim();
+            const loginInput = document.getElementById("login_input").value.trim();
             const password = document.getElementById("password").value.trim();
 
             if (!first || !last || !email || !password) {
@@ -154,7 +154,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     name: fullName,
-                    email: email,
+                    login: loginInput,
                     password: password
                 })
             })
