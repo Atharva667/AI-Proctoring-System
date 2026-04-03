@@ -198,3 +198,40 @@ gap:30px;
     border-radius: 4px;
     cursor: pointer;
 }
+
+/* ===== TOPBAR ===== */
+.topbar {
+    height: 60px;
+    background: #0f172a;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+}
+
+/* LOGO */
+.logo {
+    font-weight: 600;
+    font-size: 16px;
+}
+
+/* HOME BUTTON */
+.home-btn {
+    color: white;
+    text-decoration: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+/* HOVER EFFECT */
+.home-btn:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.login-container {
+    margin-top: 20px;
+}

@@ -951,15 +951,50 @@ def dashboard_page():
 @app.route("/start_exam", methods=["POST"])
 def start_exam():
 
-    # ✅ Only check login (NOT state)
+    # ✅ Check login
     if not session.get("user_id"):
         session.clear()
         return jsonify({"status": "unauthorized"}), 401
 
-    # ✅ Set exam state
+    student_id = session.get("user_id")
+
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+
+    # 🔥 GET CURRENT EXAM (LATEST)
+    cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
+    exam = cursor.fetchone()
+
+    if not exam:
+        cursor.close()
+        db.close()
+        return jsonify({"status": "no_exam"})
+
+    exam_id = exam["id"]
+
+    # 🔥 CHECK IF STUDENT ALREADY ATTEMPTED THIS EXAM
+    cursor.execute("""
+        SELECT id FROM exam_results
+        WHERE student_id = %s AND exam_id = %s
+        LIMIT 1
+    """, (student_id, exam_id))
+
+    already_attempted = cursor.fetchone()
+
+    cursor.close()
+    db.close()
+
+    # ❌ BLOCK IF ALREADY ATTEMPTED
+    if already_attempted:
+        return jsonify({
+            "status": "blocked",
+            "message": "You have already attempted this exam"
+        })
+
+    # ✅ ALLOW EXAM
     session["state"] = "in_exam"
+    session["exam_id"] = exam_id
     session.modified = True
-    session["exam_id"] = 12   # 👈 SET THIS (or dynamic later)
 
     print("SESSION STARTED:", dict(session))
 

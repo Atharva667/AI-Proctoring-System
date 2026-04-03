@@ -51,6 +51,12 @@
             Login
         </div>
 
+        <!-- 🔥 TOP NAVBAR -->
+        <div class="topbar">
+            <div class="logo">🤖 AKS Proctoring System</div>
+            <a href="/" class="home-btn">🏠 Home</a>
+        </div>
+
         <!-- INSTRUCTIONS -->
         <div class="instructions-box">
             <b>Instructions:</b>
@@ -104,52 +110,52 @@
 
         function login() {
 
-    const loginInput = document.getElementById("login_input").value.trim();
-    const password = document.getElementById("password").value.trim();
+            const loginInput = document.getElementById("login_input").value.trim();
+            const password = document.getElementById("password").value.trim();
 
-    if (!loginInput || !password) {
-        alert("Please enter email/phone and password");
-        return;
-    }
+            if (!loginInput || !password) {
+                alert("Please enter email/phone and password");
+                return;
+            }
 
-    // ✅ TIMEOUT CONTROLLER
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+            // ✅ TIMEOUT CONTROLLER
+            const controller = new AbortController();
+            const timeout = setTimeout(() => controller.abort(), 8000);
 
-    fetch("/login", {
-        method: "POST",
-        signal: controller.signal,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            login: loginInput,
-            password: password
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
+            fetch("/login", {
+                method: "POST",
+                signal: controller.signal,
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    login: loginInput,
+                    password: password
+                })
+            })
+                .then(res => res.json())
+                .then(data => {
 
-        clearTimeout(timeout);
+                    clearTimeout(timeout);
 
-        if (data.status === "success") {
-            showLoginSuccess();
-        } else {
-            alert(data.message);
+                    if (data.status === "success") {
+                        showLoginSuccess();
+                    } else {
+                        alert(data.message);
+                    }
+
+                })
+                .catch(err => {
+
+                    console.error("Login error:", err);
+
+                    // ❌ you had typo here → aalert ❌
+                    alert("Server is waking up (free hosting). Please wait 5 seconds and try again.");
+
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+
+                });
         }
-
-    })
-    .catch(err => {
-
-        console.error("Login error:", err);
-
-        // ❌ you had typo here → aalert ❌
-        alert("Server is waking up (free hosting). Please wait 5 seconds and try again.");
-
-        setTimeout(() => {
-            location.reload();
-        }, 2000);
-
-    });
-}
     </script>
 
 </body>

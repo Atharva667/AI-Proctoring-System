@@ -511,6 +511,10 @@ border-radius:4px;">
                 if (!document.fullscreenElement) {
                     await document.documentElement.requestFullscreen();
                 }
+                if (data.status === "blocked") {
+                    showMessage("❌ You already attempted this exam", "#dc2626");
+                    return;
+                }
                 // 1. Camera start FIRST
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 document.getElementById("proctorVideo").srcObject = stream;
@@ -758,7 +762,7 @@ border-radius:4px;">
 
             const video = document.getElementById("proctorVideo");
 
-           aiInterval = setInterval(() => {
+            aiInterval = setInterval(() => {
 
                 if (!video.videoWidth) return;
 
@@ -980,19 +984,19 @@ border-radius:4px;">
 
         function stopProctoring() {
 
-    examSubmitted = true;
+            examSubmitted = true;
 
-    // stop AI
-    if (aiInterval) clearInterval(aiInterval);
+            // stop AI
+            if (aiInterval) clearInterval(aiInterval);
 
-    // stop camera
-    const video = document.getElementById("proctorVideo");
-    if (video.srcObject) {
-        video.srcObject.getTracks().forEach(track => track.stop());
-    }
+            // stop camera
+            const video = document.getElementById("proctorVideo");
+            if (video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
 
-    console.log("✅ Proctoring stopped");
-}
+            console.log("✅ Proctoring stopped");
+        }
 
     </script>
 
