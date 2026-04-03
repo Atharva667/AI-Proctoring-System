@@ -714,6 +714,61 @@ def admin_panel():
 def maintenance():
     return render_template("maintenance.html")
 
+
+import random, time
+from flask import session, request, jsonify
+
+@app.route('/send-otp', methods=['POST'])
+def send_otp():
+    data = request.get_json()
+    login = data.get('login')
+
+    otp = str(random.randint(100000, 999999))
+
+    session['otp'] = otp
+    session['login'] = login  # 🔥 BIND LOGIN
+    session['otp_time'] = time.time()
+    session['attempts'] = 0 
+
+    print("OTP:", otp)  # testing only
+
+    return jsonify({"message": "OTP sent successfully"})
+
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    user_otp = data.get('otp')
+    login = data.get('login')
+
+    # 🔐 CHECK LOGIN MATCH
+    if login != session.get('login'):
+        return jsonify({"status": "error", "message": "Login mismatch"})
+
+        # ⏱️ 2. OTP EXPIRY CHECK  
+    if time.time() - session.get('otp_time', 0) > 300:
+        return jsonify({
+            "status": "error",
+            "message": "OTP expired"
+        })
+
+    # 🚫 3. ATTEMPT LIMIT CHECK
+    if session.get('attempts', 0) >= 3:
+        return jsonify({
+            "status": "error",
+            "message": "Too many attempts"
+        })
+
+
+
+    # 🔐 CHECK OTP MATCH
+    if user_otp != session.get('otp'):
+        return jsonify({"status": "error", "message": "Invalid OTP"})
+
+    session['verified'] = True
+    return jsonify({"status": "success", "message": "OTP verified"})
+
+
 # ---------------- ADMIN LOGIN ----------------
 
 @app.route("/admin_login", methods=["GET","POST"])
@@ -922,6 +977,14 @@ def register_user():
                 "status": "error",
                 "message": "All fields are required"
             }), 400
+        
+
+        # 🔐 OTP CHECK (NEW)
+        if not session.get("verified"):
+            return jsonify({
+                "status": "error",
+                "message": "OTP not verified"
+            }), 403
 
         # 🔥 DETECT EMAIL OR PHONE
         if "@" in login:
@@ -964,9 +1027,16 @@ def register_user():
         cursor.close()
         db.close()
 
+         # 🧹 CLEAR SESSION (VERY IMPORTANT)
+        session.pop("otp", None)
+        session.pop("verified", None)
+        session.pop("login", None)
+        session.pop("otp_time", None)
+        session.pop("attempts", None)
+
         return jsonify({
-            "status": "success",
-            "message": "Registration successful"
+        "status": "success",
+        "message": "Registration successful"
         }), 201
 
     except mysql.connector.Error as e:
