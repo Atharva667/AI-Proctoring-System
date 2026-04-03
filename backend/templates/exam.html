@@ -314,6 +314,10 @@
             transform: translateX(-50%) translateY(0);
             opacity: 1;
         }
+
+        #startBtn:disabled {
+            opacity: 0.7;
+        }
     </style>
 
 </head>
@@ -347,7 +351,7 @@ z-index:99999;">
         <h2>Start Examination</h2>
         <p>Fullscreen mode is mandatory</p>
 
-        <button onclick="startExam()" style="
+        <button id="startBtn" onclick="startExam()" style="   
 margin-top:15px;
 padding:12px 30px;
 font-size:16px;
@@ -505,55 +509,67 @@ border-radius:4px;">
 
         // ================= START EXAM =================
         async function startExam() {
-    try {
+            try {
 
-        examStarted = true;
+                examStarted = true;
 
-        // 🔥 CALL BACKEND FIRST
-        const res = await fetch("/start_exam", {
-            method: "POST",
-            credentials: "include"
-        });
+                // 🔥 CALL BACKEND FIRST
+                const res = await fetch("/start_exam", {
+                    method: "POST",
+                    credentials: "include"
+                });
 
-        const data = await res.json();
+                const data = await res.json();
 
-        console.log("START RESPONSE:", data);
+                console.log("START RESPONSE:", data);
 
-        // ❌ BLOCK IMMEDIATELY
-        if (data.status === "blocked") {
-            showMessage("❌ You already attempted this exam");
-            return;
+                // ❌ BLOCK IMMEDIATELY
+                if (data.status === "blocked") {
+
+                    showMessage("❌ You already attempted this exam");
+
+                    // 🔥 DISABLE BUTTON
+                    const btn = document.getElementById("startBtn");
+
+                    btn.innerText = "Exam Already Attempted";
+                    btn.disabled = true;
+
+                    // style change (grey look)
+                    btn.style.background = "#9ca3af";
+                    btn.style.cursor = "not-allowed";
+
+                    return;
+                }
+
+                // ❌ INVALID SESSION
+                if (data.status !== "ok") {
+                    showMessage("Session expired. Login again");
+                    window.location.href = "/login";
+                    return;
+                }
+
+                // ✅ NOW START FULLSCREEN
+                if (!document.fullscreenElement) {
+                    await document.documentElement.requestFullscreen();
+                }
+
+                // ✅ START CAMERA
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById("proctorVideo").srcObject = stream;
+
+                // ✅ UI
+                document.getElementById("startOverlay").style.display = "none";
+
+                await loadQuestions();
+
+                startTimer();
+                startAIProcessing();
+
+            } catch (err) {
+                console.error("START ERROR:", err);
+                showMessage("Failed to start exam");
+            }
         }
-
-        // ❌ INVALID SESSION
-        if (data.status !== "ok") {
-            showMessage("Session expired. Login again");
-            window.location.href = "/login";
-            return;
-        }
-
-        // ✅ NOW START FULLSCREEN
-        if (!document.fullscreenElement) {
-            await document.documentElement.requestFullscreen();
-        }
-
-        // ✅ START CAMERA
-        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-        document.getElementById("proctorVideo").srcObject = stream;
-
-        // ✅ UI
-        document.getElementById("startOverlay").style.display = "none";
-
-        await loadQuestions();
-
-        startTimer();
-        startAIProcessing();
-
-    } catch (err) {
-        console.error("START ERROR:", err);
-        showMessage("Failed to start exam");
-    }
-}
 
         function showMessage(text, color = "#dc2626") {
             const box = document.getElementById("warningBox");
