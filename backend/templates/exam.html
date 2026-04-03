@@ -414,6 +414,7 @@ border-radius:4px;">
         let examStarted = false;
         let warningActive = false;
         let aiWarningTriggered = false;
+        let noFaceActive = false;
         // ================= WARNING SYSTEM =================
 
 
@@ -734,16 +735,23 @@ border-radius:4px;">
 
                         console.log("AI RESULT:", data);
 
-                        // 🔥 ADD THIS (IMPORTANT)
                         if (data.faces === 0) {
 
-                            aiWarningTriggered = true;  // 🔥 mark AI event
+                            if (!noFaceActive) {   // 🔥 only trigger once
+                                noFaceActive = true;
 
-                            triggerWarning("❌ No face detected");
+                                aiWarningTriggered = true;
 
-                            setTimeout(() => {
-                                aiWarningTriggered = false; // 🔥 reset after 2 sec
-                            }, 2000);
+                                triggerWarning("❌ No face detected");
+
+                                setTimeout(() => {
+                                    aiWarningTriggered = false;
+                                }, 2000);
+                            }
+
+                        } else {
+                            // 🔥 RESET when face returns
+                            noFaceActive = false;
                         }
 
                         if (data.multiple_faces) {
