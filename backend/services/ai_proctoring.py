@@ -59,7 +59,7 @@ def analyze_frame(user_id, frame):
     else:
         state["multi_count"] = 0
 
-    if state["multi_count"] >= 3:
+    if state["multi_count"] >= 2:
         multiple_faces = True
         state["face_warnings"] += 1
         state["multi_count"] = 0
@@ -75,7 +75,7 @@ def analyze_frame(user_id, frame):
             dx = abs(center[0] - state["prev_center"][0])
             dy = abs(center[1] - state["prev_center"][1])
 
-            if (dx + dy > 40) and (time.time() - state["last_move_time"] > 2):
+            if (dx + dy > 20) and (time.time() - state["last_move_time"] > 2):
                 movement = True
                 state["movement_warnings"] += 1
                 state["last_move_time"] = time.time()

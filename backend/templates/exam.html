@@ -420,7 +420,7 @@ border-radius:4px;">
 
             let now = Date.now();
 
-            if (now - lastWarningTime < 5000) return; // 🔥 5 sec cooldown
+            if (now - lastWarningTime < 2000) return;// 🔥 2 sec cooldown
 
             lastWarningTime = now;
 
@@ -693,48 +693,53 @@ border-radius:4px;">
         // ================= AI PROCESS =================
         function startAIProcessing() {
 
-    const video = document.getElementById("proctorVideo");
+            const video = document.getElementById("proctorVideo");
 
-    setInterval(() => {
+            setInterval(() => {
 
-        if (!video.videoWidth) return;
+                if (!video.videoWidth) return;
 
-        let canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth * 1.5;
-        canvas.height = video.videoHeight * 1.5;
-        let ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0);
+                let canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                let ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0);
 
-        const imageData = canvas.toDataURL("image/jpeg", 0.9);
+                const imageData = canvas.toDataURL("image/jpeg", 0.9);
 
-        fetch("/analyze_frame", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                image: imageData
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
+                fetch("/analyze_frame", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        image: imageData
+                    })
+                })
+                    .then(res => res.json())
+                    .then(data => {
 
-            console.log("AI RESULT:", data);
+                        console.log("AI RESULT:", data);
 
-            if (data.multiple_faces) {
-                triggerWarning("⚠ Multiple faces detected");
-            }
+                        // 🔥 ADD THIS (IMPORTANT)
+                        if (data.faces === 0) {
+                            triggerWarning("❌ No face detected");
+                        }
 
-            if (data.movement) {
-                triggerWarning("⚠ Suspicious movement detected");
-            }
+                        if (data.multiple_faces) {
+                            triggerWarning("⚠ Multiple faces detected");
+                        }
 
-        })
-        .catch(err => console.error("AI ERROR:", err));
+                        if (data.movement) {
+                            triggerWarning("⚠ Suspicious movement detected");
+                        }
 
-    }, 4000);
+                    })
+                    .catch(err => console.error("AI ERROR:", err));
 
-}
+            }, 1500);
+
+        }
 
         // ✅ VISIBILITY CHANGE (BEST FOR DESKTOP)
         document.addEventListener("visibilitychange", () => {
