@@ -427,7 +427,7 @@ def publish_exam():
         data = request.get_json()
 
         title = data.get("title")
-        questions = data.get("questions")
+        questions = data.get("exam_questions")
 
         # 🔥 VALIDATION
         if not questions or len(questions) == 0:
@@ -823,7 +823,7 @@ def register_user():
         }), 500
     
 
-    
+
 
 @app.route("/admin_logout")
 def admin_logout():
