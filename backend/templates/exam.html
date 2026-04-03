@@ -506,50 +506,67 @@ border-radius:4px;">
         // ================= START EXAM =================
         async function startExam() {
             try {
+
                 examStarted = true;
-                // ✅ FULLSCREEN START (IMPORTANT)
+
                 if (!document.fullscreenElement) {
                     await document.documentElement.requestFullscreen();
                 }
-                if (data.status === "blocked") {
-                    showMessage("❌ You already attempted this exam", "#dc2626");
-                    return;
-                }
-                // 1. Camera start FIRST
+
+                // 1. Camera
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 document.getElementById("proctorVideo").srcObject = stream;
-                // 2. Backend session start
+
+                // 2. Backend
                 const res = await fetch("/start_exam", {
                     method: "POST",
                     credentials: "include"
                 });
 
-                const data = await res.json();
+                const data = await res.json(); // ✅ FIRST
 
                 console.log("START RESPONSE:", data);
 
+                // ✅ BLOCKED CASE
+                if (data.status === "blocked") {
+                    showMessage("❌ You already attempted this exam");
+                    return;
+                }
+
+                // ✅ INVALID SESSION
                 if (data.status !== "ok") {
-                    warningBox("Session expired. Login again.");
+                    showMessage("Session expired. Login again");
                     window.location.href = "/login";
                     return;
                 }
 
-                // 3. UI SHOW FIRST (CRITICAL 🔥)
+                // 3. UI
                 document.getElementById("startOverlay").style.display = "none";
 
-                // 4. THEN load questions
+                // 4. Load
                 await loadQuestions();
 
-                // 5. THEN start background systems
+                // 5. Start systems
                 startTimer();
                 startAIProcessing();
 
             } catch (err) {
                 console.error("START ERROR:", err);
-                warningBox("Failed to start exam");
+                showMessage("Failed to start exam");
             }
         }
 
+
+        function showMessage(text, color = "#dc2626") {
+            const box = document.getElementById("warningBox");
+            box.innerText = text;
+            box.style.background = color;
+            box.classList.add("show");
+
+            setTimeout(() => {
+                box.classList.remove("show");
+            }, 2500);
+        }
 
         async function loadQuestions() {
             try {
@@ -788,7 +805,17 @@ border-radius:4px;">
 
                         console.log("AI RESULT:", data);
 
-                        let noFaceFrames = 0;
+                        if (data.faces === 0) {
+                            noFaceFrames++;
+
+                            if (noFaceFrames >= 3 && !noFaceActive) {
+                                noFaceActive = true;
+                                triggerWarning("No face detected");
+                            }
+                        } else {
+                            noFaceFrames = 0;
+                            noFaceActive = false;
+                        }
 
                         if (data.faces === 0) {
                             noFaceFrames++;
@@ -819,16 +846,15 @@ border-radius:4px;">
 
         // ✅ VISIBILITY CHANGE (BEST FOR DESKTOP)
         document.addEventListener("visibilitychange", () => {
-            if (!examStarted || aiWarningTriggered) return;
+            if (!examStarted || aiWarningTriggered || examSubmitted) return;
 
             if (document.hidden) {
-                triggerWarning("Tab switched / minimized");
+                triggerWarning("Tab switched");
             }
         });
         // ✅ WINDOW BLUR (SECONDARY)
         window.addEventListener("blur", () => {
-            if (!examStarted || aiWarningTriggered) return;
-
+            if (!examStarted || aiWarningTriggered || examSubmitted) return;
             triggerWarning("Window focus lost");
         });
 
@@ -881,7 +907,7 @@ border-radius:4px;">
 
         // ================= FULLSCREEN =================
         document.addEventListener("fullscreenchange", () => {
-            if (!examStarted || aiWarningTriggered) return;
+            if (!examStarted || aiWarningTriggered || examSubmitted) return;
 
             if (!document.fullscreenElement) {
                 triggerWarning("Fullscreen exited");
