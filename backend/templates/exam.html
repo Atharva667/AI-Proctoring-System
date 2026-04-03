@@ -412,21 +412,34 @@ border-radius:4px;">
             tab_switch: 0
         };
         let examStarted = false;
-
+        let warningActive = false;
+        let aiWarningTriggered = false;
         // ================= WARNING SYSTEM =================
 
 
         function triggerWarning(reason) {
 
+            if (warningActive) return; // 🔥 BLOCK MULTIPLE WARNINGS
+
+            warningActive = true;
+
             let now = Date.now();
 
-            if (now - lastWarningTime < 2000) return;// 🔥 2 sec cooldown
+            if (now - lastWarningTime < 2000) {
+                warningActive = false;
+                return;
+            }
 
             lastWarningTime = now;
 
             warningCount++;
 
             alert(`⚠ WARNING ${warningCount}/${MAX_WARNINGS}\n${reason}`);
+
+            // 🔥 RELEASE LOCK AFTER ALERT
+            setTimeout(() => {
+                warningActive = false;
+            }, 1500);
 
             if (warningCount >= MAX_WARNINGS) {
                 alert("❌ Exam terminated");
@@ -723,7 +736,14 @@ border-radius:4px;">
 
                         // 🔥 ADD THIS (IMPORTANT)
                         if (data.faces === 0) {
+
+                            aiWarningTriggered = true;  // 🔥 mark AI event
+
                             triggerWarning("❌ No face detected");
+
+                            setTimeout(() => {
+                                aiWarningTriggered = false; // 🔥 reset after 2 sec
+                            }, 2000);
                         }
 
                         if (data.multiple_faces) {
@@ -743,7 +763,7 @@ border-radius:4px;">
 
         // ✅ VISIBILITY CHANGE (BEST FOR DESKTOP)
         document.addEventListener("visibilitychange", () => {
-            if (!examStarted) return;
+            if (!examStarted || aiWarningTriggered) return;
 
             if (document.hidden) {
                 triggerWarning("Tab switched / minimized");
@@ -751,15 +771,11 @@ border-radius:4px;">
         });
         // ✅ WINDOW BLUR (SECONDARY)
         window.addEventListener("blur", () => {
-            if (!examStarted) return;
+            if (!examStarted || aiWarningTriggered) return;
 
             triggerWarning("Window focus lost");
         });
 
-
-        document.addEventListener("pause", () => {
-            triggerWarning("App minimized");
-        });
         // ✅ MOBILE APP SWITCH DETECTION
         let lastActiveTime = Date.now();
 
@@ -809,14 +825,12 @@ border-radius:4px;">
 
         // ================= FULLSCREEN =================
         document.addEventListener("fullscreenchange", () => {
-
-            if (!examStarted) return; // ✅ ADD THIS
+            if (!examStarted || aiWarningTriggered) return;
 
             if (!document.fullscreenElement) {
                 triggerWarning("Fullscreen exited");
             }
         });
-
         // ================= MOBILE SECURITY =================
         window.addEventListener("resize", () => {
             if (isMobile && window.innerWidth < 350) {
