@@ -744,7 +744,7 @@ def send_otp():
 
     payload = {
         "variables_values": otp,
-        "route": "otp",
+        "route": "q",
         "numbers": login
     }
 
