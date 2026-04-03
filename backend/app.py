@@ -715,24 +715,59 @@ def maintenance():
     return render_template("maintenance.html")
 
 
-import random, time
-from flask import session, request, jsonify
+import random, time, requests
+from flask import request, jsonify, session
 
 @app.route('/send-otp', methods=['POST'])
 def send_otp():
     data = request.get_json()
     login = data.get('login')
 
+    # 📱 VALIDATE PHONE
+    if not login.isdigit() or len(login) != 10:
+        return jsonify({
+            "status": "error",
+            "message": "Enter valid 10-digit phone number"
+        })
+
+    # 🔢 GENERATE OTP
     otp = str(random.randint(100000, 999999))
 
+    # 🔐 STORE SESSION
     session['otp'] = otp
-    session['login'] = login  # 🔥 BIND LOGIN
+    session['login'] = login
     session['otp_time'] = time.time()
-    session['attempts'] = 0 
+    session['attempts'] = 0
 
-    print("OTP:", otp)  # testing only
+    # 📡 SEND SMS (FAST2SMS)
+    url = "https://www.fast2sms.com/dev/bulkV2"
 
-    return jsonify({"message": "OTP sent successfully"})
+    payload = {
+        "variables_values": otp,
+        "route": "otp",
+        "numbers": login
+    }
+
+    headers = {
+        "authorization": "FCJDrM3nTLjNp9Z7whmU6RqgcYKA85O2taQBoxz0IsbyfWe1vunxiHWGK9QqfTmBvOhap7kXI64CZLA2",  # 🔥 PUT YOUR KEY
+        "Content-Type": "application/json"
+    }
+
+    try:
+        response = requests.post(url, json=payload, headers=headers)
+        print("SMS Response:", response.text)
+
+        return jsonify({
+            "status": "success",
+            "message": "OTP sent successfully"
+        })
+
+    except Exception as e:
+        print("SMS ERROR:", e)
+        return jsonify({
+            "status": "error",
+            "message": "Failed to send OTP"
+        })
 
 
 @app.route('/verify-otp', methods=['POST'])
