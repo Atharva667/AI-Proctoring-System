@@ -737,6 +737,105 @@ def admin_login():
 
     return render_template("admin_login.html")
 
+
+from flask import request, jsonify, session
+from werkzeug.security import generate_password_hash
+import mysql.connector
+
+@app.route("/register", methods=["POST"])
+def register_user():
+    try:
+        data = request.get_json(silent=True) or request.form
+
+        name = data.get("name")
+        login = data.get("login")   # email or phone
+        password = data.get("password")
+
+        # ================= VALIDATION =================
+        if not name or not login or not password:
+            return jsonify({
+                "status": "error",
+                "message": "All fields are required"
+            }), 400
+
+        # ================= OTP CHECK (OPTIONAL) =================
+        # If you removed OTP, comment this block
+        """
+        if not session.get("verified"):
+            return jsonify({
+                "status": "error",
+                "message": "Please verify OTP first"
+            }), 403
+        """
+
+        # ================= DETECT EMAIL / PHONE =================
+        if "@" in login:
+            email = login
+            mobile = None
+        else:
+            email = None
+            mobile = login
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        # ================= CHECK EXISTING USER =================
+        cursor.execute("""
+            SELECT id FROM students 
+            WHERE email = %s OR mobile = %s
+        """, (email, mobile))
+
+        existing = cursor.fetchone()
+
+        if existing:
+            cursor.close()
+            db.close()
+
+            return jsonify({
+                "status": "error",
+                "message": "User already exists. Please login."
+            }), 409
+
+        # ================= HASH PASSWORD =================
+        hashed_password = generate_password_hash(password)
+
+        # ================= INSERT USER =================
+        cursor.execute("""
+            INSERT INTO students (name, email, mobile, password) 
+            VALUES (%s, %s, %s, %s)
+        """, (name, email, mobile, hashed_password))
+
+        db.commit()
+
+        cursor.close()
+        db.close()
+
+        # ================= CLEAR SESSION =================
+        session.pop("otp", None)
+        session.pop("verified", None)
+        session.pop("login", None)
+        session.pop("otp_time", None)
+        session.pop("attempts", None)
+
+        return jsonify({
+            "status": "success",
+            "message": "Registration successful"
+        }), 201
+
+    except mysql.connector.Error as e:
+        print("❌ REGISTER DB ERROR:", e)
+        return jsonify({
+            "status": "error",
+            "message": "Database error"
+        }), 500
+
+    except Exception as e:
+        print("❌ REGISTER ERROR:", e)
+        return jsonify({
+            "status": "error",
+            "message": "Server error"
+        }), 500
+
 @app.route("/admin_logout")
 def admin_logout():
 
@@ -924,13 +1023,6 @@ def register_user():
             }), 400
         
 
-        # 🔐 OTP CHECK (NEW)
-        if not session.get("verified"):
-            return jsonify({
-                "status": "error",
-                "message": "OTP not verified"
-            }), 403
-
         # 🔥 DETECT EMAIL OR PHONE
         if "@" in login:
             email = login
@@ -971,13 +1063,6 @@ def register_user():
         db.commit()
         cursor.close()
         db.close()
-
-         # 🧹 CLEAR SESSION (VERY IMPORTANT)
-        session.pop("otp", None)
-        session.pop("verified", None)
-        session.pop("login", None)
-        session.pop("otp_time", None)
-        session.pop("attempts", None)
 
         return jsonify({
         "status": "success",
