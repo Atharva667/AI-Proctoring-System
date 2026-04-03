@@ -540,75 +540,59 @@
 
         function publishExam() {
 
-    const questions = [];  // ✅ declare FIRST
-    const title = document.querySelector(".form-title input").value;
+            const questions = [];  // ✅ declare FIRST
+            const title = document.querySelector(".form-title input").value;
 
-    document.querySelectorAll(".question-card").forEach(q => {
+            document.querySelectorAll(".question-card").forEach(q => {
 
-        const questionText = q.querySelector(".question-header input").value;
-        const type = q.querySelector(".type").value;
+                const questionText = q.querySelector(".question-header input").value.trim();
+                const type = q.querySelector(".type").value;
 
-        let options = [];
-        let answer = null;
+                if (!questionText) return; // 🔥 SKIP EMPTY QUESTIONS
 
-        if (type === "mcq") {
-            q.querySelectorAll(".option").forEach((opt, i) => {
+                let options = [];
+                let answer = null;
 
-                const text = opt.querySelector(".option-text").value;
-                options.push(text);
+                if (type === "mcq") {
+                    q.querySelectorAll(".option").forEach((opt, i) => {
 
-                const radio = opt.querySelector(".correct");
+                        const text = opt.querySelector(".option-text").value.trim();
 
-                if (radio.checked) {
-                    answer = i;
+                        if (text) options.push(text);
+
+                        const radio = opt.querySelector(".correct");
+
+                        if (radio.checked && text) {
+                            answer = options.length - 1;
+                        }
+                    });
+
+                    // 🔥 REQUIRE AT LEAST 2 OPTIONS
+                    if (options.length < 2) return;
+
+                    // 🔥 REQUIRE CORRECT ANSWER
+                    if (answer === null) return;
                 }
 
+                questions.push({
+                    question: questionText,
+                    type: type,
+                    options: options,
+                    answer: answer
+                });
+
             });
-        }
 
-        questions.push({
-            question: questionText,
-            type: type,
-            options: options,
-            answer: answer
-        });
+            // ✅ VALIDATION AFTER BUILDING
+            if (questions.length === 0) {
+                alert("Add at least one question!");
+                return;
+            }
 
-    });
-
-    // ✅ VALIDATION AFTER BUILDING
-    if (questions.length === 0) {
-        alert("Add at least one question!");
-        return;
-    }
-
-    if (!title) {
-        alert("Enter exam title!");
-        return;
-    }
-
-    // ✅ NOW CALL API
-    fetch("/publish_exam", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            title: title,
-            questions: questions
-        })
-    })
-    .then(res => res.json())
-    .then(data => {
-
-        if (data.error) {
-            alert(data.error);
-            return;
-        }
-
-        alert("Exam created successfully!");
-    });
-
-}
+            if (!title) {
+                alert("Enter exam title!");
+                return;
+            }
 
             fetch("/save_exam", {
 
@@ -643,7 +627,11 @@
                     console.error("Error:", err);
                     alert("Failed to save exam");
                 });
-        
+
+        }
+
+
+
         window.onload = function () {
             addQuestion();
         };
