@@ -616,8 +616,11 @@
                     console.log(data);
 
                     if (data.status === "saved") {
-                        alert("Exam saved successfully");
-                    } else {
+                        alert("Exam created successfully");
+                        window.location.href = "/teacher_dashboard";
+                    }
+                    // ✅ REDIRECT TO DASHBOARD
+                    else {
                         alert("Failed to save exam");
                     }
 

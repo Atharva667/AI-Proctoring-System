@@ -291,6 +291,29 @@
             }
 
         }
+
+        #warningBox {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 12px 22px;
+            border-radius: 8px;
+            display: none;
+            z-index: 999999;
+            font-weight: 600;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.4s ease;
+            opacity: 0;
+        }
+
+        #warningBox.show {
+            display: block;
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
     </style>
 
 </head>
@@ -341,6 +364,27 @@ border-radius:4px;">
 
 
     <div class="header">
+
+        <!-- 🔥 SUBMIT LOADER -->
+        <div id="submitLoader" style="
+        position:fixed;
+        inset:0;
+        background:rgba(0,0,0,0.8);
+        color:white;
+        display:none;
+        align-items:center;
+        justify-content:center;
+        z-index:999999;
+        font-size:22px;
+        font-weight:600;
+    ">
+            ⏳ Submitting Exam...
+        </div>
+
+
+        <div>
+            Warnings: <span id="warningCountUI">0</span>/3
+        </div>
 
         <div>
             Computer Based Test – AI Proctored Mode
@@ -415,36 +459,41 @@ border-radius:4px;">
         let warningActive = false;
         let aiWarningTriggered = false;
         let noFaceActive = false;
+        let examSubmitted = false;
+        let aiInterval = null;
+        let noFaceFrames = 0;
         // ================= WARNING SYSTEM =================
 
 
         function triggerWarning(reason) {
 
-            if (warningActive) return; // 🔥 BLOCK MULTIPLE WARNINGS
-
-            warningActive = true;
+            if (examSubmitted) return;
 
             let now = Date.now();
-
-            if (now - lastWarningTime < 2000) {
-                warningActive = false;
-                return;
-            }
+            if (now - lastWarningTime < 2000) return;
 
             lastWarningTime = now;
-
             warningCount++;
+            updateWarningUI();
 
-            alert(`⚠ WARNING ${warningCount}/${MAX_WARNINGS}\n${reason}`);
+            // 🔥 SHOW MODERN WARNING BOX
+            const box = document.getElementById("warningBox");
+            box.innerText = `⚠ Warning ${warningCount}/${MAX_WARNINGS} — ${reason}`;
+            box.classList.add("show");
 
-            // 🔥 RELEASE LOCK AFTER ALERT
             setTimeout(() => {
-                warningActive = false;
-            }, 1500);
+                box.classList.remove("show");
+            }, 2500);
 
+            // 🔥 AUTO SUBMIT INSTEAD OF TERMINATE
             if (warningCount >= MAX_WARNINGS) {
-                alert("❌ Exam terminated");
-                window.location.href = "/exam_terminated";
+
+                box.innerText = "❌ Too many violations! Auto submitting...";
+                box.classList.add("show");
+
+                setTimeout(() => {
+                    submitExam(); // ✅ AUTO SUBMIT (BEST UX)
+                }, 1500);
             }
         }
         // ================= STATE =================
@@ -476,7 +525,7 @@ border-radius:4px;">
                 console.log("START RESPONSE:", data);
 
                 if (data.status !== "ok") {
-                    alert("Session expired. Login again.");
+                    warningBox("Session expired. Login again.");
                     window.location.href = "/login";
                     return;
                 }
@@ -493,7 +542,7 @@ border-radius:4px;">
 
             } catch (err) {
                 console.error("START ERROR:", err);
-                alert("Failed to start exam");
+                warningBox("Failed to start exam");
             }
         }
 
@@ -509,7 +558,7 @@ border-radius:4px;">
                 console.log("QUESTIONS:", data);
 
                 if (!data.questions || data.questions.length === 0) {
-                    alert("No questions found");
+                    warningBox("No questions found");
                     return;
                 }
 
@@ -524,7 +573,7 @@ border-radius:4px;">
 
             } catch (err) {
                 console.error("🔥 FULL ERROR:", err);
-                alert("ERROR: " + err.message);
+                warningBox("ERROR: " + err.message);
             }
         }
 
@@ -700,7 +749,7 @@ border-radius:4px;">
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
             } catch (err) {
-                alert("Camera access denied");
+                warningBox("Camera access denied");
             }
         }
 
@@ -709,7 +758,7 @@ border-radius:4px;">
 
             const video = document.getElementById("proctorVideo");
 
-            setInterval(() => {
+           aiInterval = setInterval(() => {
 
                 if (!video.videoWidth) return;
 
@@ -735,22 +784,17 @@ border-radius:4px;">
 
                         console.log("AI RESULT:", data);
 
+                        let noFaceFrames = 0;
+
                         if (data.faces === 0) {
+                            noFaceFrames++;
 
-                            if (!noFaceActive) {   // 🔥 only trigger once
+                            if (noFaceFrames >= 3 && !noFaceActive) {
                                 noFaceActive = true;
-
-                                aiWarningTriggered = true;
-
-                                triggerWarning("❌ No face detected");
-
-                                setTimeout(() => {
-                                    aiWarningTriggered = false;
-                                }, 2000);
+                                triggerWarning("No face detected");
                             }
-
                         } else {
-                            // 🔥 RESET when face returns
+                            noFaceFrames = 0;
                             noFaceActive = false;
                         }
 
@@ -894,20 +938,61 @@ border-radius:4px;">
             })
                 .then(res => res.json())
                 .then(data => {
-                    console.log("SUBMIT RESPONSE:", data); // 🔥 ADD THIS
-                    if (data.status === "saved") {
-                        alert("✅ Exam Submitted Successfully");
-                        window.location.href = "/exam_success";
-                    } else {
-                        alert("❌ Submission failed");
-                    }
+                    console.log("SUBMIT RESPONSE:", data);
 
+                    if (data.status === "saved") {
+
+                        stopProctoring(); // ✅ MOST IMPORTANT
+
+                        // ✅ SHOW SUCCESS MESSAGE (USING SAME BOX)
+                        const box = document.getElementById("warningBox");
+                        box.innerText = "✅ Exam Submitted Successfully";
+                        box.style.background = "#16a34a"; // green
+                        box.style.display = "block";
+
+                        showLoader(); // ✅ loader
+
+                        setTimeout(() => {
+                            window.location.href = "/exam_success";
+                        }, 1000);
+
+                    } else {
+
+                        const box = document.getElementById("warningBox");
+                        box.innerText = "❌ Submission failed";
+                        box.style.background = "#dc2626";
+                        box.style.display = "block";
+                    }
                 })
                 .catch(err => {
                     console.error(err);
-                    alert("❌ Server error");
+                    warningBox("❌ Server error");
                 });
         }
+
+        function updateWarningUI() {
+            document.getElementById("warningCountUI").innerText = warningCount;
+        }
+
+        function showLoader() {
+            document.getElementById("submitLoader").style.display = "flex";
+        }
+
+        function stopProctoring() {
+
+    examSubmitted = true;
+
+    // stop AI
+    if (aiInterval) clearInterval(aiInterval);
+
+    // stop camera
+    const video = document.getElementById("proctorVideo");
+    if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+    }
+
+    console.log("✅ Proctoring stopped");
+}
 
     </script>
 

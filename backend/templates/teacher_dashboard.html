@@ -419,6 +419,45 @@
             color: #dc2626;
             font-weight: 700;
         }
+
+        /* HOME BUTTON ANIMATION */
+
+        .home-btn {
+            position: relative;
+            padding: 6px 14px;
+            border-radius: 6px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Hover effect */
+        .home-btn:hover {
+            background: #2563eb;
+            color: white;
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        /* Click effect */
+        .home-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Underline animation */
+        .home-btn::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 0%;
+            height: 2px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .home-btn:hover::after {
+            width: 100%;
+        }
     </style>
 
 </head>
@@ -452,7 +491,7 @@
         <h2>AI Proctoring System – Teacher Panel</h2>
 
         <div class="header-right">
-            <a href="/">Home</a>
+            <a href="/" class="home-btn">Home</a>
 
         </div>
 
