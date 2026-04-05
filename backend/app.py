@@ -959,52 +959,60 @@ def dashboard_page():
     return render_template("dashboard.html", name=session["user_name"])
 
 
-
 @app.route("/start_exam", methods=["POST"])
 def start_exam():
-    # Use a try-finally block to ensure cleanup
     db = None
     try:
-        # 1. Check if user is logged in
+        # 1. Security: Check login
         student_id = session.get("user_id")
         if not student_id:
             return jsonify({"status": "unauthorized"}), 401
 
-        # 2. Open DB Connection
+        # 2. Database Connection
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # 3. FIX: Fetch the exam and consume the result immediately
+        # 3. Get the most recent Exam ID
         cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
-        exam = cursor.fetchone() # This "reads" the result so the cursor is clear
+        exam = cursor.fetchone()
 
         if not exam:
-            cursor.close()
             return jsonify({"status": "no_exam", "message": "No active exam found"})
 
         exam_id = exam["id"]
 
-        # --- TEMPORARY TEST MODE: ALWAYS ALLOW ---
-        # Note: We still fetch the exam_id so the frontend doesn't crash,
-        # but we skip the "already_attempted" check logic here.
+        # ======================================================
+        # ✅ ENABLED: PREVIOUS ATTEMPT SECURITY CHECK
+        # ======================================================
+        cursor.execute("""
+            SELECT id FROM exam_results 
+            WHERE student_id = %s AND exam_id = %s
+        """, (student_id, exam_id))
         
+        already_attempted = cursor.fetchone()
+        
+        if already_attempted:
+            cursor.close()
+            # This triggers the "Attempt already recorded" alert in exam.html
+            return jsonify({"status": "blocked"}) 
+        # ======================================================
+
+        # 4. Set Session State
         session["state"] = "in_exam"
         session["exam_id"] = exam_id
         session.modified = True
 
-        # 4. Clean close
         cursor.close() 
-        print(f"✅ Exam started for Student: {student_id}, Exam ID: {exam_id}")
+        print(f"✅ Secure Exam Start: Student {student_id} started Exam {exam_id}")
         return jsonify({"status": "ok"})
 
     except Exception as e:
-        print("❌ DB ERROR in /start_exam:")
+        print("❌ DATABASE ERROR:")
         import traceback
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
     finally:
-        # Crucial: Close connection even if it crashes
         if db and db.is_connected():
             db.close()
 

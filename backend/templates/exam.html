@@ -554,12 +554,12 @@ border-radius:4px;">
                 box.classList.remove("show");
             }, 2500);
 
-            // if (warningCount >= MAX_WARNINGS) {
-            //     box.innerText = "❌ Too many violations! Auto submitting...";
-            //     box.style.background = "#b91c1c";
-            //     box.classList.add("show");
-            //     setTimeout(() => { submitExam(); }, 1500);
-            // }
+            if (warningCount >= MAX_WARNINGS) {
+                box.innerText = "❌ Too many violations! Auto submitting...";
+                box.style.background = "#b91c1c";
+                box.classList.add("show");
+                setTimeout(() => { submitExam(); }, 1500);
+            }
         }
 
         function updateWarningUI() {
@@ -572,10 +572,10 @@ border-radius:4px;">
                 const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
                 const data = await res.json();
 
-                // if (data.status === "blocked") {
-                //     alert("Attempt already recorded.");
-                //     return;
-                // }
+                if (data.status === "blocked") {
+                    alert("Attempt already recorded.");
+                    return;
+                }
 
                 // 1. First, request Fullscreen
                 if (!document.fullscreenElement) {
