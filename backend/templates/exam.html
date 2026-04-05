@@ -506,47 +506,86 @@ border-radius:4px;">
 
     // ================= EXAM CORE LOGIC =================
     async function startExam() {
-        try {
-            const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
-            const data = await res.json();
+    try {
+        const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
+        const data = await res.json();
 
-            if (data.status === "blocked") {
-                const btn = document.getElementById("startBtn");
-                btn.innerText = "Attempt Already Recorded";
-                btn.disabled = true;
-                return;
+        if (data.status === "blocked") {
+            alert("Attempt already recorded.");
+            return;
+        }
+
+        // 1. First, request Fullscreen
+        if (!document.fullscreenElement) {
+            try {
+                await document.documentElement.requestFullscreen();
+            } catch (e) {
+                console.warn("Fullscreen auto-request failed, continuing...");
             }
+        }
 
-            if (data.status !== "ok") { window.location.href = "/login"; return; }
+        // 2. Then, request Camera
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { width: 640, height: 480 } // Setting resolution helps stability
+        });
+        
+        const video = document.getElementById("proctorVideo");
+        video.srcObject = stream;
 
+        // 3. Wait for video to actually start before running AI
+        video.onloadedmetadata = () => {
+            video.play();
             examStarted = true;
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(e => console.log("FS blocked"));
-            }
-
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            document.getElementById("proctorVideo").srcObject = stream;
             document.getElementById("startOverlay").style.display = "none";
-
-            await loadQuestions();
+            loadQuestions();
             startTimer();
             startAIProcessing();
+        };
 
-        } catch (err) {
-            alert("Camera is required for this exam.");
-        }
+    } catch (err) {
+        console.error("Initialization Error:", err);
+        // Change the alert to see the ACTUAL error for debugging
+        alert("Camera initialization failed: " + err.name);
     }
-
+}
     async function loadQuestions() {
+    try {
         const res = await fetch("/get_questions", { credentials: "include" });
+        
+        if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+        }
+
         const data = await res.json();
+        
+        // Check if questions actually exist
+        if (!data.questions || data.questions.length === 0) {
+            console.error("No questions returned from server.");
+            alert("No questions found for this exam. Please contact the administrator.");
+            return;
+        }
+
         questions = data.questions;
+        
+        // Initialize arrays based on question count
         answers = new Array(questions.length).fill(null);
         marked = new Array(questions.length).fill(false);
+        
+        // Reset current question index to 0 just in case
+        current = 0;
+
+        // Render the UI components
         renderPalette();
         renderQuestion();
         updateCounters();
+
+        console.log(`Successfully loaded ${questions.length} questions.`);
+
+    } catch (err) {
+        console.error("Failed to load questions:", err);
+        alert("Error loading exam questions. Please refresh the page.");
     }
+}
 
     // ================= AI PROCTORING ENGINE =================
     function startAIProcessing() {

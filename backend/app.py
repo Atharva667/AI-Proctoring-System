@@ -260,61 +260,71 @@ def save_exam():
 
 @app.route("/get_questions")
 def get_questions():
+    db = None
     try:
         db = get_db()
+        # Using dictionary=True makes the code much cleaner
         cursor = db.cursor(dictionary=True)
 
-        # GET LATEST EXAM
+        # 1. GET THE LATEST EXAM
+        # Ensure we only get the most recently created exam
         cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
         exam = cursor.fetchone()
 
         if not exam:
+            print("⚠️ Backend Warning: No exams found in the 'exams' table.")
             return jsonify({"questions": []})
 
         exam_id = exam["id"]
 
-        # GET QUESTIONS
+        # 2. GET ALL QUESTIONS FOR THIS EXAM
         cursor.execute("""
             SELECT *
             FROM exam_questions
             WHERE exam_id = %s
-            ORDER BY id
+            ORDER BY id ASC
         """, (exam_id,))
 
         rows = cursor.fetchall()
-
+        
+        # Close cursor immediately after fetching
         cursor.close()
-        db.close()
 
-        # ✅ CORRECT INDENT STARTS HERE
+        # 3. FORMAT THE DATA FOR THE FRONTEND
         questions = []
-
         for r in rows:
-            answer_value = r["correct_answer"]
-
+            # Handle the correct answer integer conversion safely
             try:
-                answer_value = int(answer_value)
-            except:
+                answer_value = int(r["correct_answer"]) if r["correct_answer"] is not None else 0
+            except (ValueError, TypeError):
                 answer_value = 0
+
+            # Filter out None values from options so the frontend doesn't show "null"
+            raw_options = [r["option1"], r["option2"], r["option3"], r["option4"]]
+            clean_options = [opt for opt in raw_options if opt is not None]
 
             questions.append({
                 "exam_id": r["exam_id"],
                 "question": r["question"],
                 "type": r["question_type"],
-                "options": [
-                    r["option1"],
-                    r["option2"],
-                    r["option3"],
-                    r["option4"]
-                ],
+                "options": clean_options,
                 "answer": answer_value
             })
 
+        print(f"✅ Success: Loaded {len(questions)} questions for Exam ID: {exam_id}")
         return jsonify({"questions": questions})
 
     except Exception as e:
-        print("ERROR:", e)
-        return jsonify({"questions": []})
+        # Detailed error logging for you to see in the terminal
+        print("❌ DATABASE ERROR in /get_questions:")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"questions": [], "error": str(e)}), 500
+
+    finally:
+        # This block ensures the DB connection closes even if an error occurs
+        if db and db.is_connected():
+            db.close()
 
 
 @app.route("/process_frame", methods=["POST"])
