@@ -442,245 +442,317 @@ border-radius:4px;">
 
     </div>
 
-<script>
-    // ================= GLOBAL STATE =================
-    const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
-    let warningCount = 0;
-    const MAX_WARNINGS = 3;
-    let lastWarningTime = 0;
-    let examStarted = false;
-    let examSubmitted = false;
-    let aiInterval = null;
-    let noFaceFrames = 0;
+    <script>
+        // ================= GLOBAL STATE =================
+        const isMobile = /Android|iPhone|iPad/i.test(navigator.userAgent);
+        let warningCount = 0;
+        const MAX_WARNINGS = 3;
+        let lastWarningTime = 0;
+        let examStarted = false;
+        let examSubmitted = false;
+        let aiInterval = null;
+        let noFaceFrames = 0;
 
-    // This object tracks the specific categories of cheating
-    let violationCounts = {
-        no_face: 0,
-        multiple_faces: 0,
-        movement: 0,
-        tab_switch: 0
-    };
-
-    let questions = [];
-    let current = 0;
-    let answers = [];
-    let marked = [];
-    let time = 300;
-
-    // ================= WARNING SYSTEM =================
-    function triggerWarning(reason, type = null) {
-        if (examSubmitted) return;
-
-        let now = Date.now();
-        if (now - lastWarningTime < 2500) return; // Prevent spamming warnings
-
-        lastWarningTime = now;
-        warningCount++;
-
-        // Update specific violation category
-        if (type && violationCounts.hasOwnProperty(type)) {
-            violationCounts[type]++;
-        }
-
-        updateWarningUI();
-
-        const box = document.getElementById("warningBox");
-        box.innerText = `⚠ Warning ${warningCount}/${MAX_WARNINGS} — ${reason}`;
-        box.classList.add("show");
-
-        setTimeout(() => {
-            box.classList.remove("show");
-        }, 2500);
-
-        if (warningCount >= MAX_WARNINGS) {
-            box.innerText = "❌ Too many violations! Auto submitting...";
-            box.style.background = "#b91c1c";
-            box.classList.add("show");
-            setTimeout(() => { submitExam(); }, 1500);
-        }
-    }
-
-    function updateWarningUI() {
-        document.getElementById("warningCountUI").innerText = warningCount;
-    }
-
-    // ================= EXAM CORE LOGIC =================
-    async function startExam() {
-    try {
-        const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
-        const data = await res.json();
-
-        if (data.status === "blocked") {
-            alert("Attempt already recorded.");
-            return;
-        }
-
-        // 1. First, request Fullscreen
-        if (!document.fullscreenElement) {
-            try {
-                await document.documentElement.requestFullscreen();
-            } catch (e) {
-                console.warn("Fullscreen auto-request failed, continuing...");
-            }
-        }
-
-        // 2. Then, request Camera
-        const stream = await navigator.mediaDevices.getUserMedia({ 
-            video: { width: 640, height: 480 } // Setting resolution helps stability
-        });
-        
-        const video = document.getElementById("proctorVideo");
-        video.srcObject = stream;
-
-        // 3. Wait for video to actually start before running AI
-        video.onloadedmetadata = () => {
-            video.play();
-            examStarted = true;
-            document.getElementById("startOverlay").style.display = "none";
-            loadQuestions();
-            startTimer();
-            startAIProcessing();
+        // This object tracks the specific categories of cheating
+        let violationCounts = {
+            no_face: 0,
+            multiple_faces: 0,
+            movement: 0,
+            tab_switch: 0
         };
 
-    } catch (err) {
-        console.error("Initialization Error:", err);
-        // Change the alert to see the ACTUAL error for debugging
-        alert("Camera initialization failed: " + err.name);
-    }
-}
-    async function loadQuestions() {
-    try {
-        const res = await fetch("/get_questions", { credentials: "include" });
-        
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
+        let questions = [];
+        let current = 0;
+        let answers = [];
+        let marked = [];
+        let time = 300;
+
+        // ================= WARNING SYSTEM =================
+        function triggerWarning(reason, type = null) {
+            if (examSubmitted) return;
+
+            let now = Date.now();
+            if (now - lastWarningTime < 2500) return; // Prevent spamming warnings
+
+            lastWarningTime = now;
+            warningCount++;
+
+            // Update specific violation category
+            if (type && violationCounts.hasOwnProperty(type)) {
+                violationCounts[type]++;
+            }
+
+            updateWarningUI();
+
+            const box = document.getElementById("warningBox");
+            box.innerText = `⚠ Warning ${warningCount}/${MAX_WARNINGS} — ${reason}`;
+            box.classList.add("show");
+
+            setTimeout(() => {
+                box.classList.remove("show");
+            }, 2500);
+
+            if (warningCount >= MAX_WARNINGS) {
+                box.innerText = "❌ Too many violations! Auto submitting...";
+                box.style.background = "#b91c1c";
+                box.classList.add("show");
+                setTimeout(() => { submitExam(); }, 1500);
+            }
         }
 
-        const data = await res.json();
-        
-        // Check if questions actually exist
-        if (!data.questions || data.questions.length === 0) {
-            console.error("No questions returned from server.");
-            alert("No questions found for this exam. Please contact the administrator.");
-            return;
+        function updateWarningUI() {
+            document.getElementById("warningCountUI").innerText = warningCount;
         }
 
-        questions = data.questions;
-        
-        // Initialize arrays based on question count
-        answers = new Array(questions.length).fill(null);
-        marked = new Array(questions.length).fill(false);
-        
-        // Reset current question index to 0 just in case
-        current = 0;
+        // ================= EXAM CORE LOGIC =================
+        async function startExam() {
+            try {
+                const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
+                const data = await res.json();
 
-        // Render the UI components
-        renderPalette();
-        renderQuestion();
-        updateCounters();
+                if (data.status === "blocked") {
+                    alert("Attempt already recorded.");
+                    return;
+                }
 
-        console.log(`Successfully loaded ${questions.length} questions.`);
-
-    } catch (err) {
-        console.error("Failed to load questions:", err);
-        alert("Error loading exam questions. Please refresh the page.");
-    }
-}
-
-    // ================= AI PROCTORING ENGINE =================
-    function startAIProcessing() {
-        const video = document.getElementById("proctorVideo");
-
-        aiInterval = setInterval(() => {
-            if (!video.videoWidth || examSubmitted) return;
-
-            let canvas = document.createElement("canvas");
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-            let ctx = canvas.getContext("2d");
-            ctx.drawImage(video, 0, 0);
-
-            const imageData = canvas.toDataURL("image/jpeg", 0.7);
-
-            fetch("/analyze_frame", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: imageData })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.faces === 0) {
-                    noFaceFrames++;
-                    if (noFaceFrames >= 3) {
-                        triggerWarning("No face detected", "no_face");
-                        noFaceFrames = 0;
+                // 1. First, request Fullscreen
+                if (!document.fullscreenElement) {
+                    try {
+                        await document.documentElement.requestFullscreen();
+                    } catch (e) {
+                        console.warn("Fullscreen auto-request failed, continuing...");
                     }
-                } else {
-                    noFaceFrames = 0;
-                    if (data.multiple_faces) triggerWarning("Multiple faces detected", "multiple_faces");
-                    if (data.movement) triggerWarning("Suspicious movement", "movement");
+                }
+
+                // 2. Then, request Camera
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480 } // Setting resolution helps stability
+                });
+
+                const video = document.getElementById("proctorVideo");
+                video.srcObject = stream;
+
+                // 3. Wait for video to actually start before running AI
+                video.onloadedmetadata = () => {
+                    video.play();
+                    examStarted = true;
+                    document.getElementById("startOverlay").style.display = "none";
+                    loadQuestions();
+                    startTimer();
+                    startAIProcessing();
+                };
+
+            } catch (err) {
+                console.error("Initialization Error:", err);
+                // Change the alert to see the ACTUAL error for debugging
+                alert("Camera initialization failed: " + err.name);
+            }
+        }
+
+        // 1. Fixed Timer Function
+        function startTimer() {
+            const timerDisplay = document.getElementById("timer");
+            const interval = setInterval(() => {
+                if (examSubmitted) {
+                    clearInterval(interval);
+                    return;
+                }
+
+                let minutes = Math.floor(time / 60);
+                let seconds = time % 60;
+
+                timerDisplay.innerText = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                if (time <= 0) {
+                    clearInterval(interval);
+                    submitExam(); // Auto-submit when time hits 0
+                }
+                time--;
+            }, 1000);
+        }
+
+        // 2. Fixed Palette Rendering
+        function renderPalette() {
+            const palette = document.getElementById("palette");
+            let html = "";
+            for (let i = 0; i < questions.length; i++) {
+                let colorClass = "palette-btn"; // Default grey
+                if (answers[i] !== null) colorClass = "answered"; // Green
+                else if (marked[i]) colorClass = "marked"; // Yellow
+
+                html += `<button class="${colorClass}" onclick="goToQuestion(${i})">${i + 1}</button>`;
+            }
+            palette.innerHTML = html;
+        }
+
+        // 3. Fixed Question Rendering
+        function renderQuestion() {
+            let q = questions[current];
+            document.getElementById("qNo").innerText = "Question " + (current + 1);
+            document.getElementById("questionText").innerText = q.question;
+
+            let optionsHTML = "";
+            if (q.type === "mcq") {
+                q.options.forEach((opt, i) => {
+                    optionsHTML += `
+                <div class="option" onclick="selectOption(${i})">
+                    <input type="radio" name="ans" value="${i}" ${answers[current] == i ? "checked" : ""}>
+                    <label>${opt}</label>
+                </div>`;
+                });
+            } else {
+                optionsHTML = `<textarea oninput="answers[current]=this.value" placeholder="Type answer here...">${answers[current] || ""}</textarea>`;
+            }
+            document.getElementById("optionsBox").innerHTML = optionsHTML;
+        }
+
+        // 4. Navigation Helpers
+        function goToQuestion(i) {
+            current = i;
+            renderQuestion();
+        }
+
+        function updateCounters() {
+            let answered = answers.filter(a => a !== null).length;
+            document.getElementById("answeredCount").innerText = answered;
+            document.getElementById("remainingCount").innerText = questions.length - answered;
+        }
+
+
+
+        async function loadQuestions() {
+            try {
+                const res = await fetch("/get_questions", { credentials: "include" });
+
+                if (!res.ok) {
+                    throw new Error(`HTTP error! status: ${res.status}`);
+                }
+
+                const data = await res.json();
+
+                // Check if questions actually exist
+                if (!data.questions || data.questions.length === 0) {
+                    console.error("No questions returned from server.");
+                    alert("No questions found for this exam. Please contact the administrator.");
+                    return;
+                }
+
+                questions = data.questions;
+
+                // Initialize arrays based on question count
+                answers = new Array(questions.length).fill(null);
+                marked = new Array(questions.length).fill(false);
+
+                // Reset current question index to 0 just in case
+                current = 0;
+
+                // Render the UI components
+                renderPalette();
+                renderQuestion();
+                updateCounters();
+
+                console.log(`Successfully loaded ${questions.length} questions.`);
+
+            } catch (err) {
+                console.error("Failed to load questions:", err);
+                alert("Error loading exam questions. Please refresh the page.");
+            }
+        }
+
+        // ================= AI PROCTORING ENGINE =================
+        function startAIProcessing() {
+            const video = document.getElementById("proctorVideo");
+
+            aiInterval = setInterval(() => {
+                if (!video.videoWidth || examSubmitted) return;
+
+                let canvas = document.createElement("canvas");
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                let ctx = canvas.getContext("2d");
+                ctx.drawImage(video, 0, 0);
+
+                const imageData = canvas.toDataURL("image/jpeg", 0.7);
+
+                fetch("/analyze_frame", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ image: imageData })
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.faces === 0) {
+                            noFaceFrames++;
+                            if (noFaceFrames >= 3) {
+                                triggerWarning("No face detected", "no_face");
+                                noFaceFrames = 0;
+                            }
+                        } else {
+                            noFaceFrames = 0;
+                            if (data.multiple_faces) triggerWarning("Multiple faces detected", "multiple_faces");
+                            if (data.movement) triggerWarning("Suspicious movement", "movement");
+                        }
+                    });
+            }, 1500);
+        }
+
+        // ================= SUBMISSION =================
+        function submitExam() {
+            if (examSubmitted) return;
+
+            let score = 0;
+            questions.forEach((q, i) => {
+                if (q.type === "mcq" && answers[i] !== null) {
+                    if (Number(answers[i]) === Number(q.answer)) score++;
                 }
             });
-        }, 1500);
-    }
 
-    // ================= SUBMISSION =================
-    function submitExam() {
-        if (examSubmitted) return;
+            // Sum up all violation types for the database
+            let totalViolations = Object.values(violationCounts).reduce((a, b) => a + b, 0);
 
-        let score = 0;
-        questions.forEach((q, i) => {
-            if (q.type === "mcq" && answers[i] !== null) {
-                if (Number(answers[i]) === Number(q.answer)) score++;
-            }
-        });
+            document.getElementById("submitLoader").style.display = "flex";
 
-        // Sum up all violation types for the database
-        let totalViolations = Object.values(violationCounts).reduce((a, b) => a + b, 0);
-
-        document.getElementById("submitLoader").style.display = "flex";
-
-        fetch("/submit_exam", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                exam_id: questions[0]?.exam_id || 1,
-                score: score,
-                total: questions.length,
-                violations: totalViolations,
-                answers: answers
+            fetch("/submit_exam", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    exam_id: questions[0]?.exam_id || 1,
+                    score: score,
+                    total: questions.length,
+                    violations: totalViolations,
+                    answers: answers
+                })
             })
-        })
-        .then(() => {
-            stopProctoring();
-            window.location.href = "/exam_success";
+                .then(() => {
+                    stopProctoring();
+                    window.location.href = "/exam_success";
+                });
+        }
+
+        function stopProctoring() {
+            examSubmitted = true;
+            clearInterval(aiInterval);
+            const video = document.getElementById("proctorVideo");
+            if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        }
+
+        // ================= BROWSER SECURITY =================
+        document.addEventListener("visibilitychange", () => {
+            if (examStarted && document.hidden && !examSubmitted) triggerWarning("Tab switch detected", "tab_switch");
         });
-    }
 
-    function stopProctoring() {
-        examSubmitted = true;
-        clearInterval(aiInterval);
-        const video = document.getElementById("proctorVideo");
-        if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
-    }
+        document.addEventListener("fullscreenchange", () => {
+            if (examStarted && !document.fullscreenElement && !examSubmitted) triggerWarning("Fullscreen exited", "tab_switch");
+        });
 
-    // ================= BROWSER SECURITY =================
-    document.addEventListener("visibilitychange", () => {
-        if (examStarted && document.hidden && !examSubmitted) triggerWarning("Tab switch detected", "tab_switch");
-    });
-
-    document.addEventListener("fullscreenchange", () => {
-        if (examStarted && !document.fullscreenElement && !examSubmitted) triggerWarning("Fullscreen exited", "tab_switch");
-    });
-
-    // Block right-click and keyboard shortcuts
-    document.addEventListener("contextmenu", e => e.preventDefault());
-    document.addEventListener("copy", e => e.preventDefault());
-    document.addEventListener("paste", e => e.preventDefault());
-    document.addEventListener("keydown", e => {
-        if (e.ctrlKey && ['c','v','u'].includes(e.key.toLowerCase())) e.preventDefault();
-    });
-</script>
+        // Block right-click and keyboard shortcuts
+        document.addEventListener("contextmenu", e => e.preventDefault());
+        document.addEventListener("copy", e => e.preventDefault());
+        document.addEventListener("paste", e => e.preventDefault());
+        document.addEventListener("keydown", e => {
+            if (e.ctrlKey && ['c', 'v', 'u'].includes(e.key.toLowerCase())) e.preventDefault();
+        });
+    </script>
 
 </body>
 
