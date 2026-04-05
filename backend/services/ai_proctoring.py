@@ -30,6 +30,8 @@ def analyze_frame(user_id, frame):
     faces = detect_faces(frame)
     face_count = len(faces)
 
+    print(f"DEBUG AI: User: {user_id} | Faces Found: {face_count}")
+
     if user_id not in user_states:
         user_states[user_id] = {
             "prev_center": None,

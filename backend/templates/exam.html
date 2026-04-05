@@ -291,29 +291,33 @@
             }
 
         }
+#warningBox {
+    position: fixed;
+    top: 50px; /* Lower it slightly from the very top */
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    z-index: 9999999; /* Make this extremely high */
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    display: none; /* Controlled by JS */
+    border: 2px solid white;
+}
 
-        #warningBox {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-20px);
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            color: white;
-            padding: 12px 22px;
-            border-radius: 8px;
-            display: none;
-            z-index: 999999;
-            font-weight: 600;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
-            transition: all 0.4s ease;
-            opacity: 0;
-        }
+/* Add a simple animation class */
+#warningBox.show {
+    display: block !important;
+    animation: slideIn 0.3s ease-out;
+}
 
-        #warningBox.show {
-            display: block;
-            transform: translateX(-50%) translateY(0);
-            opacity: 1;
-        }
+@keyframes slideIn {
+    from { top: -100px; opacity: 0; }
+    to { top: 50px; opacity: 1; }
+}
 
         #startBtn:disabled {
             opacity: 0.7;
@@ -550,12 +554,12 @@ border-radius:4px;">
                 box.classList.remove("show");
             }, 2500);
 
-            if (warningCount >= MAX_WARNINGS) {
-                box.innerText = "❌ Too many violations! Auto submitting...";
-                box.style.background = "#b91c1c";
-                box.classList.add("show");
-                setTimeout(() => { submitExam(); }, 1500);
-            }
+            // if (warningCount >= MAX_WARNINGS) {
+            //     box.innerText = "❌ Too many violations! Auto submitting...";
+            //     box.style.background = "#b91c1c";
+            //     box.classList.add("show");
+            //     setTimeout(() => { submitExam(); }, 1500);
+            // }
         }
 
         function updateWarningUI() {
