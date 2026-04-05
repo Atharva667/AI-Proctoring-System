@@ -990,17 +990,17 @@ def start_exam():
         LIMIT 1
     """, (student_id, exam_id))
 
-    already_attempted = cursor.fetchone()
+    # already_attempted = cursor.fetchone()
 
     cursor.close()
     db.close()
 
-    # ❌ BLOCK IF ALREADY ATTEMPTED
-    if already_attempted:
-        return jsonify({
-            "status": "blocked",
-            "message": "You have already attempted this exam"
-        })
+    # # ❌ BLOCK IF ALREADY ATTEMPTED
+    # if already_attempted:
+    #     return jsonify({
+    #         "status": "blocked",
+    #         "message": "You have already attempted this exam"
+    #     })
 
     # ✅ ALLOW EXAM
     session["state"] = "in_exam"

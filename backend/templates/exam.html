@@ -467,6 +467,64 @@ border-radius:4px;">
         let marked = [];
         let time = 300;
 
+
+
+        // ================= 1. THE MISSING ACTION FUNCTIONS =================
+
+    function selectOption(index) {
+        answers[current] = index;
+        renderQuestion();
+    }
+
+    function saveAnswer() {
+        // If it's an MCQ, try to find the selected radio button
+        const selected = document.querySelector('input[name="ans"]:checked');
+        if (selected) {
+            answers[current] = Number(selected.value);
+        }
+        
+        if (current < questions.length - 1) {
+            nextQuestion();
+        } else {
+            renderPalette();
+            updateCounters();
+            alert("Last question reached. You can now Submit.");
+        }
+    }
+
+    function nextQuestion() {
+        if (current < questions.length - 1) {
+            current++;
+            renderQuestion();
+            renderPalette();
+            updateCounters();
+        }
+    }
+
+    function markForReview() {
+        marked[current] = true;
+        renderPalette();
+    }
+
+    function clearAnswer() {
+        answers[current] = null;
+        renderQuestion();
+        renderPalette();
+        updateCounters();
+    }
+
+    function goToQuestion(i) {
+        current = i;
+        renderQuestion();
+    }
+
+    function updateCounters() {
+        let answered = answers.filter(a => a !== null).length;
+        document.getElementById("answeredCount").innerText = answered;
+        document.getElementById("remainingCount").innerText = questions.length - answered;
+    }
+
+
         // ================= WARNING SYSTEM =================
         function triggerWarning(reason, type = null) {
             if (examSubmitted) return;
@@ -510,10 +568,10 @@ border-radius:4px;">
                 const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
                 const data = await res.json();
 
-                if (data.status === "blocked") {
-                    alert("Attempt already recorded.");
-                    return;
-                }
+                // if (data.status === "blocked") {
+                //     alert("Attempt already recorded.");
+                //     return;
+                // }
 
                 // 1. First, request Fullscreen
                 if (!document.fullscreenElement) {
@@ -660,41 +718,33 @@ border-radius:4px;">
         }
 
         // ================= AI PROCTORING ENGINE =================
-        function startAIProcessing() {
-            const video = document.getElementById("proctorVideo");
+function startAIProcessing() {
+        const video = document.getElementById("proctorVideo");
+        aiInterval = setInterval(() => {
+            if (!video.videoWidth || examSubmitted) return;
+            let canvas = document.createElement("canvas");
+            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+            canvas.getContext("2d").drawImage(video, 0, 0);
+            const imageData = canvas.toDataURL("image/jpeg", 0.6);
 
-            aiInterval = setInterval(() => {
-                if (!video.videoWidth || examSubmitted) return;
-
-                let canvas = document.createElement("canvas");
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                let ctx = canvas.getContext("2d");
-                ctx.drawImage(video, 0, 0);
-
-                const imageData = canvas.toDataURL("image/jpeg", 0.7);
-
-                fetch("/analyze_frame", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ image: imageData })
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (data.faces === 0) {
-                            noFaceFrames++;
-                            if (noFaceFrames >= 3) {
-                                triggerWarning("No face detected", "no_face");
-                                noFaceFrames = 0;
-                            }
-                        } else {
-                            noFaceFrames = 0;
-                            if (data.multiple_faces) triggerWarning("Multiple faces detected", "multiple_faces");
-                            if (data.movement) triggerWarning("Suspicious movement", "movement");
-                        }
-                    });
-            }, 1500);
-        }
+            fetch("/analyze_frame", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ image: imageData })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.faces === 0) {
+                    noFaceFrames++;
+                    if (noFaceFrames >= 3) { triggerWarning("No face detected", "no_face"); noFaceFrames = 0; }
+                } else {
+                    noFaceFrames = 0;
+                    if (data.multiple_faces) triggerWarning("Multiple faces detected", "multiple_faces");
+                    if (data.movement) triggerWarning("Suspicious movement", "movement");
+                }
+            }).catch(e => console.log("AI Error"));
+        }, 1500);
+    }
 
         // ================= SUBMISSION =================
         function submitExam() {
