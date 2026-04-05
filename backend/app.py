@@ -959,59 +959,54 @@ def dashboard_page():
     return render_template("dashboard.html", name=session["user_name"])
 
 
+
 @app.route("/start_exam", methods=["POST"])
 def start_exam():
+    # Use a try-finally block to ensure cleanup
+    db = None
+    try:
+        # 1. Check if user is logged in
+        student_id = session.get("user_id")
+        if not student_id:
+            return jsonify({"status": "unauthorized"}), 401
 
-    # ✅ Check login
-    if not session.get("user_id"):
-        session.clear()
-        return jsonify({"status": "unauthorized"}), 401
+        # 2. Open DB Connection
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
 
-    student_id = session.get("user_id")
+        # 3. FIX: Fetch the exam and consume the result immediately
+        cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
+        exam = cursor.fetchone() # This "reads" the result so the cursor is clear
 
-    db = get_db()
-    cursor = db.cursor(dictionary=True)
+        if not exam:
+            cursor.close()
+            return jsonify({"status": "no_exam", "message": "No active exam found"})
 
-    # 🔥 GET CURRENT EXAM (LATEST)
-    cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
-    exam = cursor.fetchone()
+        exam_id = exam["id"]
 
-    if not exam:
-        cursor.close()
-        db.close()
-        return jsonify({"status": "no_exam"})
+        # --- TEMPORARY TEST MODE: ALWAYS ALLOW ---
+        # Note: We still fetch the exam_id so the frontend doesn't crash,
+        # but we skip the "already_attempted" check logic here.
+        
+        session["state"] = "in_exam"
+        session["exam_id"] = exam_id
+        session.modified = True
 
-    exam_id = exam["id"]
+        # 4. Clean close
+        cursor.close() 
+        print(f"✅ Exam started for Student: {student_id}, Exam ID: {exam_id}")
+        return jsonify({"status": "ok"})
 
-    # 🔥 CHECK IF STUDENT ALREADY ATTEMPTED THIS EXAM
-    cursor.execute("""
-        SELECT id FROM exam_results
-        WHERE student_id = %s AND exam_id = %s
-        LIMIT 1
-    """, (student_id, exam_id))
+    except Exception as e:
+        print("❌ DB ERROR in /start_exam:")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-    # already_attempted = cursor.fetchone()
-
-    cursor.close()
-    db.close()
-
-    # # ❌ BLOCK IF ALREADY ATTEMPTED
-    # if already_attempted:
-    #     return jsonify({
-    #         "status": "blocked",
-    #         "message": "You have already attempted this exam"
-    #     })
-
-    # ✅ ALLOW EXAM
-    session["state"] = "in_exam"
-    session["exam_id"] = exam_id
-    session.modified = True
-
-    print("SESSION STARTED:", dict(session))
-
-    return jsonify({"status": "ok"})
-
-
+    finally:
+        # Crucial: Close connection even if it crashes
+        if db and db.is_connected():
+            db.close()
 
 
 @app.route("/enter_exam")
