@@ -963,27 +963,25 @@ def dashboard_page():
 def start_exam():
     db = None
     try:
-        # 1. Security: Check login
         student_id = session.get("user_id")
         if not student_id:
             return jsonify({"status": "unauthorized"}), 401
 
-        # 2. Database Connection
         db = get_db()
-        cursor = db.cursor(dictionary=True)
+        # 🔥 FIX: Use buffered=True to prevent "Unread result found"
+        cursor = db.cursor(dictionary=True, buffered=True)
 
-        # 3. Get the most recent Exam ID
+        # 1. Get the most recent Exam ID
         cursor.execute("SELECT id FROM exams ORDER BY id DESC LIMIT 1")
         exam = cursor.fetchone()
 
         if not exam:
+            cursor.close()
             return jsonify({"status": "no_exam", "message": "No active exam found"})
 
         exam_id = exam["id"]
 
-        # ======================================================
-        # ✅ ENABLED: PREVIOUS ATTEMPT SECURITY CHECK
-        # ======================================================
+        # 2. Security Check: Has student already attempted?
         cursor.execute("""
             SELECT id FROM exam_results 
             WHERE student_id = %s AND exam_id = %s
@@ -991,28 +989,28 @@ def start_exam():
         
         already_attempted = cursor.fetchone()
         
-        if already_attempted:
-            cursor.close()
-            # This triggers the "Attempt already recorded" alert in exam.html
-            return jsonify({"status": "blocked"}) 
-        # ======================================================
+        # Clear the cursor before returning
+        cursor.close()
 
-        # 4. Set Session State
+        if already_attempted:
+            return jsonify({"status": "blocked"}) 
+
+        # 3. Success: Set Session State
         session["state"] = "in_exam"
         session["exam_id"] = exam_id
         session.modified = True
 
-        cursor.close() 
         print(f"✅ Secure Exam Start: Student {student_id} started Exam {exam_id}")
         return jsonify({"status": "ok"})
 
     except Exception as e:
-        print("❌ DATABASE ERROR:")
+        print("❌ DATABASE ERROR in /start_exam:")
         import traceback
         traceback.print_exc()
         return jsonify({"status": "error", "message": str(e)}), 500
 
     finally:
+        # Crucial: Always close connection
         if db and db.is_connected():
             db.close()
 
