@@ -1,45 +1,35 @@
 import cv2
 import time
+import numpy as np
 
-# ================= GLOBAL STATE =================
+# Global state to track users across frames
 user_states = {}
 
-# ================= FACE DETECTION =================
 face_cascade = cv2.CascadeClassifier(
     cv2.data.haarcascades + 'haarcascade_frontalface_default.xml'
 )
 
 def detect_faces(frame):
+    if frame is None:
+        return []
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    # scaleFactor 1.1 and minNeighbors 5 are more stable for proctoring
     faces = face_cascade.detectMultiScale(
         gray,
-        scaleFactor=1.05,
-        minNeighbors=3,
+        scaleFactor=1.1,
+        minNeighbors=5,
         minSize=(30, 30)
     )
-    return faces
+    # Standardize output to a list to prevent "len()" errors on tuples
+    return list(faces) if len(faces) > 0 else []
 
-
-# ================= MAIN ANALYSIS =================
 def analyze_frame(user_id, frame):
-
-    # ✅ FIX 1: Frame safety
     if frame is None:
-        return {
-            "faces": 0,
-            "multiple_faces": False,
-            "movement": False,
-            "movement_warnings": 0,
-            "face_warnings": 0,
-            "terminate": False
-        }
+        return {"faces": 0, "multiple_faces": False, "movement": False, "terminate": False}
 
     faces = detect_faces(frame)
+    face_count = len(faces)
 
-    # ✅ SAFE face count
-    face_count = len(faces) if isinstance(faces, (list, tuple)) else 0
-
-    # ================= INIT USER STATE =================
     if user_id not in user_states:
         user_states[user_id] = {
             "prev_center": None,
@@ -50,45 +40,40 @@ def analyze_frame(user_id, frame):
         }
 
     state = user_states[user_id]
-
-    # ================= MULTIPLE FACE DETECTION =================
     multiple_faces = False
+    movement = False
 
+    # --- MULTIPLE FACE LOGIC ---
     if face_count >= 2:
         state["multi_count"] += 1
+        if state["multi_count"] >= 2: # 2 consecutive frames to avoid glitches
+            multiple_faces = True
+            state["face_warnings"] += 1
+            state["multi_count"] = 0
     else:
         state["multi_count"] = 0
 
-    if state["multi_count"] >= 2:
-        multiple_faces = True
-        state["face_warnings"] += 1
-        state["multi_count"] = 0
-
-    # ================= MOVEMENT DETECTION =================
-    movement = False
-
+    # --- MOVEMENT LOGIC ---
     if face_count == 1:
         (x, y, w, h) = faces[0]
-        center = (x + w // 2, y + h // 2)
+        center = (int(x + w // 2), int(y + h // 2))
 
         if state["prev_center"] is not None:
             dx = abs(center[0] - state["prev_center"][0])
             dy = abs(center[1] - state["prev_center"][1])
 
-            if (dx + dy > 20) and (time.time() - state["last_move_time"] > 2):
+            # 25 pixel threshold for 1.5s intervals
+            if (dx + dy > 25) and (time.time() - state["last_move_time"] > 2):
                 movement = True
                 state["movement_warnings"] += 1
                 state["last_move_time"] = time.time()
-
         state["prev_center"] = center
+    else:
+        state["prev_center"] = None
 
-    # ================= TERMINATION =================
-    terminate = False
+    # --- TERMINATION ---
+    terminate = state["movement_warnings"] >= 3 or state["face_warnings"] >= 3
 
-    if state["movement_warnings"] >= 3 or state["face_warnings"] >= 3:
-        terminate = True
-
-    # ================= RESPONSE =================
     return {
         "faces": face_count,
         "multiple_faces": multiple_faces,

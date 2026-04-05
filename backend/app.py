@@ -406,55 +406,56 @@ def dashboard_stats():
         "pending": pending,
         "results": results
     }
-
 @app.route("/create_exam")
 def create_exam():
-
+    # 1. Session Security Check
+    # Ensure only a user who successfully logged in as a 'teacher' can enter
     if "teacher" not in session:
-        return redirect("/teacher_login")
+        # If not logged in, boot them back to the login page
+        return redirect(url_for("teacher_login"))
 
+    # 2. Page Rendering
+    # Load the HTML file where the teacher inputs questions, options, and answers
     return render_template("create_exam.html")
-
 
 
 @app.route("/publish_exam", methods=["POST"])
 def publish_exam():
+    # Security: Only approved teachers in session can create exams
+    if "teacher" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
 
     try:
-        if "teacher" not in session:
-            return jsonify({"error": "Unauthorized"}), 401
-
         data = request.get_json()
-
         title = data.get("title")
-        questions = data.get("exam_questions")
+        questions = data.get("questions") # or data.get("exam_questions") depending on your JS
 
-        # 🔥 VALIDATION
-        if not questions or len(questions) == 0:
-            return jsonify({"error": "Add at least one question"}), 400
+        if not questions:
+            return jsonify({"error": "No questions provided"}), 400
 
         db = get_db()
         cursor = db.cursor()
 
-        # 👉 Insert exam
-        cursor.execute("INSERT INTO exams (title) VALUES (%s)", (title,))
+        # Insert the main Exam header
+        cursor.execute("INSERT INTO exams (title, created_by) VALUES (%s, %s)", 
+                       (title, session.get("teacher")))
         exam_id = cursor.lastrowid
 
-        # 👉 Insert questions
+        # Insert each individual question into the exam_questions table
         for q in questions:
+            opts = q.get("options", [None]*4)
             cursor.execute("""
-                INSERT INTO questions (exam_id, question, type)
-                VALUES (%s, %s, %s)
-            """, (exam_id, q["question"], q["type"]))
+                INSERT INTO exam_questions 
+                (exam_id, question, question_type, option1, option2, option3, option4, correct_answer)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            """, (exam_id, q["question"], q["type"], opts[0], opts[1], opts[2], opts[3], q["answer"]))
 
         db.commit()
-
-        cursor.close()
         db.close()
-
-        return jsonify({"message": "Exam created successfully"})
+        return jsonify({"status": "success", "message": "Exam published successfully!"})
 
     except Exception as e:
+        print("PUBLISH ERROR:", e)
         return jsonify({"error": str(e)}), 500
 
 
@@ -1122,42 +1123,54 @@ def start_session():
 
 @app.route("/submit_exam", methods=["POST"])
 def submit_exam():
+    db = None
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({"status": "error", "message": "No data received"}), 400
 
-        exam_id = int(data.get("exam_id"))
-        score = int(data.get("score"))
-        total = int(data.get("total"))
-        violations = int(data.get("violations"))
-        answers = data.get("answers")
+        # Extract data from the frontend request
+        exam_id = int(data.get("exam_id", 0))
+        score = int(data.get("score", 0))
+        total = int(data.get("total", 0))
+        violations = int(data.get("violations", 0))
+        answers = data.get("answers", [])
 
-        answers_text = "|".join([str(a) for a in answers])
+        # Convert answers list to a single string (e.g., "1|0|2|Paris")
+        answers_text = "|".join([str(a) if a is not None else "" for a in answers])
+        
+        # Get the current logged-in student's ID
         student_id = session.get("user_id")
+        if not student_id:
+            return jsonify({"status": "error", "message": "User session expired"}), 401
 
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
-        # 🔥 CHECK IF DESCRIPTIVE EXISTS
+        # 1. 🔥 CHECK IF DESCRIPTIVE QUESTIONS EXIST
+        # We check the exam structure to see if the teacher needs to grade it manually
         cursor.execute("""
             SELECT question_type FROM exam_questions WHERE exam_id=%s
         """, (exam_id,))
 
         questions = cursor.fetchall()
 
-        needs_review = any(q["question_type"] in ["short","paragraph"] for q in questions)
+        # Logic: If there is a 'short' or 'paragraph' question, the exam cannot be fully EVALUATED yet
+        needs_review = any(q["question_type"] in ["short", "paragraph"] for q in questions)
 
         if needs_review:
-            status = "PARTIAL_EVALUATED"
+            status = "PARTIAL_EVALUATED" # Teacher needs to grade the theory parts
         else:
-            status = "EVALUATED"
+            status = "EVALUATED" # It was all MCQ, so the score is final
 
-        cursor = db.cursor()
-
+        # 2. SAVE THE RESULT
+        # Switching back to a standard cursor for the INSERT operation
+        cursor = db.cursor() 
         cursor.execute("""
-        INSERT INTO exam_results
-        (student_id, exam_id, total, score, violations, answers, status, exam_date)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,NOW())
-        """,(
+            INSERT INTO exam_results 
+            (student_id, exam_id, total, score, violations, answers, status, exam_date) 
+            VALUES (%s, %s, %s, %s, %s, %s, %s, NOW())
+        """, (
             student_id,
             exam_id,
             total,
@@ -1168,16 +1181,17 @@ def submit_exam():
         ))
 
         db.commit()
-
-        cursor.close()
-        db.close()
-
         return jsonify({"status": "saved"})
 
     except Exception as e:
         import traceback
         traceback.print_exc()
-        return jsonify({"status":"error"})
+        return jsonify({"status": "error", "message": str(e)}), 500
+    
+    finally:
+        # Ensure the database connection is ALWAYS closed
+        if db:
+            db.close()
 
 
 @app.route("/teacher_results")
