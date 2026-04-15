@@ -6,7 +6,6 @@ import numpy as np
 import os
 from datetime import datetime
 import cv2
-from ai_proctoring import analyze_frame
 import base64
 
 from werkzeug.security import generate_password_hash, check_password_hash
