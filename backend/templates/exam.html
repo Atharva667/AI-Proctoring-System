@@ -480,21 +480,32 @@ border-radius:4px;">
         renderQuestion();
     }
 
-    function saveAnswer() {
-        // If it's an MCQ, try to find the selected radio button
-        const selected = document.querySelector('input[name="ans"]:checked');
-        if (selected) {
-            answers[current] = Number(selected.value);
-        }
-        
-        if (current < questions.length - 1) {
-            nextQuestion();
-        } else {
-            renderPalette();
-            updateCounters();
-            alert("Last question reached. You can now Submit.");
-        }
+function saveAnswer() {
+    // 1. Check for MCQ (Radio buttons)
+    const selected = document.querySelector('input[name="ans"]:checked');
+    
+    // 2. Check for Paragraph or Short Answer (Textareas or Text inputs)
+    const textInput = document.querySelector('.options textarea, .options input[type="text"]');
+
+    if (selected) {
+        answers[current] = Number(selected.value);
+    } else if (textInput && textInput.value.trim() !== "") {
+        // .trim() ensures we don't save just empty spaces
+        answers[current] = textInput.value;
     }
+    
+    renderPalette();
+    updateCounters();
+
+    // 3. Navigation logic
+    if (current < questions.length - 1) {
+        nextQuestion();
+    } else {
+        // Update the palette for the final question without an annoying popup
+        renderPalette();
+        console.log("Last question saved.");
+    }
+}
 
     function nextQuestion() {
         if (current < questions.length - 1) {
@@ -504,6 +515,15 @@ border-radius:4px;">
             updateCounters();
         }
     }
+
+    function confirmSubmit() {
+    const answered = answers.filter(a => a !== null).length;
+    const total = questions.length;
+    
+    if (confirm(`You have answered ${answered}/${total} questions. Final submission?`)) {
+        submitExam();
+    }
+}
 
     function markForReview() {
         marked[current] = true;
@@ -722,73 +742,146 @@ border-radius:4px;">
         }
 
         // ================= AI PROCTORING ENGINE =================
-function startAIProcessing() {
-        const video = document.getElementById("proctorVideo");
-        aiInterval = setInterval(() => {
-            if (!video.videoWidth || examSubmitted) return;
-            let canvas = document.createElement("canvas");
-            canvas.width = video.videoWidth; canvas.height = video.videoHeight;
-            canvas.getContext("2d").drawImage(video, 0, 0);
-            const imageData = canvas.toDataURL("image/jpeg", 0.6);
+let multiFaceBuffer = 0;
+let noFaceBuffer = 0;
 
-            fetch("/analyze_frame", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ image: imageData })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.faces === 0) {
-                    noFaceFrames++;
-                    if (noFaceFrames >= 3) { triggerWarning("No face detected", "no_face"); noFaceFrames = 0; }
-                } else {
-                    noFaceFrames = 0;
-                    if (data.multiple_faces) triggerWarning("Multiple faces detected", "multiple_faces");
-                    if (data.movement) triggerWarning("Suspicious movement", "movement");
+function startAIProcessing() {
+    const video = document.getElementById("proctorVideo");
+    
+    aiInterval = setInterval(() => {
+        // Stop if exam is over or video isn't ready
+        if (!video.videoWidth || examSubmitted) return;
+
+        // 1. Capture frame at a lower resolution (320x240) for better performance
+        let canvas = document.createElement("canvas");
+        canvas.width = 320; 
+        canvas.height = 240;
+        canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
+        
+        // 0.5 quality is plenty for Haar Cascades and saves bandwidth
+        const imageData = canvas.toDataURL("image/jpeg", 0.5);
+
+        fetch("/analyze_frame", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: imageData })
+        })
+        .then(res => res.json())
+        .then(data => {
+            const currentViolations = data.violations;
+
+            // 2. FACE DETECTION CHECK (Using buffers to prevent flickering errors)
+            if (currentViolations.no_face > violationCounts.no_face) {
+                noFaceBuffer++;
+                if (noFaceBuffer >= 3) { // Must fail for 3 intervals (~4.5 seconds)
+                    triggerWarning("Face not detected", "no_face");
+                    noFaceBuffer = 0;
                 }
-            }).catch(e => console.log("AI Error"));
-        }, 1500);
-    }
+            } else {
+                noFaceBuffer = 0;
+            }
+
+            // 3. MULTIPLE FACES CHECK
+            if (currentViolations.multiple_faces > violationCounts.multiple_faces) {
+                multiFaceBuffer++;
+                if (multiFaceBuffer >= 2) { // 2 intervals for multiple faces (stricter)
+                    triggerWarning("Multiple faces detected", "multiple_faces");
+                    multiFaceBuffer = 0;
+                }
+            } else {
+                multiFaceBuffer = 0;
+            }
+
+            // 4. MOVEMENT CHECK (Trigger immediately if threshold is crossed)
+            if (currentViolations.movement > violationCounts.movement) {
+                triggerWarning("Suspicious movement detected", "movement");
+            }
+
+            // 5. SYNC COUNTS (Crucial: keeps frontend and backend counts aligned)
+            violationCounts = { 
+                ...currentViolations, 
+                tab_switch: violationCounts.tab_switch 
+            };
+
+        }).catch(e => console.error("AI Engine Communication Error:", e));
+    }, 1500);
+}
 
         // ================= SUBMISSION =================
-        function submitExam() {
-            if (examSubmitted) return;
+async function submitExam() {
+    if (examSubmitted) return;
 
-            let score = 0;
-            questions.forEach((q, i) => {
-                if (q.type === "mcq" && answers[i] !== null) {
-                    if (Number(answers[i]) === Number(q.answer)) score++;
-                }
-            });
+    // 1. STOP THE AI FIRST! 
+    // This stops warnings from triggering during the submission process.
+    stopProctoring(); 
 
-            // Sum up all violation types for the database
-            let totalViolations = Object.values(violationCounts).reduce((a, b) => a + b, 0);
+    document.getElementById("submitLoader").style.display = "flex";
 
-            document.getElementById("submitLoader").style.display = "flex";
+    // 2. CALCULATE SCORE (Ignoring paragraph/subjective answers for auto-score)
+    let score = 0;
+    questions.forEach((q, i) => {
+        if (q.type === "mcq" && answers[i] !== null) {
+            // Compare student answer to correct answer
+            if (Number(answers[i]) === Number(q.answer)) score++;
+        }
+    });
 
-            fetch("/submit_exam", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    exam_id: questions[0]?.exam_id || 1,
-                    score: score,
-                    total: questions.length,
-                    violations: totalViolations,
-                    answers: answers
-                })
+    // 3. PREPARE DATA
+    let totalViolations = Object.values(violationCounts).reduce((a, b) => a + b, 0);
+
+    // 4. SUBMIT TO BACKEND
+    try {
+        const response = await fetch("/submit_exam", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                exam_id: questions[0]?.exam_id || 1,
+                score: score,
+                total: questions.length,
+                violations: totalViolations,
+                answers: answers // This includes your paragraph/short text answers
             })
-                .then(() => {
-                    stopProctoring();
-                    window.location.href = "/exam_success";
-                });
-        }
+        });
 
-        function stopProctoring() {
-            examSubmitted = true;
-            clearInterval(aiInterval);
-            const video = document.getElementById("proctorVideo");
-            if (video.srcObject) video.srcObject.getTracks().forEach(t => t.stop());
+        if (response.ok) {
+            // 5. EXIT FULLSCREEN SAFELY AFTER DB SAVED
+            if (document.fullscreenElement) {
+                await document.exitFullscreen();
+            }
+            window.location.href = "/exam_success";
+        } else {
+            throw new Error("Server rejected submission");
         }
+    } catch (err) {
+        console.error("Submission failed:", err);
+        alert("Submission failed. Check your internet and try again.");
+        document.getElementById("submitLoader").style.display = "none";
+        examSubmitted = false; // Allow them to try clicking submit again
+    }
+}
+
+function stopProctoring() {
+    // 1. Immediately flip the global flags
+    examSubmitted = true;
+    examStarted = false; // Add this to kill the event listeners' logic
+
+    // 2. Clear the AI interval immediately
+    if (aiInterval) {
+        clearInterval(aiInterval);
+        aiInterval = null;
+    }
+
+    // 3. Kill the Camera Stream
+    const video = document.getElementById("proctorVideo");
+    if (video && video.srcObject) {
+        const tracks = video.srcObject.getTracks();
+        tracks.forEach(track => {
+            track.stop(); // Stop the hardware (camera light goes off)
+            console.log(`Track ${track.kind} stopped.`);
+        });
+        video.srcObject = null; // Detach stream from video element
+    }
+}
 
         // ================= BROWSER SECURITY =================
         document.addEventListener("visibilitychange", () => {
