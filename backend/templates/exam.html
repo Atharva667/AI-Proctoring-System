@@ -749,31 +749,34 @@ function startAIProcessing() {
     const video = document.getElementById("proctorVideo");
     
     aiInterval = setInterval(() => {
-        // Stop if exam is over or video isn't ready
+
         if (!video.videoWidth || examSubmitted) return;
 
-        // 1. Capture frame at a lower resolution (320x240) for better performance
         let canvas = document.createElement("canvas");
-        canvas.width = 320; 
+        canvas.width = 320;
         canvas.height = 240;
         canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
-        
-        // 0.5 quality is plenty for Haar Cascades and saves bandwidth
-        const imageData = canvas.toDataURL("image/jpeg", 0.5);
 
-        fetch("/analyze_frame", {
+        const imageData = canvas.toDataURL("image/jpeg", 0.8); // 🔥 improved quality
+
+        fetch("/analyze_frame", {   // ✅ MATCHED ROUTE
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: imageData })
+            body: JSON.stringify({ image: imageData }) // ✅ MATCHED KEY
         })
         .then(res => res.json())
         .then(data => {
+
+            console.log("AI RESPONSE:", data); // 🔥 DEBUG
+
+            if (!data || !data.violations) return;
+
             const currentViolations = data.violations;
 
-            // 2. FACE DETECTION CHECK (Using buffers to prevent flickering errors)
-            if (currentViolations.no_face > violationCounts.no_face) {
+            // NO FACE
+            if (currentViolations.no_face >= 1) {
                 noFaceBuffer++;
-                if (noFaceBuffer >= 3) { // Must fail for 3 intervals (~4.5 seconds)
+                if (noFaceBuffer >= 3) {
                     triggerWarning("Face not detected", "no_face");
                     noFaceBuffer = 0;
                 }
@@ -781,10 +784,10 @@ function startAIProcessing() {
                 noFaceBuffer = 0;
             }
 
-            // 3. MULTIPLE FACES CHECK
-            if (currentViolations.multiple_faces > violationCounts.multiple_faces) {
+            // MULTIPLE FACE
+            if (currentViolations.multiple_faces >= 1) {
                 multiFaceBuffer++;
-                if (multiFaceBuffer >= 2) { // 2 intervals for multiple faces (stricter)
+                if (multiFaceBuffer >= 2) {
                     triggerWarning("Multiple faces detected", "multiple_faces");
                     multiFaceBuffer = 0;
                 }
@@ -792,19 +795,20 @@ function startAIProcessing() {
                 multiFaceBuffer = 0;
             }
 
-            // 4. MOVEMENT CHECK (Trigger immediately if threshold is crossed)
-            if (currentViolations.movement > violationCounts.movement) {
+            // MOVEMENT
+            if (currentViolations.movement >= 1) {
                 triggerWarning("Suspicious movement detected", "movement");
             }
 
-            // 5. SYNC COUNTS (Crucial: keeps frontend and backend counts aligned)
-            violationCounts = { 
-                ...currentViolations, 
-                tab_switch: violationCounts.tab_switch 
+            violationCounts = {
+                ...currentViolations,
+                tab_switch: violationCounts.tab_switch
             };
 
-        }).catch(e => console.error("AI Engine Communication Error:", e));
-    }, 1500);
+        })
+        .catch(e => console.error("AI ERROR:", e));
+
+    }, 1000); // 🔥 faster response
 }
 
         // ================= SUBMISSION =================

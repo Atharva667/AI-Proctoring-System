@@ -2,8 +2,11 @@ from flask import Flask, jsonify, request, render_template, session, redirect, u
 from flask import send_from_directory
 from flask_cors import CORS
 import mysql.connector
+import numpy as np
 import os
 from datetime import datetime
+import cv2
+from ai_proctoring import analyze_frame
 import base64
 
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -25,27 +28,43 @@ CORS(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LOG_FILE = os.path.join(BASE_DIR, "activity_log.txt")
 
-@app.route('/analyze_frame', methods=['POST'])
-def analyze_frame():
+ 
 
-    import numpy as np
-    import cv2
-    from services.ai_proctoring import analyze_frame as analyze_logic
+@app.route("/analyze_frame", methods=["POST"])
+def analyze_frame_api():
 
-    data = request.json['image']
-    encoded = data.split(',')[1]
+    data = request.get_json()
 
-    img = base64.b64decode(encoded)
-    npimg = np.frombuffer(img, dtype=np.uint8)
+    frame_data = data.get("image")   # must match frontend
+    frame = decode_frame(frame_data)
 
-    frame = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
+    user_id = session.get("user_id") or "test_user"
 
-    user_id = request.remote_addr   # track user
+    result = analyze_frame(user_id, frame)
 
-    result = analyze_logic(user_id, frame)
+    print("AI RESULT:", result)
 
     return jsonify(result)
 
+def decode_frame(base64_string):
+    try:
+        # 1. Strip the header (e.g., "data:image/jpeg;base64,") if it exists
+        if "," in base64_string:
+            base64_string = base64_string.split(",")[1]
+            
+        # 2. Decode the base64 string into raw bytes
+        img_bytes = base64.b64decode(base64_string)
+        
+        # 3. Convert bytes to a 1D numpy array
+        img_array = np.frombuffer(img_bytes, dtype=np.uint8)
+        
+        # 4. Decode into an OpenCV BGR image format
+        frame = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+        return frame
+        
+    except Exception as e:
+        print("Error decoding frame:", e)
+        return None
 
 # ---------------- DATABASE ----------------
 def get_db():
@@ -330,16 +349,7 @@ def get_questions():
             db.close()
 
 
-@app.route("/process_frame", methods=["POST"])
-def process_frame():
-    return jsonify({
-        "violations": {
-            "no_face": 0,
-            "multiple_faces": 0,
-            "movement": 0,
-            "camera_block": 0
-        }
-    })
+    
     
 @app.route("/debug_db")
 def debug_db():
