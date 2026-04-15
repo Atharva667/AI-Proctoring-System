@@ -10,7 +10,7 @@ import base64
 
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from backend.services.ai_proctoring import analyze_frame
+from services.ai_proctoring import analyze_frame
 
 print("🚀 APP STARTING...")
 
