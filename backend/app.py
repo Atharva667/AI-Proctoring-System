@@ -50,15 +50,18 @@ def analyze_frame():
 # ---------------- DATABASE ----------------
 def get_db():
     try:
-        return mysql.connector.connect(
+        db = mysql.connector.connect(
             host=os.environ.get("MYSQLHOST"),
             user=os.environ.get("MYSQLUSER"),
             password=os.environ.get("MYSQLPASSWORD"),
             database=os.environ.get("MYSQLDATABASE"),
-            port=int(os.environ.get("MYSQLPORT", 3306))
+            port=int(os.environ.get("MYSQLPORT")),
+            ssl_disabled=False   # ✅ IMPORTANT
         )
+        return db
     except Exception as e:
         print("❌ DATABASE CONNECTION ERROR:", e)
+        return None
 # ---------------- PAGES ----------------
 
 
