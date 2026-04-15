@@ -328,19 +328,7 @@
 
 <body>
 
-    <div id="warningBox" style="
-position:fixed;
-top:20px;
-left:50%;
-transform:translateX(-50%);
-background:#dc2626;
-color:white;
-padding:10px 20px;
-border-radius:6px;
-display:none;
-z-index:999999;
-font-weight:600;">
-    </div>
+    <div id="warningBox"></div>
 
     <div id="startOverlay" style="
 position:fixed;inset:0;
@@ -551,40 +539,39 @@ function saveAnswer() {
 
         // ================= WARNING SYSTEM =================
         function triggerWarning(reason, type = null) {
-            if (examSubmitted) return;
+    if (examSubmitted) return;
 
-            let now = Date.now();
-            if (now - lastWarningTime < 2500) return; // Prevent spamming warnings
+    let now = Date.now();
+    if (now - lastWarningTime < 2500) return;
 
-            lastWarningTime = now;
-            warningCount++;
+    lastWarningTime = now;
+    warningCount++;
 
-            // Update specific violation category
-            if (type && violationCounts.hasOwnProperty(type)) {
-                violationCounts[type]++;
-            }
+    if (type && violationCounts.hasOwnProperty(type)) {
+        violationCounts[type]++;
+    }
 
-            updateWarningUI();
+    updateWarningUI();
 
-            const box = document.getElementById("warningBox");
-            box.innerText = `⚠ Warning ${warningCount}/${MAX_WARNINGS} — ${reason}`;
-            box.classList.add("show");
+    const box = document.getElementById("warningBox");
 
-            setTimeout(() => {
-                box.classList.remove("show");
-            }, 2500);
+    box.innerText = `⚠ Warning ${warningCount}/3 — ${reason}`;
 
-            if (warningCount >= MAX_WARNINGS) {
-                box.innerText = "❌ Too many violations! Auto submitting...";
-                box.style.background = "#b91c1c";
-                box.classList.add("show");
-                setTimeout(() => { submitExam(); }, 1500);
-            }
-        }
+    // 🔥 FIXED ANIMATION RESET
+    box.classList.remove("show");
+    void box.offsetWidth;
+    box.classList.add("show");
 
-        function updateWarningUI() {
-            document.getElementById("warningCountUI").innerText = warningCount;
-        }
+    setTimeout(() => {
+        box.classList.remove("show");
+    }, 2500);
+
+    if (warningCount >= 3) {
+        box.innerText = "❌ Too many violations! Auto submitting...";
+        box.classList.add("show");
+        setTimeout(() => { submitExam(); }, 1500);
+    }
+}
 
         // ================= EXAM CORE LOGIC =================
         async function startExam() {
