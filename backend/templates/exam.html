@@ -292,31 +292,29 @@
 
         }
 
-        #warningBox {
-            position: fixed;
-            top: 50px;
-            /* Lower it slightly from the very top */
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-            color: white;
-            padding: 15px 30px;
-            border-radius: 8px;
-            z-index: 9999999;
-            /* Make this extremely high */
-            font-weight: bold;
-            font-size: 18px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            display: none;
-            /* Controlled by JS */
-            border: 2px solid white;
-        }
+#warningBox {
+    position: fixed;
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #dc2626;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 8px;
+    z-index: 9999999;
+    font-weight: bold;
+    font-size: 18px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 
-        /* Add a simple animation class */
-        #warningBox.show {
-            display: block !important;
-            animation: slideIn 0.3s ease-out;
-        }
+    opacity: 0;              /* 👈 hidden using opacity */
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+
+#warningBox.show {
+    opacity: 1;              /* 👈 visible */
+    top: 70px;
+}
 
         @keyframes slideIn {
             from {
@@ -773,11 +771,7 @@ border-radius:4px;">
 
                         if (!data || !data.violations) return;
 
-                        const currentViolations = {
-                            no_face: data.faces === 0 ? 1 : 0,
-                            multiple_faces: data.face_warnings || 0,
-                            movement: data.movement_warnings || 0
-                        };
+                         const currentViolations = data.violations;
 
                         // NO FACE
                         if (currentViolations.no_face >= 1) {

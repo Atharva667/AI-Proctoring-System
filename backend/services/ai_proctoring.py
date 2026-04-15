@@ -77,10 +77,11 @@ def analyze_frame(user_id, frame):
     terminate = state["movement_warnings"] >= 3 or state["face_warnings"] >= 3
 
     return {
-        "faces": face_count,
-        "multiple_faces": multiple_faces,
-        "movement": movement,
-        "movement_warnings": state["movement_warnings"],
-        "face_warnings": state["face_warnings"],
-        "terminate": terminate
-    }
+    "violations": {
+        "no_face": 1 if face_count == 0 else 0,
+        "multiple_faces": state["face_warnings"],
+        "movement": state["movement_warnings"],
+        "camera_block": 0
+    },
+    "terminate": terminate
+}
