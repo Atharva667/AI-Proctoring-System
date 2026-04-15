@@ -291,33 +291,44 @@
             }
 
         }
-#warningBox {
-    position: fixed;
-    top: 50px; /* Lower it slightly from the very top */
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    color: white;
-    padding: 15px 30px;
-    border-radius: 8px;
-    z-index: 9999999; /* Make this extremely high */
-    font-weight: bold;
-    font-size: 18px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    display: none; /* Controlled by JS */
-    border: 2px solid white;
-}
 
-/* Add a simple animation class */
-#warningBox.show {
-    display: block !important;
-    animation: slideIn 0.3s ease-out;
-}
+        #warningBox {
+            position: fixed;
+            top: 50px;
+            /* Lower it slightly from the very top */
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            z-index: 9999999;
+            /* Make this extremely high */
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: none;
+            /* Controlled by JS */
+            border: 2px solid white;
+        }
 
-@keyframes slideIn {
-    from { top: -100px; opacity: 0; }
-    to { top: 50px; opacity: 1; }
-}
+        /* Add a simple animation class */
+        #warningBox.show {
+            display: block !important;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                top: -100px;
+                opacity: 0;
+            }
+
+            to {
+                top: 50px;
+                opacity: 1;
+            }
+        }
 
         #startBtn:disabled {
             opacity: 0.7;
@@ -463,115 +474,119 @@ border-radius:4px;">
 
         // ================= 1. THE MISSING ACTION FUNCTIONS =================
 
-    function selectOption(index) {
-        answers[current] = index;
-        renderQuestion();
-    }
+        function selectOption(index) {
+            answers[current] = index;
+            renderQuestion();
+        }
 
-function saveAnswer() {
-    // 1. Check for MCQ (Radio buttons)
-    const selected = document.querySelector('input[name="ans"]:checked');
-    
-    // 2. Check for Paragraph or Short Answer (Textareas or Text inputs)
-    const textInput = document.querySelector('.options textarea, .options input[type="text"]');
+        function saveAnswer() {
+            // 1. Check for MCQ (Radio buttons)
+            const selected = document.querySelector('input[name="ans"]:checked');
 
-    if (selected) {
-        answers[current] = Number(selected.value);
-    } else if (textInput && textInput.value.trim() !== "") {
-        // .trim() ensures we don't save just empty spaces
-        answers[current] = textInput.value;
-    }
-    
-    renderPalette();
-    updateCounters();
+            // 2. Check for Paragraph or Short Answer (Textareas or Text inputs)
+            const textInput = document.querySelector('.options textarea, .options input[type="text"]');
 
-    // 3. Navigation logic
-    if (current < questions.length - 1) {
-        nextQuestion();
-    } else {
-        // Update the palette for the final question without an annoying popup
-        renderPalette();
-        console.log("Last question saved.");
-    }
-}
+            if (selected) {
+                answers[current] = Number(selected.value);
+            } else if (textInput && textInput.value.trim() !== "") {
+                // .trim() ensures we don't save just empty spaces
+                answers[current] = textInput.value;
+            }
 
-    function nextQuestion() {
-        if (current < questions.length - 1) {
-            current++;
+            renderPalette();
+            updateCounters();
+
+            // 3. Navigation logic
+            if (current < questions.length - 1) {
+                nextQuestion();
+            } else {
+                // Update the palette for the final question without an annoying popup
+                renderPalette();
+                console.log("Last question saved.");
+            }
+        }
+
+        function nextQuestion() {
+            if (current < questions.length - 1) {
+                current++;
+                renderQuestion();
+                renderPalette();
+                updateCounters();
+            }
+        }
+
+        function confirmSubmit() {
+            const answered = answers.filter(a => a !== null).length;
+            const total = questions.length;
+
+            if (confirm(`You have answered ${answered}/${total} questions. Final submission?`)) {
+                submitExam();
+            }
+        }
+
+        function markForReview() {
+            marked[current] = true;
+            renderPalette();
+        }
+
+        function clearAnswer() {
+            answers[current] = null;
             renderQuestion();
             renderPalette();
             updateCounters();
         }
-    }
 
-    function confirmSubmit() {
-    const answered = answers.filter(a => a !== null).length;
-    const total = questions.length;
-    
-    if (confirm(`You have answered ${answered}/${total} questions. Final submission?`)) {
-        submitExam();
-    }
-}
+        function goToQuestion(i) {
+            current = i;
+            renderQuestion();
+        }
 
-    function markForReview() {
-        marked[current] = true;
-        renderPalette();
-    }
-
-    function clearAnswer() {
-        answers[current] = null;
-        renderQuestion();
-        renderPalette();
-        updateCounters();
-    }
-
-    function goToQuestion(i) {
-        current = i;
-        renderQuestion();
-    }
-
-    function updateCounters() {
-        let answered = answers.filter(a => a !== null).length;
-        document.getElementById("answeredCount").innerText = answered;
-        document.getElementById("remainingCount").innerText = questions.length - answered;
-    }
+        function updateCounters() {
+            let answered = answers.filter(a => a !== null).length;
+            document.getElementById("answeredCount").innerText = answered;
+            document.getElementById("remainingCount").innerText = questions.length - answered;
+        }
 
 
         // ================= WARNING SYSTEM =================
         function triggerWarning(reason, type = null) {
-    if (examSubmitted) return;
+            if (examSubmitted) return;
 
-    let now = Date.now();
-    if (now - lastWarningTime < 2500) return;
+            let now = Date.now();
+            if (now - lastWarningTime < 2500) return;
 
-    lastWarningTime = now;
-    warningCount++;
+            lastWarningTime = now;
+            warningCount++;
 
-    if (type && violationCounts.hasOwnProperty(type)) {
-        violationCounts[type]++;
-    }
+            if (type && violationCounts.hasOwnProperty(type)) {
+                violationCounts[type]++;
+            }
 
-    updateWarningUI();
+            updateWarningUI();
 
-    const box = document.getElementById("warningBox");
+            const box = document.getElementById("warningBox");
 
-    box.innerText = `⚠ Warning ${warningCount}/3 — ${reason}`;
+            box.innerText = `⚠ Warning ${warningCount}/3 — ${reason}`;
 
-    // 🔥 FIXED ANIMATION RESET
-    box.classList.remove("show");
-    void box.offsetWidth;
-    box.classList.add("show");
+            // 🔥 FIXED ANIMATION RESET
+            box.classList.remove("show");
+            void box.offsetWidth;
+            box.classList.add("show");
 
-    setTimeout(() => {
-        box.classList.remove("show");
-    }, 2500);
+            setTimeout(() => {
+                box.classList.remove("show");
+            }, 2500);
 
-    if (warningCount >= 3) {
-        box.innerText = "❌ Too many violations! Auto submitting...";
-        box.classList.add("show");
-        setTimeout(() => { submitExam(); }, 1500);
-    }
-}
+            if (warningCount >= 3) {
+                box.innerText = "❌ Too many violations! Auto submitting...";
+                box.classList.add("show");
+                setTimeout(() => { submitExam(); }, 1500);
+            }
+        }
+
+        function updateWarningUI() {
+            document.getElementById("warningCountUI").innerText = warningCount;
+        }
 
         // ================= EXAM CORE LOGIC =================
         async function startExam() {
@@ -729,150 +744,154 @@ function saveAnswer() {
         }
 
         // ================= AI PROCTORING ENGINE =================
-let multiFaceBuffer = 0;
-let noFaceBuffer = 0;
+        let multiFaceBuffer = 0;
+        let noFaceBuffer = 0;
 
-function startAIProcessing() {
-    const video = document.getElementById("proctorVideo");
-    
-    aiInterval = setInterval(() => {
+        function startAIProcessing() {
+            const video = document.getElementById("proctorVideo");
 
-        if (!video.videoWidth || examSubmitted) return;
+            aiInterval = setInterval(() => {
 
-        let canvas = document.createElement("canvas");
-        canvas.width = 320;
-        canvas.height = 240;
-        canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
+                if (!video.videoWidth || examSubmitted) return;
 
-        const imageData = canvas.toDataURL("image/jpeg", 0.8); // 🔥 improved quality
+                let canvas = document.createElement("canvas");
+                canvas.width = 320;
+                canvas.height = 240;
+                canvas.getContext("2d").drawImage(video, 0, 0, 320, 240);
 
-        fetch("/analyze_frame", {   // ✅ MATCHED ROUTE
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ image: imageData }) // ✅ MATCHED KEY
-        })
-        .then(res => res.json())
-        .then(data => {
+                const imageData = canvas.toDataURL("image/jpeg", 0.8); // 🔥 improved quality
 
-            console.log("AI RESPONSE:", data); // 🔥 DEBUG
+                fetch("/analyze_frame", {   // ✅ MATCHED ROUTE
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ image: imageData }) // ✅ MATCHED KEY
+                })
+                    .then(res => res.json())
+                    .then(data => {
 
-            if (!data || !data.violations) return;
+                        console.log("AI RESPONSE:", data); // 🔥 DEBUG
 
-            const currentViolations = data.violations;
+                        if (!data || !data.violations) return;
 
-            // NO FACE
-            if (currentViolations.no_face >= 1) {
-                noFaceBuffer++;
-                if (noFaceBuffer >= 3) {
-                    triggerWarning("Face not detected", "no_face");
-                    noFaceBuffer = 0;
-                }
-            } else {
-                noFaceBuffer = 0;
-            }
+                        const currentViolations = {
+                            no_face: data.faces === 0 ? 1 : 0,
+                            multiple_faces: data.face_warnings || 0,
+                            movement: data.movement_warnings || 0
+                        };
 
-            // MULTIPLE FACE
-            if (currentViolations.multiple_faces >= 1) {
-                multiFaceBuffer++;
-                if (multiFaceBuffer >= 2) {
-                    triggerWarning("Multiple faces detected", "multiple_faces");
-                    multiFaceBuffer = 0;
-                }
-            } else {
-                multiFaceBuffer = 0;
-            }
+                        // NO FACE
+                        if (currentViolations.no_face >= 1) {
+                            noFaceBuffer++;
+                            if (noFaceBuffer >= 3) {
+                                triggerWarning("Face not detected", "no_face");
+                                noFaceBuffer = 0;
+                            }
+                        } else {
+                            noFaceBuffer = 0;
+                        }
 
-            // MOVEMENT
-            if (currentViolations.movement >= 1) {
-                triggerWarning("Suspicious movement detected", "movement");
-            }
+                        // MULTIPLE FACE
+                        if (currentViolations.multiple_faces >= 1) {
+                            multiFaceBuffer++;
+                            if (multiFaceBuffer >= 2) {
+                                triggerWarning("Multiple faces detected", "multiple_faces");
+                                multiFaceBuffer = 0;
+                            }
+                        } else {
+                            multiFaceBuffer = 0;
+                        }
 
-            violationCounts = {
-                ...currentViolations,
-                tab_switch: violationCounts.tab_switch
-            };
+                        // MOVEMENT
+                        if (currentViolations.movement >= 1) {
+                            triggerWarning("Suspicious movement detected", "movement");
+                        }
 
-        })
-        .catch(e => console.error("AI ERROR:", e));
+                        violationCounts = {
+                            ...currentViolations,
+                            tab_switch: violationCounts.tab_switch
+                        };
 
-    }, 1000); // 🔥 faster response
-}
+                    })
+                    .catch(e => console.error("AI ERROR:", e));
+
+            }, 1000); // 🔥 faster response
+        }
 
         // ================= SUBMISSION =================
-async function submitExam() {
-    if (examSubmitted) return;
+        async function submitExam() {
+            if (examSubmitted) return;
 
-    // 1. STOP THE AI FIRST! 
-    // This stops warnings from triggering during the submission process.
-    stopProctoring(); 
+            // 1. STOP THE AI FIRST! 
+            // This stops warnings from triggering during the submission process.
+            stopProctoring();
 
-    document.getElementById("submitLoader").style.display = "flex";
+            document.getElementById("submitLoader").style.display = "flex";
 
-    // 2. CALCULATE SCORE (Ignoring paragraph/subjective answers for auto-score)
-    let score = 0;
-    questions.forEach((q, i) => {
-        if (q.type === "mcq" && answers[i] !== null) {
-            // Compare student answer to correct answer
-            if (Number(answers[i]) === Number(q.answer)) score++;
-        }
-    });
+            // 2. CALCULATE SCORE (Ignoring paragraph/subjective answers for auto-score)
+            let score = 0;
+            questions.forEach((q, i) => {
+                if (q.type === "mcq" && answers[i] !== null) {
+                    // Compare student answer to correct answer
+                    if (Number(answers[i]) === Number(q.answer)) score++;
+                }
+            });
 
-    // 3. PREPARE DATA
-    let totalViolations = Object.values(violationCounts).reduce((a, b) => a + b, 0);
+            // 3. PREPARE DATA
+            let totalViolations = Object.values(violationCounts).reduce((a, b) => a + b, 0);
 
-    // 4. SUBMIT TO BACKEND
-    try {
-        const response = await fetch("/submit_exam", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                exam_id: questions[0]?.exam_id || 1,
-                score: score,
-                total: questions.length,
-                violations: totalViolations,
-                answers: answers // This includes your paragraph/short text answers
-            })
-        });
+            // 4. SUBMIT TO BACKEND
+            try {
+                const response = await fetch("/submit_exam", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        exam_id: questions[0]?.exam_id || 1,
+                        score: score,
+                        total: questions.length,
+                        violations: totalViolations,
+                        answers: answers // This includes your paragraph/short text answers
+                    })
+                });
 
-        if (response.ok) {
-            // 5. EXIT FULLSCREEN SAFELY AFTER DB SAVED
-            if (document.fullscreenElement) {
-                await document.exitFullscreen();
+                if (response.ok) {
+                    // 5. EXIT FULLSCREEN SAFELY AFTER DB SAVED
+                    if (document.fullscreenElement) {
+                        await document.exitFullscreen();
+                    }
+                    window.location.href = "/exam_success";
+                } else {
+                    throw new Error("Server rejected submission");
+                }
+            } catch (err) {
+                console.error("Submission failed:", err);
+                alert("Submission failed. Check your internet and try again.");
+                document.getElementById("submitLoader").style.display = "none";
+                examSubmitted = false; // Allow them to try clicking submit again
             }
-            window.location.href = "/exam_success";
-        } else {
-            throw new Error("Server rejected submission");
         }
-    } catch (err) {
-        console.error("Submission failed:", err);
-        alert("Submission failed. Check your internet and try again.");
-        document.getElementById("submitLoader").style.display = "none";
-        examSubmitted = false; // Allow them to try clicking submit again
-    }
-}
 
-function stopProctoring() {
-    // 1. Immediately flip the global flags
-    examSubmitted = true;
-    examStarted = false; // Add this to kill the event listeners' logic
+        function stopProctoring() {
+            // 1. Immediately flip the global flags
+            examSubmitted = true;
+            examStarted = false; // Add this to kill the event listeners' logic
 
-    // 2. Clear the AI interval immediately
-    if (aiInterval) {
-        clearInterval(aiInterval);
-        aiInterval = null;
-    }
+            // 2. Clear the AI interval immediately
+            if (aiInterval) {
+                clearInterval(aiInterval);
+                aiInterval = null;
+            }
 
-    // 3. Kill the Camera Stream
-    const video = document.getElementById("proctorVideo");
-    if (video && video.srcObject) {
-        const tracks = video.srcObject.getTracks();
-        tracks.forEach(track => {
-            track.stop(); // Stop the hardware (camera light goes off)
-            console.log(`Track ${track.kind} stopped.`);
-        });
-        video.srcObject = null; // Detach stream from video element
-    }
-}
+            // 3. Kill the Camera Stream
+            const video = document.getElementById("proctorVideo");
+            if (video && video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => {
+                    track.stop(); // Stop the hardware (camera light goes off)
+                    console.log(`Track ${track.kind} stopped.`);
+                });
+                video.srcObject = null; // Detach stream from video element
+            }
+        }
 
         // ================= BROWSER SECURITY =================
         document.addEventListener("visibilitychange", () => {
