@@ -592,10 +592,10 @@ function saveAnswer() {
                 const res = await fetch("/start_exam", { method: "POST", credentials: "include" });
                 const data = await res.json();
 
-                if (data.status === "blocked") {
-                    alert("Attempt already recorded.");
-                    return;
-                }
+                // if (data.status === "blocked") {
+                //     alert("Attempt already recorded.");
+                //     return;
+                // }
 
                 // 1. First, request Fullscreen
                 if (!document.fullscreenElement) {
