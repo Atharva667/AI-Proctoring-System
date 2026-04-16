@@ -615,25 +615,36 @@ def review_exams():
         return redirect("/teacher_login")
 
     try:
-
         db = get_db()
         cursor = db.cursor(dictionary=True)
 
         cursor.execute("""
-    SELECT 
-        s.id as student_id,
-        s.name,
-        COUNT(er.id) as attempts,
-        MAX(CAST(er.score AS SIGNED)) as best_score,
-        MAX(er.total) as total,
-        MAX(er.id) as latest_id,
-        MAX(CASE WHEN er.status='PENDING_REVIEW' THEN er.id ELSE NULL END) as pending_id,
-        SUM(CASE WHEN er.status='PENDING_REVIEW' THEN 1 ELSE 0 END) as pending_count
-    FROM exam_results er
-    JOIN students s ON er.student_id = s.id
-    GROUP BY s.id, s.name
-    ORDER BY MAX(er.id) DESC
-""")   
+        SELECT 
+            s.id as student_id,
+            s.name,
+            COUNT(er.id) as attempts,
+
+            MAX(CAST(er.score AS SIGNED)) as best_score,
+
+            (SELECT score FROM exam_results 
+             WHERE student_id = s.id 
+             ORDER BY id DESC LIMIT 1) as latest_score,
+
+            (SELECT total FROM exam_results 
+             WHERE student_id = s.id 
+             ORDER BY id DESC LIMIT 1) as total,
+
+            MAX(er.id) as latest_id,
+
+            MAX(CASE WHEN er.status='PENDING_REVIEW' THEN er.id ELSE NULL END) as pending_id,
+            SUM(CASE WHEN er.status='PENDING_REVIEW' THEN 1 ELSE 0 END) as pending_count
+
+        FROM exam_results er
+        JOIN students s ON er.student_id = s.id
+        GROUP BY s.id, s.name
+        ORDER BY MAX(er.id) DESC
+        """)
+
         exams = cursor.fetchall()
 
         cursor.close()

@@ -184,16 +184,17 @@
 
         @media (max-width:768px) {
 
-    table {
-        min-width: 700px;
-    }
+            table {
+                min-width: 700px;
+            }
 
-    th, td {
-        font-size: 12px;
-        padding: 10px;
-    }
+            th,
+            td {
+                font-size: 12px;
+                padding: 10px;
+            }
 
-}
+        }
     </style>
 
 </head>
@@ -234,8 +235,14 @@
                     <td>{{ e.attempts }}</td>
 
                     <td>
-                        {% if e.best_score %}
-                        {{ e.best_score }} / {{ e.total }}
+                        {% if e.latest_score %}
+                        <span style="color:green; font-weight:bold;">
+                            Latest: {{ e.latest_score }} / {{ e.total }}
+                        </span>
+                        <br>
+                        <span style="color:blue;">
+                            Best: {{ e.best_score }}
+                        </span>
                         {% else %}
                         -
                         {% endif %}
@@ -276,7 +283,7 @@
 
                         </div>
                     </td>
-                    </td>
+                    
 
                 </tr>
 
