@@ -717,18 +717,47 @@ def submit_evaluation():
 
     total_marks = 0
 
+    # 1. Manual marks (descriptive)
     for key in request.form:
         if "mark" in key:
             total_marks += int(request.form[key])
 
+    # 2. ADD MCQ marks automatically
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
 
+    # 🔥 FIXED QUERY (this was broken)
+    cursor.execute("""
+        SELECT answers, exam_id FROM exam_results WHERE id=%s
+    """, (result_id,))
+
+    result = cursor.fetchone()
+
+    answers = (result["answers"] or "").split("|")
+
+    cursor.execute("""
+        SELECT correct_answer, question_type 
+        FROM exam_questions 
+        WHERE exam_id=%s
+    """, (result["exam_id"],))
+
+    questions = cursor.fetchall()
+
+    for i, q in enumerate(questions):
+        if q["question_type"] == "mcq":
+            try:
+                if int(answers[i]) == int(q["correct_answer"]):
+                    total_marks += 1   # ✅ 1 mark for correct MCQ
+            except:
+                pass
+
+    # 🔥 FINAL UPDATE
+    cursor = db.cursor()  # normal cursor for update
     cursor.execute("""
         UPDATE exam_results
         SET score=%s, status='EVALUATED'
         WHERE id=%s
-    """,(total_marks,result_id))
+    """, (total_marks, result_id))
 
     db.commit()
 

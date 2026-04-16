@@ -146,7 +146,7 @@
     <div class="container">
 
         <div class="student-box">
-            <b>Student:</b> {{ session.user_name }}
+             <b>Student:</b> {{ exam.name }} (ID: {{ exam.student_id }})
         </div>
 
         <form action="/submit_evaluation" method="POST">
