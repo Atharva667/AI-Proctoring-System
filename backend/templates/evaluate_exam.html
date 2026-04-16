@@ -146,7 +146,7 @@
     <div class="container">
 
         <div class="student-box">
-             <b>Student:</b> {{ exam.name }} (ID: {{ exam.student_id }})
+            <b>Student:</b> {{ exam.name }} (ID: {{ exam.student_id }})
         </div>
 
         <form action="/submit_evaluation" method="POST">
@@ -208,8 +208,13 @@
                 {% else %}
 
                 <label>Assign Marks</label><br>
-                <input type="number" name="mark{{ loop.index }}" min="0" max="5">
 
+                {% if exam.status == "EVALUATED" %}
+                <!-- 🔒 Already evaluated -->
+                <input type="number" value="{{ exam.score }}" disabled>
+                {% else %}
+                <!-- ✅ Allow marking -->
+                <input type="number" name="mark{{ loop.index }}" min="0" max="5">
                 {% endif %}
 
             </div>
@@ -217,9 +222,16 @@
             {% endfor %}
 
             <div class="submit-box">
-                <button class="submit">Submit Evaluation</button>
-            </div>
 
+                {% if exam.status != "EVALUATED" %}
+                <button class="submit">Submit Evaluation</button>
+                {% else %}
+                <button class="submit" style="background: gray; cursor: not-allowed;" disabled>
+                    Already Evaluated
+                </button>
+                {% endif %}
+
+            </div>
         </form>
 
     </div>

@@ -726,6 +726,14 @@ def submit_evaluation():
     db = get_db()
     cursor = db.cursor(dictionary=True)
 
+        # 🔒 CHECK IF ALREADY EVALUATED
+    cursor.execute("SELECT status FROM exam_results WHERE id=%s", (result_id,))
+    current = cursor.fetchone()
+
+    if current and current["status"] == "EVALUATED":
+        return "Already evaluated. Cannot re-evaluate.", 400
+
+
     # 🔥 FIXED QUERY (this was broken)
     cursor.execute("""
         SELECT answers, exam_id FROM exam_results WHERE id=%s
